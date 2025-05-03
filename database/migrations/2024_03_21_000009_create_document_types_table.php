@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('document_types', function (Blueprint $table) {
-            $table->id('type_id');
+            $table->id();
             $table->string('type_name');
             $table->text('description')->nullable();
             $table->timestamps();

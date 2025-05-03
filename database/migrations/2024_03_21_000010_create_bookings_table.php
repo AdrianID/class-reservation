@@ -9,17 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
-            $table->id('booking_id');
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('room_id')->constrained('rooms');
-            $table->string('booking_code')->unique();
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('room_id')->constrained()->onDelete('cascade');
+            $table->foreignId('approver_id')->nullable()->constrained('users')->onDelete('set null');
             $table->date('booking_date');
             $table->time('start_time');
-            $table->integer('duration_minutes');
-            $table->text('purpose');
+            $table->time('end_time');
+            $table->string('purpose');
+            $table->integer('number_of_participants');
             $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
-            $table->boolean('requires_approval')->default(false);
-            $table->foreignId('approver_id')->nullable()->constrained('users');
             $table->text('rejection_reason')->nullable();
             $table->timestamps();
             $table->softDeletes();

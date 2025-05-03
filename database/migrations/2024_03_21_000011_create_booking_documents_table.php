@@ -9,11 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('booking_documents', function (Blueprint $table) {
-            $table->id('document_id');
-            $table->foreignId('booking_id')->constrained('bookings');
-            $table->string('file_name');
-            $table->string('file_path');
-            $table->foreignId('type_id')->constrained('document_types');
+            $table->id();
+            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
+            $table->foreignId('document_type_id')->constrained()->onDelete('cascade');
+            $table->string('document_path');
+            $table->string('document_name');
             $table->timestamps();
             $table->softDeletes();
         });

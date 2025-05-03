@@ -9,10 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('room_facilities', function (Blueprint $table) {
-            $table->id('facility_id');
-            $table->foreignId('room_id')->constrained('rooms');
+            $table->id();
+            $table->foreignId('room_id')->constrained()->onDelete('cascade');
             $table->string('facility_name');
-            $table->boolean('is_available')->default(true);
+            $table->integer('quantity');
+            $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

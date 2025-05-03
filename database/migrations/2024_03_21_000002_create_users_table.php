@@ -9,14 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id('user_id');
+            $table->id();
             $table->string('full_name');
             $table->string('email')->unique();
-            $table->string('password_hash');
+            $table->string('password');
             $table->string('identity_number')->unique(); // NIM/NIDN
             $table->string('whatsapp_number')->unique();
-            $table->foreignId('role_id')->constrained('roles');
+            $table->foreignId('role_id')->constrained()->onDelete('cascade');
             $table->boolean('is_active')->default(true);
+            $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
         });

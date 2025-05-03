@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('buildings', function (Blueprint $table) {
-            $table->id('building_id');
-            $table->foreignId('faculty_id')->constrained('faculties');
+            $table->id();
+            $table->foreignId('faculty_id')->constrained()->onDelete('cascade');
             $table->string('building_name');
             $table->text('description')->nullable();
             $table->timestamps();

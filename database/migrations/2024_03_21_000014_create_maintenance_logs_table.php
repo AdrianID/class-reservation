@@ -9,12 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('maintenance_logs', function (Blueprint $table) {
-            $table->id('maintenance_id');
-            $table->foreignId('room_id')->constrained('rooms');
-            $table->text('description');
-            $table->date('maintenance_date');
-            $table->string('performed_by');
-            $table->enum('status', ['scheduled', 'completed'])->default('scheduled');
+            $table->id();
+            $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('issue_description');
+            $table->enum('status', ['reported', 'in_progress', 'completed'])->default('reported');
+            $table->text('resolution_notes')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
