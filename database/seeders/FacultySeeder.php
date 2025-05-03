@@ -28,6 +28,18 @@ class FacultySeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'faculty_name' => 'Fakultas Kedokteran',
+                'description' => 'Fakultas yang fokus pada bidang kesehatan dan kedokteran',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'faculty_name' => 'Fakultas Ilmu Sosial dan Politik',
+                'description' => 'Fakultas yang fokus pada bidang sosial dan politik',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         DB::table('faculties')->insert($faculties);

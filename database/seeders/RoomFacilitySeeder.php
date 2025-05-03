@@ -9,46 +9,51 @@ class RoomFacilitySeeder extends Seeder
 {
     public function run(): void
     {
+        // Get room IDs
+        $kelasTeknikId = DB::table('rooms')->where('room_code', 'TK-101')->value('id');
+        $labKomputerId = DB::table('rooms')->where('room_code', 'TK-LAB-101')->value('id');
+        $kelasEkonomiId = DB::table('rooms')->where('room_code', 'EK-101')->value('id');
+        $seminarHukumId = DB::table('rooms')->where('room_code', 'HK-SEM-101')->value('id');
+        $rapatFisipId = DB::table('rooms')->where('room_code', 'FS-RPT-101')->value('id');
+
         $facilities = [
             [
-                'room_id' => 1, // A101
+                'room_id' => $kelasTeknikId,
                 'facility_name' => 'Proyektor',
-                'is_available' => true,
+                'quantity' => 1,
+                'description' => 'Proyektor untuk presentasi',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'room_id' => 1, // A101
-                'facility_name' => 'AC',
-                'is_available' => true,
+                'room_id' => $kelasTeknikId,
+                'facility_name' => 'Papan Tulis',
+                'quantity' => 1,
+                'description' => 'Papan tulis putih',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'room_id' => 2, // A201
+                'room_id' => $labKomputerId,
                 'facility_name' => 'Komputer',
-                'is_available' => true,
+                'quantity' => 30,
+                'description' => 'Komputer untuk praktikum',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'room_id' => 2, // A201
-                'facility_name' => 'Proyektor',
-                'is_available' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'room_id' => 3, // B301
+                'room_id' => $seminarHukumId,
                 'facility_name' => 'Sound System',
-                'is_available' => true,
+                'quantity' => 1,
+                'description' => 'Sistem audio untuk seminar',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'room_id' => 3, // B301
-                'facility_name' => 'Proyektor',
-                'is_available' => true,
+                'room_id' => $rapatFisipId,
+                'facility_name' => 'Meja Rapat',
+                'quantity' => 1,
+                'description' => 'Meja rapat besar',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

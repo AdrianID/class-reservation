@@ -28,6 +28,18 @@ class RoomCategorySeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'category_name' => 'Ruang Rapat',
+                'description' => 'Ruang untuk kegiatan rapat',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'category_name' => 'Ruang Baca',
+                'description' => 'Ruang untuk kegiatan membaca dan belajar mandiri',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         DB::table('room_categories')->insert($categories);
