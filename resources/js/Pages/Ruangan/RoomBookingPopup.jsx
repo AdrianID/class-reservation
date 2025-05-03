@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { router } from "@inertiajs/react";
 import {
     Calendar,
     Clock,
@@ -94,7 +94,7 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
             setTimeout(() => {
                 setIsSubmitting(false);
                 // onClose();
-                Inertia.visit("ruangan/list");
+                router.visit("/ruangan/list");
             }, 1500);
         }
     };

@@ -529,7 +529,10 @@ export default function RoomDetail() {
 
                                         {/* Submit button */}
                                         <button
-                                            type="submit"
+                                            type="button"
+                                            onClick={() =>
+                                                router.visit("/dashboard")
+                                            }
                                             className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-medium transition duration-150 ease-in-out"
                                             style={{
                                                 backgroundColor: primaryColor,

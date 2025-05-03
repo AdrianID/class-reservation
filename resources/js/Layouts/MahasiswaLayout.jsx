@@ -117,7 +117,7 @@ export default function MahasiswaLayout({ header, children }) {
                                 >
                                     Ruangan
                                 </Link>
-                                <Link
+                                {/* <Link
                                     href={route("peminjaman.index")}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                                         isCurrentRoute("peminjaman.index")
@@ -126,7 +126,7 @@ export default function MahasiswaLayout({ header, children }) {
                                     }`}
                                 >
                                     Peminjaman
-                                </Link>
+                                </Link> */}
                                 {/* tambahkan menu lain di sini */}
                             </div>
                         </div>
