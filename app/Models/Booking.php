@@ -10,9 +10,6 @@ class Booking extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $primaryKey = 'booking_id';
-    public $incrementing = true;
-
     protected $fillable = [
         'user_id',
         'room_id',

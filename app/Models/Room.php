@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 class Room extends Model
 {
-    use HasFactory, SoftDeletes;
-
-    protected $primaryKey = 'room_id';
-    public $incrementing = true;
+    use HasFactory, SoftDeletes ;
 
     protected $fillable = [
         'building_id',
@@ -24,33 +22,38 @@ class Room extends Model
         'status',
     ];
 
-    public function building()
+    protected $casts = [
+        'capacity' => 'integer',
+        'status' => 'string',
+    ];
+
+    public function building(): BelongsTo
     {
-        return $this->belongsTo(Building::class, 'building_id');
+        return $this->belongsTo(Building::class);
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(RoomCategory::class, 'category_id');
+        return $this->belongsTo(RoomCategory::class);
     }
 
-    public function facilities()
+    public function facilities(): HasMany
     {
-        return $this->hasMany(RoomFacility::class, 'room_id');
+        return $this->hasMany(RoomFacility::class);
     }
 
-    public function availabilities()
+    public function availabilities(): HasMany
     {
-        return $this->hasMany(RoomAvailability::class, 'room_id');
+        return $this->hasMany(RoomAvailability::class);
     }
 
-    public function bookings()
+    public function bookings(): HasMany
     {
-        return $this->hasMany(Booking::class, 'room_id');
+        return $this->hasMany(Booking::class);
     }
 
-    public function maintenanceLogs()
+    public function maintenanceLogs(): HasMany
     {
-        return $this->hasMany(MaintenanceLog::class, 'room_id');
+        return $this->hasMany(MaintenanceLog::class);
     }
 } 

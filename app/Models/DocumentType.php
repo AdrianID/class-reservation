@@ -5,21 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DocumentType extends Model
 {
     use HasFactory, SoftDeletes;
-
-    protected $primaryKey = 'type_id';
-    public $incrementing = true;
 
     protected $fillable = [
         'type_name',
         'description',
     ];
 
-    public function bookingDocuments()
+    public function bookingDocuments(): HasMany
     {
-        return $this->hasMany(BookingDocument::class, 'type_id');
+        return $this->hasMany(BookingDocument::class);
     }
 } 

@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 class Building extends Model
 {
     use HasFactory, SoftDeletes;
-
-    protected $primaryKey = 'building_id';
-    public $incrementing = true;
 
     protected $fillable = [
         'faculty_id',
@@ -19,13 +17,13 @@ class Building extends Model
         'description',
     ];
 
-    public function faculty()
+    public function faculty(): BelongsTo
     {
-        return $this->belongsTo(Faculty::class, 'faculty_id');
+        return $this->belongsTo(Faculty::class);
     }
 
-    public function rooms()
+    public function rooms(): HasMany
     {
-        return $this->hasMany(Room::class, 'building_id');
+        return $this->hasMany(Room::class);
     }
 } 

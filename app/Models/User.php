@@ -4,18 +4,18 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
-
-    protected $primaryKey = 'user_id';
-    public $incrementing = true;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -25,11 +25,12 @@ class User extends Authenticatable
     protected $fillable = [
         'full_name',
         'email',
-        'password_hash',
+        'password',
         'identity_number',
         'whatsapp_number',
         'role_id',
         'is_active',
+        'email_verified_at',
     ];
 
     /**
@@ -38,7 +39,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password_hash',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -46,22 +48,20 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+    ];
+
+    public function role(): BelongsTo
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Role::class);
     }
 
-    public function role()
+    public function bookings(): HasMany
     {
-        return $this->belongsTo(Role::class, 'role_id');
-    }
-
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class, 'user_id');
+        return $this->hasMany(Booking::class);
     }
 
     public function approvedBookings()
@@ -69,8 +69,13 @@ class User extends Authenticatable
         return $this->hasMany(Booking::class, 'approver_id');
     }
 
-    public function feedbacks()
+    public function feedbacks(): HasMany
     {
-        return $this->hasMany(Feedback::class, 'user_id');
+        return $this->hasMany(Feedback::class);
+    }
+
+    public function maintenanceLogs(): HasMany
+    {
+        return $this->hasMany(MaintenanceLog::class);
     }
 }

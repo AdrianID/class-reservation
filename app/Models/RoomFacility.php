@@ -4,23 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 class RoomFacility extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $primaryKey = 'facility_id';
-    public $incrementing = true;
-
     protected $fillable = [
         'room_id',
         'facility_name',
-        'is_available',
+        'quantity',
+        'description',
     ];
 
-    public function room()
+    protected $casts = [
+        'quantity' => 'integer',
+    ];
+
+    public function room(): BelongsTo
     {
-        return $this->belongsTo(Room::class, 'room_id');
+        return $this->belongsTo(Room::class);
     }
 } 
