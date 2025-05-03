@@ -569,7 +569,7 @@ export default function Jadwal() {
                                             </div>
                                             <div className="px-5 py-4 border-t border-gray-200">
                                                 <Link
-                                                    href={`/jadwal/kelas/${classRoom.id}`}
+                                                    href={`/jadwal/detail`}
                                                     className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-medium transition duration-150 ease-in-out block text-center"
                                                     style={{
                                                         backgroundColor:
