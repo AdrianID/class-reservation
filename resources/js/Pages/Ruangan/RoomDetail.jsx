@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
-import MahasiswaLayout from "@/Layouts/MahasiswaLayout";
+import UserLayout from "@/Layouts/UserLayout";
 import { format } from "date-fns";
 
 export default function RoomDetail() {
@@ -114,7 +114,7 @@ export default function RoomDetail() {
     };
 
     return (
-        <MahasiswaLayout
+        <UserLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     Detail Kelas
@@ -547,6 +547,6 @@ export default function RoomDetail() {
                     </div>
                 </div>
             </div>
-        </MahasiswaLayout>
+        </UserLayout>
     );
 }

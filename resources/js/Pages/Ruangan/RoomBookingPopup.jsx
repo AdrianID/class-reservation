@@ -11,6 +11,8 @@ import {
     Info,
     Check,
     Building,
+    School,
+    MapPin,
 } from "lucide-react";
 import {
     format,
@@ -32,8 +34,10 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
     const [capacity, setCapacity] = useState(1);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedFaculty, setSelectedFaculty] = useState("default");
+    const [selectedBuilding, setSelectedBuilding] = useState("");
+    const [selectedRoom, setSelectedRoom] = useState("");
 
-    // Brand color as primary color
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
 
@@ -45,6 +49,45 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         { id: "studi", label: "Studi Kelompok", icon: <BookOpen size={20} /> },
         { id: "lainnya", label: "Lainnya", icon: <Info size={20} /> },
     ];
+
+    const faculties = [
+        { id: "default", label: "Semua Fakultas" },
+        { id: "ft", label: "Fakultas Teknik" },
+        { id: "fmipa", label: "FMIPA" },
+        { id: "fib", label: "FIB" },
+        { id: "fe", label: "Fakultas Ekonomi" },
+        { id: "fh", label: "Fakultas Hukum" },
+    ];
+
+    const buildings = {
+        default: [{ id: "any", label: "Semua Gedung" }],
+        ft: [
+            { id: "ft1", label: "Gedung FT 1" },
+            { id: "ft2", label: "Gedung FT 2" },
+            { id: "ft3", label: "Gedung FT 3" },
+        ],
+        fmipa: [
+            { id: "mipa1", label: "Gedung MIPA 1" },
+            { id: "mipa2", label: "Gedung MIPA 2" },
+        ],
+        fib: [{ id: "fib1", label: "Gedung FIB 1" }],
+        fe: [
+            { id: "fe1", label: "Gedung FE 1" },
+            { id: "fe2", label: "Gedung FE 2" },
+        ],
+        fh: [{ id: "fh1", label: "Gedung FH 1" }],
+    };
+
+    const rooms = {
+        any: [{ id: "any", label: "Semua Ruangan" }],
+        ft1: [
+            { id: "ft101", label: "FT 101 (Kapasitas: 30)" },
+            { id: "ft102", label: "FT 102 (Kapasitas: 50)" },
+        ],
+        ft2: [{ id: "ft201", label: "FT 201 (Kapasitas: 40)" }],
+        mipa1: [{ id: "m101", label: "MIPA 101 (Kapasitas: 60)" }],
+        // Add more rooms as needed
+    };
 
     const timeSlots = [
         "07:00",
@@ -63,7 +106,6 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         "20:00",
     ];
 
-    // Pre-calculate next available time slots
     useEffect(() => {
         const now = new Date();
         if (isToday(selectedDate)) {
@@ -72,28 +114,36 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
             const formattedTime = `${nextHour.toString().padStart(2, "0")}:00`;
             setStartTime(formattedTime);
 
-            // Set end time to 2 hours after start time
             const endHour = nextHour + 2;
             if (endHour <= 20) {
                 setEndTime(`${endHour.toString().padStart(2, "0")}:00`);
             } else {
-                setEndTime("20:00"); // Max time
+                setEndTime("20:00");
             }
         } else {
-            // If not today, default to 09:00 - 11:00
             setStartTime("09:00");
             setEndTime("11:00");
         }
     }, [selectedDate]);
 
+    useEffect(() => {
+        // Reset building selection when faculty changes
+        setSelectedBuilding("");
+        setSelectedRoom("");
+    }, [selectedFaculty]);
+
+    useEffect(() => {
+        // Reset room selection when building changes
+        setSelectedRoom("");
+    }, [selectedBuilding]);
+
     const handleNext = () => {
-        if (step < 2) {
+        if (step < 3) {
             setStep(step + 1);
         } else {
             setIsSubmitting(true);
             setTimeout(() => {
                 setIsSubmitting(false);
-                // onClose();
                 router.visit("/ruangan/list");
             }, 1500);
         }
@@ -107,7 +157,6 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         }
     };
 
-    // Date picker helpers
     const getDaysInMonth = (year, month) => {
         return new Date(year, month + 1, 0).getDate();
     };
@@ -120,12 +169,10 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const days = [];
 
-        // Add empty cells for days before the first day of the month
         for (let i = 0; i < firstDayOfMonth; i++) {
             days.push(null);
         }
 
-        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
             days.push(i);
         }
@@ -143,7 +190,6 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         );
         const today = new Date();
 
-        // Only allow today and future dates (up to 30 days ahead)
         return (
             isAfter(date, addDays(today, -1)) &&
             isBefore(date, addDays(today, 30))
@@ -237,45 +283,13 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         );
     };
 
-    // Progress indicator
-    /* const renderProgressIndicator = () => {
-        return (
-            <div className="flex justify-center items-center mb-6">
-                {[1, 2].map((i) => (
-                    <div key={i} className="flex items-center">
-                        <div
-                            className={`
-                h-10 w-10 rounded-full flex items-center justify-center font-medium
-                ${i === step ? "text-white" : "bg-gray-200 text-gray-600"}
-                ${i < step ? "text-white" : ""}
-              `}
-                            style={{
-                                backgroundColor: i <= step ? primaryColor : "",
-                            }}
-                        >
-                            {i < step ? <Check size={20} /> : i}
-                        </div>
-                        {i < 2 && (
-                            <div
-                                className={`w-24 h-1 mx-1`}
-                                style={{
-                                    backgroundColor:
-                                        i < step ? primaryColor : "#e5e7eb",
-                                }}
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-        );
-    }; */
     const renderProgressBar = () => {
         return (
             <div className="h-1 w-full">
                 <div
                     className="h-full transition-all duration-300"
                     style={{
-                        width: step === 1 ? "50%" : "100%",
+                        width: step === 1 ? "33%" : step === 2 ? "66%" : "100%",
                         backgroundColor: primaryColor,
                     }}
                 />
@@ -299,7 +313,8 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                     </button>
                     <h2 className="text-2xl font-semibold mb-1">
                         {step === 1 && "Peminjaman Ruangan - Tujuan Kegiatan"}
-                        {step === 2 && "Peminjaman Ruangan - Jadwal"}
+                        {step === 2 && "Peminjaman Ruangan - Jadwal & Lokasi"}
+                        {step === 3 && "Peminjaman Ruangan - Konfirmasi"}
                     </h2>
                     <p className="text-white text-opacity-80 text-sm">
                         Silakan lengkapi informasi untuk menemukan ruangan yang
@@ -307,14 +322,10 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                     </p>
                 </div>
 
-                {/* Progress */}
-                {/* <div className="px-6 pt-6 pb-2">
-                    {renderProgressIndicator()}
-                </div>
- */}
                 {/* Body */}
                 <div className="p-6">
                     {step === 1 && (
+                        // Step 1 content remains the same
                         <div className="grid grid-cols-1">
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium text-gray-800">
@@ -330,14 +341,15 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                         <button
                                             key={activity.id}
                                             className={`
-                        p-4 border rounded-lg flex flex-col items-center text-center
-                        ${
-                            selectedActivity === activity.label
-                                ? "border-[#365b6d] ring-2 ring-[#365b6d] ring-opacity-30"
-                                : "hover:bg-gray-50"
-                        }
-                        transition-all
-                      `}
+                                                p-4 border rounded-lg flex flex-col items-center text-center
+                                                ${
+                                                    selectedActivity ===
+                                                    activity.label
+                                                        ? "border-[#365b6d] ring-2 ring-[#365b6d] ring-opacity-30"
+                                                        : "hover:bg-gray-50"
+                                                }
+                                                transition-all
+                                            `}
                                             style={{
                                                 backgroundColor:
                                                     selectedActivity ===
@@ -353,8 +365,8 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                         >
                                             <div
                                                 className={`
-                          p-3 rounded-full mb-2
-                        `}
+                                                    p-3 rounded-full mb-2
+                                                `}
                                                 style={{
                                                     backgroundColor:
                                                         selectedActivity ===
@@ -398,173 +410,367 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                             </div>
                         </div>
                     )}
-
                     {step === 2 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-5">
-                                <h3 className="text-lg font-medium text-gray-800">
-                                    Jadwal Peminjaman
-                                </h3>
+                        <div className="space-y-6">
+                            <h3 className="text-lg font-medium text-gray-800 mb-4">
+                                Detail Peminjaman Ruangan
+                            </h3>
 
-                                {/* Date picker */}
+                            {/* Main content in 2 columns */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
+                                {/* Left column - Time and capacity */}
                                 <div>
-                                    <label className="block text-gray-700 font-medium mb-2">
-                                        Tanggal:
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                        <h4 className="text-base font-medium text-gray-700 mb-4 flex items-center">
                                             <Calendar
                                                 size={18}
-                                                className="text-gray-500"
+                                                className="mr-2 text-gray-500"
                                             />
+                                            Jadwal Peminjaman
+                                        </h4>
+
+                                        <div className="space-y-4">
+                                            {/* Date picker */}
+                                            <div>
+                                                <label className="block text-sm text-gray-600 mb-1.5">
+                                                    Tanggal:
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <Calendar
+                                                            size={16}
+                                                            className="text-gray-500"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="w-full text-left bg-white border border-gray-300 rounded-lg p-2.5 pl-10 focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                        onClick={() =>
+                                                            setShowDatePicker(
+                                                                !showDatePicker
+                                                            )
+                                                        }
+                                                    >
+                                                        {format(
+                                                            selectedDate,
+                                                            "EEEE, d MMMM yyyy",
+                                                            { locale: id }
+                                                        )}
+                                                    </button>
+                                                    {showDatePicker &&
+                                                        renderDatePicker()}
+                                                </div>
+                                            </div>
+
+                                            {/* Time Selection in a more compact layout */}
+                                            <div>
+                                                <label className="block text-sm text-gray-600 mb-1.5">
+                                                    Waktu:
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {/* Start Time */}
+                                                    <div>
+                                                        <label className="block text-xs text-gray-500 mb-1">
+                                                            Mulai
+                                                        </label>
+                                                        <div className="relative">
+                                                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                                <Clock
+                                                                    size={16}
+                                                                    className="text-gray-500"
+                                                                />
+                                                            </div>
+                                                            <select
+                                                                className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                                value={
+                                                                    startTime
+                                                                }
+                                                                onChange={(
+                                                                    e
+                                                                ) => {
+                                                                    setStartTime(
+                                                                        e.target
+                                                                            .value
+                                                                    );
+                                                                    // Automatically set end time 2 hours later if possible
+                                                                    const startIndex =
+                                                                        timeSlots.indexOf(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    if (
+                                                                        startIndex >=
+                                                                            0 &&
+                                                                        startIndex +
+                                                                            2 <
+                                                                            timeSlots.length
+                                                                    ) {
+                                                                        setEndTime(
+                                                                            timeSlots[
+                                                                                startIndex +
+                                                                                    2
+                                                                            ]
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {timeSlots.map(
+                                                                    (time) => (
+                                                                        <option
+                                                                            key={`start-${time}`}
+                                                                            value={
+                                                                                time
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                time
+                                                                            }
+                                                                        </option>
+                                                                    )
+                                                                )}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* End Time */}
+                                                    <div>
+                                                        <label className="block text-xs text-gray-500 mb-1">
+                                                            Selesai
+                                                        </label>
+                                                        <div className="relative">
+                                                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                                <Clock
+                                                                    size={16}
+                                                                    className="text-gray-500"
+                                                                />
+                                                            </div>
+                                                            <select
+                                                                className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                                value={endTime}
+                                                                onChange={(e) =>
+                                                                    setEndTime(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                            >
+                                                                {timeSlots
+                                                                    .filter(
+                                                                        (t) =>
+                                                                            t >
+                                                                            startTime
+                                                                    )
+                                                                    .map(
+                                                                        (
+                                                                            time
+                                                                        ) => (
+                                                                            <option
+                                                                                key={`end-${time}`}
+                                                                                value={
+                                                                                    time
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    time
+                                                                                }
+                                                                            </option>
+                                                                        )
+                                                                    )}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Capacity */}
+                                            <div>
+                                                <label className="block text-sm text-gray-600 mb-1.5">
+                                                    Kapasitas yang dibutuhkan:
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <Users
+                                                            size={16}
+                                                            className="text-gray-500"
+                                                        />
+                                                    </div>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max="200"
+                                                        className="w-full p-2.5 pl-10 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                        placeholder="Jumlah orang"
+                                                        value={capacity}
+                                                        onChange={(e) =>
+                                                            setCapacity(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            className="w-full text-left bg-white border border-gray-300 rounded-lg p-3 pl-10 focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                            onClick={() =>
-                                                setShowDatePicker(
-                                                    !showDatePicker
-                                                )
-                                            }
-                                        >
-                                            {format(
-                                                selectedDate,
-                                                "EEEE, d MMMM yyyy",
-                                                {
-                                                    locale: id,
-                                                }
-                                            )}
-                                        </button>
-                                        {showDatePicker && renderDatePicker()}
                                     </div>
                                 </div>
 
-                                {/* Time Selection */}
+                                {/* Right column - Location section */}
                                 <div>
-                                    <label className="block text-gray-700 font-medium mb-2">
-                                        Waktu:
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {/* Start Time */}
-                                        <div>
-                                            <label className="block text-xs text-gray-500 mb-1">
-                                                Mulai
-                                            </label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                    <Clock
-                                                        size={16}
-                                                        className="text-gray-500"
-                                                    />
-                                                </div>
-                                                <select
-                                                    className="w-full pl-10 py-3 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                                    value={startTime}
-                                                    onChange={(e) => {
-                                                        setStartTime(
-                                                            e.target.value
-                                                        );
-                                                        // Automatically set end time 2 hours later if possible
-                                                        const startIndex =
-                                                            timeSlots.indexOf(
-                                                                e.target.value
-                                                            );
-                                                        if (
-                                                            startIndex >= 0 &&
-                                                            startIndex + 2 <
-                                                                timeSlots.length
-                                                        ) {
-                                                            setEndTime(
-                                                                timeSlots[
-                                                                    startIndex +
-                                                                        2
-                                                                ]
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    {timeSlots.map((time) => (
-                                                        <option
-                                                            key={`start-${time}`}
-                                                            value={time}
-                                                        >
-                                                            {time}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
+                                    <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                        <h4 className="text-base font-medium text-gray-700 mb-4 flex items-center">
+                                            <MapPin
+                                                size={18}
+                                                className="mr-2 text-gray-500"
+                                            />
+                                            Lokasi Ruangan
+                                        </h4>
 
-                                        {/* End Time */}
-                                        <div>
-                                            <label className="block text-xs text-gray-500 mb-1">
-                                                Selesai
-                                            </label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                    <Clock
-                                                        size={16}
-                                                        className="text-gray-500"
-                                                    />
+                                        <div className="space-y-4">
+                                            {/* Faculty Selection */}
+                                            <div>
+                                                <label className="block text-sm text-gray-600 mb-1.5">
+                                                    Fakultas:
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <School
+                                                            size={16}
+                                                            className="text-gray-500"
+                                                        />
+                                                    </div>
+                                                    <select
+                                                        className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                        value={selectedFaculty}
+                                                        onChange={(e) =>
+                                                            setSelectedFaculty(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    >
+                                                        {faculties.map(
+                                                            (faculty) => (
+                                                                <option
+                                                                    key={
+                                                                        faculty.id
+                                                                    }
+                                                                    value={
+                                                                        faculty.id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        faculty.label
+                                                                    }
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
                                                 </div>
-                                                <select
-                                                    className="w-full pl-10 py-3 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                                    value={endTime}
-                                                    onChange={(e) =>
-                                                        setEndTime(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                >
-                                                    {timeSlots
-                                                        .filter(
-                                                            (t) => t > startTime
-                                                        )
-                                                        .map((time) => (
+                                            </div>
+
+                                            {/* Building Selection */}
+                                            <div>
+                                                <label className="block text-sm text-gray-600 mb-1.5">
+                                                    Gedung:
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <Building
+                                                            size={16}
+                                                            className="text-gray-500"
+                                                        />
+                                                    </div>
+                                                    <select
+                                                        className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                        value={selectedBuilding}
+                                                        onChange={(e) =>
+                                                            setSelectedBuilding(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            !selectedFaculty ||
+                                                            selectedFaculty ===
+                                                                "default"
+                                                        }
+                                                    >
+                                                        {buildings[
+                                                            selectedFaculty
+                                                        ]?.map((building) => (
                                                             <option
-                                                                key={`end-${time}`}
-                                                                value={time}
+                                                                key={
+                                                                    building.id
+                                                                }
+                                                                value={
+                                                                    building.id
+                                                                }
                                                             >
-                                                                {time}
+                                                                {building.label}
                                                             </option>
                                                         ))}
-                                                </select>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Room Selection */}
+                                            <div>
+                                                <label className="block text-sm text-gray-600 mb-1.5">
+                                                    Ruangan (Opsional):
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <MapPin
+                                                            size={16}
+                                                            className="text-gray-500"
+                                                        />
+                                                    </div>
+                                                    <select
+                                                        className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                        value={selectedRoom}
+                                                        onChange={(e) =>
+                                                            setSelectedRoom(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            !selectedBuilding ||
+                                                            selectedBuilding ===
+                                                                "any"
+                                                        }
+                                                    >
+                                                        {rooms[
+                                                            selectedBuilding
+                                                        ]?.map((room) => (
+                                                            <option
+                                                                key={room.id}
+                                                                value={room.id}
+                                                            >
+                                                                {room.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Kosongkan jika ingin mencari
+                                                    semua ruangan yang tersedia
+                                                </p>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                {/* Capacity */}
-                                <div>
-                                    <label className="block text-gray-700 font-medium mb-2">
-                                        Kapasitas yang dibutuhkan:
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <Users
-                                                size={18}
-                                                className="text-gray-500"
-                                            />
-                                        </div>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="200"
-                                            className="w-full p-3 pl-10 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                            placeholder="Jumlah orang"
-                                            value={capacity}
-                                            onChange={(e) =>
-                                                setCapacity(e.target.value)
-                                            }
-                                        />
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
+                    {step === 3 && (
+                        // Step 3 is now just confirmation with booking summary
+                        <div>
+                            <h3 className="text-lg font-medium text-gray-800 mb-4">
+                                Konfirmasi Peminjaman
+                            </h3>
 
-                            {/* Booking Summary */}
+                            {/* Booking Summary with horizontal layout */}
                             <div className="rounded-lg border border-gray-200 overflow-hidden">
                                 <div
-                                    className="p-4 border-b"
+                                    className="p-3 border-b"
                                     style={{ backgroundColor: primaryColor }}
                                 >
                                     <h4 className="font-medium text-white flex items-center">
@@ -572,9 +778,11 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                         Ringkasan Peminjaman
                                     </h4>
                                 </div>
+
                                 <div className="p-5 bg-white">
-                                    <ul className="space-y-3">
-                                        <li className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                    {/* Two-column grid layout */}
+                                    <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                                             <span className="text-gray-600">
                                                 Kegiatan
                                             </span>
@@ -585,8 +793,9 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                                     : selectedActivity ||
                                                       "Belum ditentukan"}
                                             </span>
-                                        </li>
-                                        <li className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                                             <span className="text-gray-600">
                                                 Tanggal
                                             </span>
@@ -594,13 +803,12 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                                 {format(
                                                     selectedDate,
                                                     "d MMMM yyyy",
-                                                    {
-                                                        locale: id,
-                                                    }
+                                                    { locale: id }
                                                 )}
                                             </span>
-                                        </li>
-                                        <li className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                                             <span className="text-gray-600">
                                                 Hari
                                             </span>
@@ -609,24 +817,74 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                                     locale: id,
                                                 })}
                                             </span>
-                                        </li>
-                                        <li className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                                             <span className="text-gray-600">
                                                 Waktu
                                             </span>
                                             <span className="font-medium text-gray-800">
                                                 {startTime} - {endTime}
                                             </span>
-                                        </li>
-                                        <li className="flex justify-between items-center">
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                                             <span className="text-gray-600">
                                                 Kapasitas
                                             </span>
                                             <span className="font-medium text-gray-800">
                                                 {capacity} orang
                                             </span>
-                                        </li>
-                                    </ul>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                            <span className="text-gray-600">
+                                                Fakultas
+                                            </span>
+                                            <span className="font-medium text-gray-800">
+                                                {faculties.find(
+                                                    (f) =>
+                                                        f.id === selectedFaculty
+                                                )?.label || "Belum dipilih"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                            <span className="text-gray-600">
+                                                Gedung
+                                            </span>
+                                            <span className="font-medium text-gray-800">
+                                                {selectedBuilding
+                                                    ? buildings[
+                                                          selectedFaculty
+                                                      ]?.find(
+                                                          (b) =>
+                                                              b.id ===
+                                                              selectedBuilding
+                                                      )?.label ||
+                                                      "Belum dipilih"
+                                                    : "Belum dipilih"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                            <span className="text-gray-600">
+                                                Ruangan
+                                            </span>
+                                            <span className="font-medium text-gray-800">
+                                                {selectedRoom
+                                                    ? rooms[
+                                                          selectedBuilding
+                                                      ]?.find(
+                                                          (r) =>
+                                                              r.id ===
+                                                              selectedRoom
+                                                      )?.label ||
+                                                      "Semua ruangan"
+                                                    : "Semua ruangan"}
+                                            </span>
+                                        </div>
+                                    </div>
 
                                     <div
                                         className="mt-6 p-4 rounded-lg"
@@ -636,7 +894,7 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                     >
                                         <div className="flex">
                                             <div className="flex-shrink-0">
-                                                <Info
+                                                <Check
                                                     style={{
                                                         color: primaryColor,
                                                     }}
@@ -647,7 +905,8 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                                                 <p className="text-sm text-gray-700">
                                                     Pastikan informasi telah
                                                     sesuai dengan kriteria
-                                                    peminjaman anda!
+                                                    peminjaman anda sebelum
+                                                    melanjutkan!
                                                 </p>
                                             </div>
                                         </div>
@@ -674,14 +933,20 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                             isSubmitting ||
                             (step === 1 && !selectedActivity) ||
                             (step === 2 &&
-                                (!selectedDate || !startTime || !endTime))
+                                (!selectedDate ||
+                                    !startTime ||
+                                    !endTime ||
+                                    !selectedFaculty))
                         }
                         className="flex items-center px-6 py-2.5 rounded-lg text-white font-medium"
                         style={{
                             backgroundColor:
                                 (step === 1 && !selectedActivity) ||
                                 (step === 2 &&
-                                    (!selectedDate || !startTime || !endTime))
+                                    (!selectedDate ||
+                                        !startTime ||
+                                        !endTime ||
+                                        !selectedFaculty))
                                     ? "#9ca3af"
                                     : primaryColor,
                             opacity: isSubmitting ? 0.75 : 1,
@@ -713,7 +978,7 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
                             </span>
                         ) : (
                             <>
-                                {step === 2 ? "Cari Ruangan" : "Lanjutkan"}
+                                {step === 3 ? "Cari Ruangan" : "Lanjutkan"}
                                 <ChevronRight size={18} className="ml-1" />
                             </>
                         )}

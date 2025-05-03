@@ -11,3 +11,4 @@ class PeminjamanController extends Controller
         return Inertia::render('Peminjaman/Index');
     }
 }
+

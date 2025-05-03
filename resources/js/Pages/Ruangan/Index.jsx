@@ -9,7 +9,7 @@ import {
     Info,
     ChevronRight,
 } from "lucide-react";
-import MahasiswaLayout from "@/Layouts/MahasiswaLayout";
+import UserLayout from "@/Layouts/UserLayout";
 import RoomBookingPopup from "./RoomBookingPopup";
 
 export default function Ruangan() {
@@ -24,7 +24,7 @@ export default function Ruangan() {
     };
 
     const categories = [
-        {
+        /* {
             id: "fakultas-sendiri",
             title: "Pinjam Ruang Fakultas Sendiri",
             description: "Pinjam ruangan yang tersedia di fakultas Anda",
@@ -61,11 +61,29 @@ export default function Ruangan() {
             route: "/ruangan/khusus",
             bgClass: "bg-amber-50",
             borderClass: "border-amber-200",
+        }, */
+        {
+            id: "ruangan",
+            title: "Pinjam Ruangan",
+            description: "Pinjam ruangan yang tersedia di Universitas",
+            icon: <Building className="h-10 w-10" />,
+            route: "/ruangan",
+            bgClass: "bg-blue-50",
+            borderClass: "border-blue-200",
+        },
+        {
+            id: "fasilitas-umum",
+            title: "Pinjam Ruang Fasilitas Umum",
+            description: "Pinjam Fasilitas Umum yang Tersedia di Universitas",
+            icon: <Bookmark className="h-10 w-10" />,
+            route: "/ruangan/fasilitas-umum",
+            bgClass: "bg-teal-50",
+            borderClass: "border-teal-200",
         },
     ];
 
     return (
-        <MahasiswaLayout
+        <UserLayout
             header={
                 <h2
                     className="text-xl font-semibold leading-tight"
@@ -118,11 +136,11 @@ export default function Ruangan() {
                                         onClick={() =>
                                             handleCategoryClick(category.title)
                                         }
-                                        className={`text-left w-full p-5 border-2 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${category.bgClass} ${category.borderClass}`}
+                                        className={`text-left w-full p-8 min-h-[160px] mb-6 border-2 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${category.bgClass} ${category.borderClass}`}
                                     >
                                         <div className="flex items-start space-x-4">
                                             <div
-                                                className="p-3 rounded-full"
+                                                className="p-4 rounded-full"
                                                 style={{
                                                     backgroundColor:
                                                         primaryColor,
@@ -134,18 +152,18 @@ export default function Ruangan() {
                                             </div>
                                             <div>
                                                 <h3
-                                                    className="text-lg font-medium"
+                                                    className="text-xl font-semibold"
                                                     style={{
                                                         color: primaryColor,
                                                     }}
                                                 >
                                                     {category.title}
                                                 </h3>
-                                                <p className="mt-2 text-sm text-gray-600">
+                                                <p className="mt-3 text-sm text-gray-600">
                                                     {category.description}
                                                 </p>
                                                 <div
-                                                    className="mt-3 flex items-center"
+                                                    className="mt-4 flex items-center"
                                                     style={{
                                                         color: primaryColor,
                                                     }}
@@ -233,6 +251,6 @@ export default function Ruangan() {
                     onClose={() => setPopupOpen(false)}
                 />
             )}
-        </MahasiswaLayout>
+        </UserLayout>
     );
 }

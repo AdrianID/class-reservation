@@ -1,10 +1,13 @@
-import AuthenticatedLayout from "@/Layouts/MahasiswaLayout";
+import UserLayout from "@/Layouts/UserLayout";
 import { Head, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 
 export default function Dashboard() {
+    const { props } = usePage();
+    const user = props.user;
+
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
 
@@ -96,7 +99,7 @@ export default function Dashboard() {
     };
 
     return (
-        <AuthenticatedLayout
+        <UserLayout
             header={
                 <h2
                     className="text-xl font-semibold leading-tight"
@@ -166,7 +169,7 @@ export default function Dashboard() {
                     className="text-2xl font-bold mb-6"
                     style={{ color: primaryColor }}
                 >
-                    Selamat datang di Dashboard
+                    Selamat datang, {user?.name ?? "User"}
                 </h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -441,6 +444,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </UserLayout>
     );
 }

@@ -1,11 +1,12 @@
 import UserLayout from "@/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
-import { Head, Link } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { id } from "date-fns/locale";
+import { Link } from "@inertiajs/react";
 
-export default function RoomList() {
+export default function Jadwal() {
     // Brand colors
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
@@ -28,6 +29,7 @@ export default function RoomList() {
             capacity: "50 orang",
             facilities: ["AC", "Proyektor", "Sound System"],
             badgeColor: "bg-green-100 text-green-800",
+            scheduleStatus: "ada jadwal", // Added schedule status
         },
         {
             id: 2,
@@ -38,6 +40,7 @@ export default function RoomList() {
             capacity: "40 orang",
             facilities: ["AC", "Sound System"],
             badgeColor: "bg-yellow-100 text-yellow-800",
+            scheduleStatus: "ada jadwal", // Added schedule status
         },
         {
             id: 3,
@@ -48,6 +51,7 @@ export default function RoomList() {
             capacity: "30 orang",
             facilities: ["AC", "Proyektor", "Wi-Fi"],
             badgeColor: "bg-red-100 text-red-800",
+            scheduleStatus: "tidak ada jadwal", // Added schedule status
         },
         {
             id: 4,
@@ -58,6 +62,7 @@ export default function RoomList() {
             capacity: "45 orang",
             facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
             badgeColor: "bg-green-100 text-green-800",
+            scheduleStatus: "ada jadwal", // Added schedule status
         },
         {
             id: 5,
@@ -68,6 +73,7 @@ export default function RoomList() {
             capacity: "35 orang",
             facilities: ["AC", "Wi-Fi"],
             badgeColor: "bg-green-100 text-green-800",
+            scheduleStatus: "tidak ada jadwal", // Added schedule status
         },
         {
             id: 6,
@@ -78,6 +84,7 @@ export default function RoomList() {
             capacity: "40 orang",
             facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
             badgeColor: "bg-yellow-100 text-yellow-800",
+            scheduleStatus: "ada jadwal", // Added schedule status
         },
     ];
 
@@ -120,6 +127,18 @@ export default function RoomList() {
                 return "Maintenance";
             default:
                 return status;
+        }
+    };
+
+    // Schedule status badge color
+    const getScheduleStatusBadge = (status) => {
+        switch (status) {
+            case "ada jadwal":
+                return "bg-blue-100 text-blue-800";
+            case "tidak ada jadwal":
+                return "bg-gray-100 text-gray-500";
+            default:
+                return "bg-gray-100 text-gray-800";
         }
     };
 
@@ -181,11 +200,11 @@ export default function RoomList() {
         <UserLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Peminjaman Kelas
+                    Jadwal Kelas
                 </h2>
             }
         >
-            <Head title="Peminjaman Kelas" />
+            <Head title="Jadwal Kelas" />
 
             <div className="py-6 min-h-screen">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -201,7 +220,7 @@ export default function RoomList() {
                                         className="text-lg font-medium"
                                         style={{ color: primaryLightColor }}
                                     >
-                                        Tanggal Peminjaman
+                                        Tanggal Jadwal
                                     </h3>
                                     <div className="flex items-center space-x-4">
                                         <button
@@ -430,15 +449,27 @@ export default function RoomList() {
                                                     alt={classRoom.name}
                                                     className="h-full w-full object-cover"
                                                 />
-                                                <span
-                                                    className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                                        classRoom.status
-                                                    )}`}
-                                                >
-                                                    {getStatusLabel(
-                                                        classRoom.status
-                                                    )}
-                                                </span>
+                                                <div className="absolute top-3 right-3 flex flex-col gap-2">
+                                                    <span
+                                                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                                            classRoom.status
+                                                        )}`}
+                                                    >
+                                                        {getStatusLabel(
+                                                            classRoom.status
+                                                        )}
+                                                    </span>
+                                                    <span
+                                                        className={`px-3 py-1 rounded-full text-xs font-medium ${getScheduleStatusBadge(
+                                                            classRoom.scheduleStatus
+                                                        )}`}
+                                                    >
+                                                        {classRoom.scheduleStatus ===
+                                                        "ada jadwal"
+                                                            ? "Ada Jadwal"
+                                                            : "Tidak Ada Jadwal"}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div className="p-5 flex-1">
                                                 <h4
@@ -538,32 +569,25 @@ export default function RoomList() {
                                             </div>
                                             <div className="px-5 py-4 border-t border-gray-200">
                                                 <Link
-                                                    href={route(
-                                                        "ruangan.detail"
-                                                    )}
-                                                    className="w-full block text-center py-2.5 px-4 rounded-lg text-white text-sm font-medium transition duration-150 ease-in-out"
+                                                    href={`/jadwal/kelas/${classRoom.id}`}
+                                                    className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-medium transition duration-150 ease-in-out block text-center"
                                                     style={{
                                                         backgroundColor:
-                                                            classRoom.status ===
-                                                            "tersedia"
+                                                            classRoom.scheduleStatus ===
+                                                            "ada jadwal"
                                                                 ? primaryColor
                                                                 : "gray",
                                                         opacity:
-                                                            classRoom.status ===
-                                                            "tersedia"
+                                                            classRoom.scheduleStatus ===
+                                                            "ada jadwal"
                                                                 ? 1
                                                                 : 0.6,
-                                                        pointerEvents:
-                                                            classRoom.status ===
-                                                            "tersedia"
-                                                                ? "auto"
-                                                                : "none",
                                                     }}
                                                 >
-                                                    {classRoom.status ===
-                                                    "tersedia"
-                                                        ? "Pesan Sekarang"
-                                                        : "Tidak Tersedia"}
+                                                    {classRoom.scheduleStatus ===
+                                                    "ada jadwal"
+                                                        ? "Lihat Jadwal"
+                                                        : "Tidak Ada Jadwal"}
                                                 </Link>
                                             </div>
                                         </div>

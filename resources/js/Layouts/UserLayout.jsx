@@ -117,6 +117,16 @@ export default function MahasiswaLayout({ header, children }) {
                                 >
                                     Ruangan
                                 </Link>
+                                <Link
+                                    href={route("jadwal.index")}
+                                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                                        isCurrentRoute("jadwal.index")
+                                            ? "border-indigo-500 text-white"
+                                            : "border-transparent text-gray-300 hover:border-gray-300 hover:text-gray-100"
+                                    }`}
+                                >
+                                    Jadwal
+                                </Link>
                                 {/* <Link
                                     href={route("peminjaman.index")}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
@@ -194,10 +204,18 @@ export default function MahasiswaLayout({ header, children }) {
                                         Dashboard
                                     </Dropdown.Link>
                                     <Dropdown.Link
+                                        href={route("ruangan.index")}
+                                    >
+                                        Ruangan
+                                    </Dropdown.Link>
+                                    <Dropdown.Link href={route("jadwal.index")}>
+                                        Jadwal
+                                    </Dropdown.Link>
+                                    {/* <Dropdown.Link
                                         href={route("peminjaman.index")}
                                     >
                                         Peminjaman
-                                    </Dropdown.Link>
+                                    </Dropdown.Link> */}
                                     <Dropdown.Link href={route("profile.edit")}>
                                         Profile
                                     </Dropdown.Link>

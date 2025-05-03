@@ -1,4 +1,4 @@
-import MahasiswaLayout from "@/Layouts/MahasiswaLayout";
+import UserLayout from "@/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
 import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
@@ -178,7 +178,7 @@ export default function Peminjaman() {
     };
 
     return (
-        <MahasiswaLayout
+        <UserLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     Peminjaman Kelas
@@ -584,6 +584,6 @@ export default function Peminjaman() {
                     onClose={() => setShowExpandedCalendar(false)}
                 />
             )}
-        </MahasiswaLayout>
+        </UserLayout>
     );
 }
