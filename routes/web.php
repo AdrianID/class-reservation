@@ -1,7 +1,7 @@
 <?php
 
 // admin
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
 // user
