@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { router } from "@inertiajs/react";
 import Select from "react-select";
 import {
-    Calendar,
     Clock,
     Users,
     BookOpen,
@@ -14,16 +13,12 @@ import {
     Building,
     School,
     MapPin,
+    Calendar,
 } from "lucide-react";
-import {
-    format,
-    addHours,
-    isBefore,
-    isAfter,
-    isToday,
-    addDays,
-} from "date-fns";
+import { format, isToday } from "date-fns";
 import { id } from "date-fns/locale";
+import TimeRangePicker from "./components/TimePicker";
+import DatePicker from "./components/DatePicker";
 
 export default function RoomBookingPopup({ initialCategory, onClose, faculties, buildings }) {
     const [step, setStep] = useState(1);
@@ -33,7 +28,6 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
     const [capacity, setCapacity] = useState(1);
-    const [showDatePicker, setShowDatePicker] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
@@ -107,146 +101,30 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
         }
     };
 
-    const getDaysInMonth = (year, month) => {
-        return new Date(year, month + 1, 0).getDate();
-    };
-
-    const getMonthDays = () => {
-        const year = selectedDate.getFullYear();
-        const month = selectedDate.getMonth();
-        const daysInMonth = getDaysInMonth(year, month);
-
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const days = [];
-
-        for (let i = 0; i < firstDayOfMonth; i++) {
-            days.push(null);
-        }
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push(i);
-        }
-
-        return days;
-    };
-
-    const isDateSelectable = (day) => {
-        if (!day) return false;
-
-        const date = new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            day
-        );
-        const today = new Date();
-
-        return (
-            isAfter(date, addDays(today, -1)) &&
-            isBefore(date, addDays(today, 30))
-        );
-    };
-
-    const renderDatePicker = () => {
-        const days = getMonthDays();
-        const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-
-        return (
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-10 w-full">
-                <div className="flex justify-between items-center mb-3">
-                    <button
-                        className="p-1 rounded-full hover:bg-gray-100"
-                        onClick={() => {
-                            const newDate = new Date(selectedDate);
-                            newDate.setMonth(newDate.getMonth() - 1);
-                            setSelectedDate(newDate);
-                        }}
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
-                    <div className="font-medium">
-                        {format(selectedDate, "MMMM yyyy", { locale: id })}
-                    </div>
-                    <button
-                        className="p-1 rounded-full hover:bg-gray-100"
-                        onClick={() => {
-                            const newDate = new Date(selectedDate);
-                            newDate.setMonth(newDate.getMonth() + 1);
-                            setSelectedDate(newDate);
-                        }}
-                    >
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                    {dayNames.map((day) => (
-                        <div
-                            key={day}
-                            className="text-xs font-medium text-gray-500"
-                        >
-                            {day}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-1">
-                    {days.map((day, index) => {
-                        const isSelectable = isDateSelectable(day);
-                        const isSelected =
-                            day && day === selectedDate.getDate();
-
-                        return (
-                            <button
-                                key={index}
-                                disabled={!isSelectable}
-                                className={`
-                  h-8 w-8 rounded-full flex items-center justify-center text-sm
-                  ${!day ? "invisible" : ""}
-                  ${isSelected ? `bg-[${primaryColor}] text-white` : ""}
-                  ${!isSelected && isSelectable ? "hover:bg-gray-100" : ""}
-                  ${
-                      !isSelectable && day
-                          ? "text-gray-300 cursor-not-allowed"
-                          : ""
-                  }
-                `}
-                                style={
-                                    isSelected
-                                        ? { backgroundColor: primaryColor }
-                                        : {}
-                                }
-                                onClick={() => {
-                                    if (isSelectable) {
-                                        const newDate = new Date(selectedDate);
-                                        newDate.setDate(day);
-                                        setSelectedDate(newDate);
-                                        setShowDatePicker(false);
-                                    }
-                                }}
-                            >
-                                {day}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
-
     const renderProgressBar = () => {
         return (
             <div className="h-1 w-full">
                 <div
-                    className="h-full transition-all duration-300"
+                    className="h-full transition-all duration-300 bg-primary"
                     style={{
                         width: step === 1 ? "33%" : step === 2 ? "66%" : "100%",
-                        backgroundColor: primaryColor,
                     }}
                 />
             </div>
         );
     };
 
+    const handleFacultyChange = (selectedOption) => {
+        setSelectedFaculty(selectedOption);
+        setSelectedBuilding(null);
+    };
+
+    const getAvailableBuildings = () => {
+        if (!selectedFaculty) return [];
+        return buildings[selectedFaculty.value] || [];
+    };
+
+    // Style dropdown
     const selectStyles = {
         control: (base) => ({
             ...base,
@@ -257,7 +135,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
             "&:hover": {
                 borderColor: "#365b6d",
             },
-            paddingLeft: "36px", // Space for the icon
+            paddingLeft: "36px",
         }),
         valueContainer: (base) => ({
             ...base,
@@ -271,60 +149,17 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                 backgroundColor: "#f9fafb",
             },
         }),
-    };
-
-    const formatDate = (date) => {
-        const days = [
-            "Minggu",
-            "Senin",
-            "Selasa",
-            "Rabu",
-            "Kamis",
-            "Jumat",
-            "Sabtu",
-        ];
-        const months = [
-            "Januari",
-            "Februari",
-            "Maret",
-            "April",
-            "Mei",
-            "Juni",
-            "Juli",
-            "Agustus",
-            "September",
-            "Oktober",
-            "November",
-            "Desember",
-        ];
-
-        const day = days[date.getDay()];
-        const dateNum = date.getDate();
-        const month = months[date.getMonth()];
-        const year = date.getFullYear();
-
-        return `${day}, ${dateNum} ${month} ${year}`;
-    };
-
-    const handleFacultyChange = (selectedOption) => {
-        setSelectedFaculty(selectedOption);
-        setSelectedBuilding(null); // Reset building when faculty changes
-    };
-
-    // Get buildings based on selected faculty
-    const getAvailableBuildings = () => {
-        if (!selectedFaculty) return [];
-        return buildings[selectedFaculty.value] || [];
+        menu: (base) => ({
+            ...base,
+            zIndex: 30,
+        }),
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden">
                 {/* Header */}
-                <div
-                    className="p-5 text-white relative"
-                    style={{ backgroundColor: primaryColor }}
-                >
+                <div className="p-5 text-white relative bg-primary">
                     <button
                         onClick={onClose}
                         className="absolute right-4 top-4 text-white hover:bg-opacity-20 hover:bg-white rounded-full p-1 transition-colors"
@@ -345,7 +180,6 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                 {/* Body */}
                 <div className="p-6">
                     {step === 1 && (
-                        // Step 1 content remains the same
                         <div className="grid grid-cols-1">
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium text-gray-800">
@@ -365,7 +199,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                                 ${
                                                     selectedActivity ===
                                                     activity.label
-                                                        ? "border-[#365b6d] ring-2 ring-[#365b6d] ring-opacity-30"
+                                                        ? "border-primary ring-2 ring-primary ring-opacity-30"
                                                         : "hover:bg-gray-50"
                                                 }
                                                 transition-all
@@ -374,7 +208,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                                 backgroundColor:
                                                     selectedActivity ===
                                                     activity.label
-                                                        ? primaryLightColor
+                                                        ? "bg-primaryLight"
                                                         : "",
                                             }}
                                             onClick={() =>
@@ -386,19 +220,13 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                             <div
                                                 className={`
                                                     p-3 rounded-full mb-2
+                                                    ${
+                                                        selectedActivity ===
+                                                        activity.label
+                                                            ? "bg-[#d0dce2] text-primary"
+                                                            : "bg-gray-100 text-gray-500"
+                                                    }
                                                 `}
-                                                style={{
-                                                    backgroundColor:
-                                                        selectedActivity ===
-                                                        activity.label
-                                                            ? "#d0dce2"
-                                                            : "#f3f4f6",
-                                                    color:
-                                                        selectedActivity ===
-                                                        activity.label
-                                                            ? primaryColor
-                                                            : "#6b7280",
-                                                }}
                                             >
                                                 {activity.icon}
                                             </div>
@@ -416,7 +244,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                         </label>
                                         <input
                                             type="text"
-                                            className="w-full p-3 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                            className="w-full p-3 border rounded-lg focus:ring focus:ring-primary focus:ring-opacity-30 focus:border-primary"
                                             placeholder="Masukkan nama kegiatan"
                                             value={customActivity}
                                             onChange={(e) =>
@@ -436,9 +264,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                 Detail Peminjaman Ruangan
                             </h3>
 
-                            {/* Main content in 2 columns with improved layout */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {/* Left column - Time and capacity */}
                                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                                     <h4 className="text-base font-medium text-gray-700 mb-5 flex items-center">
                                         <Calendar
@@ -449,143 +275,19 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                     </h4>
 
                                     <div className="space-y-5">
-                                        {/* Date picker */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-2">
-                                                Tanggal:
-                                            </label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                    <Calendar
-                                                        size={16}
-                                                        className="text-gray-500"
-                                                    />
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    className="w-full text-left bg-white border border-gray-300 rounded-lg p-2.5 pl-10 focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                                    onClick={() =>
-                                                        setShowDatePicker(
-                                                            !showDatePicker
-                                                        )
-                                                    }
-                                                >
-                                                    {formatDate(selectedDate)}
-                                                </button>
-                                                {showDatePicker &&
-                                                    renderDatePicker()}
-                                            </div>
-                                        </div>
+                                        <DatePicker
+                                            selectedDate={selectedDate}
+                                            setSelectedDate={setSelectedDate}
+                                        />
 
-                                        {/* Time Selection in a more compact layout */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-2">
-                                                Waktu:
-                                            </label>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                {/* Start Time */}
-                                                <div>
-                                                    <label className="block text-xs text-gray-500 mb-1">
-                                                        Mulai
-                                                    </label>
-                                                    <div className="relative">
-                                                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                            <Clock
-                                                                size={16}
-                                                                className="text-gray-500"
-                                                            />
-                                                        </div>
-                                                        <select
-                                                            className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                                            value={startTime}
-                                                            onChange={(e) => {
-                                                                setStartTime(
-                                                                    e.target
-                                                                        .value
-                                                                );
-                                                                // Automatically set end time 2 hours later if possible
-                                                                const startIndex =
-                                                                    timeSlots.indexOf(
-                                                                        e.target
-                                                                            .value
-                                                                    );
-                                                                if (
-                                                                    startIndex >=
-                                                                        0 &&
-                                                                    startIndex +
-                                                                        2 <
-                                                                        timeSlots.length
-                                                                ) {
-                                                                    setEndTime(
-                                                                        timeSlots[
-                                                                            startIndex +
-                                                                                2
-                                                                        ]
-                                                                    );
-                                                                }
-                                                            }}
-                                                        >
-                                                            {timeSlots.map(
-                                                                (time) => (
-                                                                    <option
-                                                                        key={`start-${time}`}
-                                                                        value={
-                                                                            time
-                                                                        }
-                                                                    >
-                                                                        {time}
-                                                                    </option>
-                                                                )
-                                                            )}
-                                                        </select>
-                                                    </div>
-                                                </div>
+                                        <TimeRangePicker
+                                            startTime={startTime}
+                                            endTime={endTime}
+                                            setStartTime={setStartTime}
+                                            setEndTime={setEndTime}
+                                            timeSlots={timeSlots}
+                                        />
 
-                                                {/* End Time */}
-                                                <div>
-                                                    <label className="block text-xs text-gray-500 mb-1">
-                                                        Selesai
-                                                    </label>
-                                                    <div className="relative">
-                                                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                            <Clock
-                                                                size={16}
-                                                                className="text-gray-500"
-                                                            />
-                                                        </div>
-                                                        <select
-                                                            className="w-full pl-10 py-2.5 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
-                                                            value={endTime}
-                                                            onChange={(e) =>
-                                                                setEndTime(
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        >
-                                                            {timeSlots
-                                                                .filter(
-                                                                    (t) =>
-                                                                        t >
-                                                                        startTime
-                                                                )
-                                                                .map((time) => (
-                                                                    <option
-                                                                        key={`end-${time}`}
-                                                                        value={
-                                                                            time
-                                                                        }
-                                                                    >
-                                                                        {time}
-                                                                    </option>
-                                                                ))}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Capacity */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-2">
                                                 Kapasitas yang dibutuhkan:
@@ -601,7 +303,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                                     type="number"
                                                     min="1"
                                                     max="200"
-                                                    className="w-full p-2.5 pl-10 border rounded-lg focus:ring focus:ring-[#365b6d] focus:ring-opacity-30 focus:border-[#365b6d]"
+                                                    className="w-full p-2.5 pl-10 border rounded-lg focus:ring focus:ring-primary focus:ring-opacity-30 focus:border-primary"
                                                     placeholder="Jumlah orang"
                                                     value={capacity}
                                                     onChange={(e) =>
@@ -615,7 +317,6 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                     </div>
                                 </div>
 
-                                {/* Right column - Location section with React-Select */}
                                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                                     <h4 className="text-base font-medium text-gray-700 mb-5 flex items-center">
                                         <MapPin
@@ -626,13 +327,12 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                     </h4>
 
                                     <div className="space-y-5">
-                                        {/* Faculty Selection with React-Select */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-2">
                                                 Fakultas:
                                             </label>
                                             <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 z-10 flex items-center pl-3 pointer-events-none">
+                                                <div className="absolute inset-y-0 left-0 z-20 flex items-center pl-3 pointer-events-none">
                                                     <School
                                                         size={16}
                                                         className="text-gray-500"
@@ -653,13 +353,12 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                             </div>
                                         </div>
 
-                                        {/* Building Selection with React-Select */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-2">
                                                 Gedung:
                                             </label>
                                             <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 z-10 flex items-center pl-3 pointer-events-none">
+                                                <div className="absolute inset-y-0 left-0 z-20 flex items-center pl-3 pointer-events-none">
                                                     <Building
                                                         size={16}
                                                         className="text-gray-500"
@@ -683,7 +382,6 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                             </div>
                                         </div>
 
-                                        {/* Information note */}
                                         <div className="bg-blue-50 p-4 rounded-lg mt-4">
                                             <p className="text-sm text-blue-700 flex items-start">
                                                 <svg
@@ -709,137 +407,139 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                         </div>
                     )}
                     {step === 3 && (
-                        // Step 3 is now just confirmation with booking summary
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-800 mb-4">
-                                Konfirmasi Peminjaman
-                            </h3>
+                        <div className="max-w-3xl mx-auto space-y-6">
+                            <div className="text-center sm:text-left">
+                                <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                                    Konfirmasi Peminjaman
+                                </h3>
+                                <p className="text-gray-600">
+                                    Silakan periksa detail peminjaman Anda
+                                    sebelum melanjutkan
+                                </p>
+                            </div>
 
-                            {/* Booking Summary with horizontal layout */}
-                            <div className="rounded-lg border border-gray-200 overflow-hidden">
-                                <div
-                                    className="p-3 border-b"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    <h4 className="font-medium text-white flex items-center">
-                                        <Info size={18} className="mr-2" />
+                            {/* Booking Summary Card */}
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow">
+                                {/* Card Header */}
+                                <div className="bg-primary p-4 flex items-center">
+                                    <Info
+                                        size={20}
+                                        className="text-white mr-2"
+                                    />
+                                    <h4 className="font-medium text-white">
                                         Ringkasan Peminjaman
                                     </h4>
                                 </div>
 
-                                <div className="p-5 bg-white">
-                                    {/* Two-column grid layout */}
-                                    <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Kegiatan
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {selectedActivity === "Lainnya"
-                                                    ? customActivity ||
-                                                      "Belum ditentukan"
-                                                    : selectedActivity ||
-                                                      "Belum ditentukan"}
-                                            </span>
+                                {/* Card Content */}
+                                <div className="p-6">
+                                    {/* Grid Layout for Booking Details */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 mb-6">
+                                        {/* Left Column */}
+                                        <div>
+                                            <h5 className="text-gray-700 font-medium mb-4 pb-2 border-b border-gray-100">
+                                                Informasi Kegiatan
+                                            </h5>
+                                            <div className="space-y-4">
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Kegiatan
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {selectedActivity ===
+                                                        "Lainnya"
+                                                            ? customActivity ||
+                                                              "Belum ditentukan"
+                                                            : selectedActivity ||
+                                                              "Belum ditentukan"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Tanggal
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {format(
+                                                            selectedDate,
+                                                            "d MMMM yyyy",
+                                                            { locale: id }
+                                                        )}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Hari
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {format(
+                                                            selectedDate,
+                                                            "EEEE",
+                                                            { locale: id }
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Tanggal
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {format(
-                                                    selectedDate,
-                                                    "d MMMM yyyy",
-                                                    { locale: id }
-                                                )}
-                                            </span>
-                                        </div>
+                                        {/* Right Column */}
+                                        <div>
+                                            <h5 className="text-gray-700 font-medium mb-4 pb-2 border-b border-gray-100">
+                                                Informasi Ruangan
+                                            </h5>
+                                            <div className="space-y-4">
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Waktu
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {startTime} - {endTime}
+                                                    </span>
+                                                </div>
 
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Hari
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {format(selectedDate, "EEEE", {
-                                                    locale: id,
-                                                })}
-                                            </span>
-                                        </div>
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Kapasitas
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {capacity} orang
+                                                    </span>
+                                                </div>
 
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Waktu
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {startTime} - {endTime}
-                                            </span>
-                                        </div>
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Fakultas
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {selectedFaculty?.label ||
+                                                            "Belum dipilih"}
+                                                    </span>
+                                                </div>
 
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Kapasitas
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {capacity} orang
-                                            </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Fakultas
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {faculties.find(
-                                                    (f) =>
-                                                        f.id === selectedFaculty
-                                                )?.label || "Belum dipilih"}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                            <span className="text-gray-600">
-                                                Gedung
-                                            </span>
-                                            <span className="font-medium text-gray-800">
-                                                {selectedBuilding
-                                                    ? buildings[
-                                                          selectedFaculty
-                                                      ]?.find(
-                                                          (b) =>
-                                                              b.id ===
-                                                              selectedBuilding
-                                                      )?.label ||
-                                                      "Belum dipilih"
-                                                    : "Belum dipilih"}
-                                            </span>
+                                                <div className="flex flex-col sm:flex-row sm:justify-between">
+                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                        Gedung
+                                                    </span>
+                                                    <span className="font-medium text-gray-800">
+                                                        {selectedBuilding?.label ||
+                                                            "Belum dipilih"}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div
-                                        className="mt-6 p-4 rounded-lg"
-                                        style={{
-                                            backgroundColor: primaryLightColor,
-                                        }}
-                                    >
-                                        <div className="flex">
-                                            <div className="flex-shrink-0">
-                                                <Check
-                                                    style={{
-                                                        color: primaryColor,
-                                                    }}
-                                                    size={18}
-                                                />
-                                            </div>
-                                            <div className="ml-3">
-                                                <p className="text-sm text-gray-700">
-                                                    Pastikan informasi telah
-                                                    sesuai dengan kriteria
-                                                    peminjaman anda sebelum
-                                                    melanjutkan!
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div className="bg-blue-50 p-4 rounded-lg flex items-start ">
+                                        <Check
+                                            className="text-primary mt-0.5 mr-3 flex-shrink-0"
+                                            size={20}
+                                        />
+                                        <p className="text-sm text-gray-700">
+                                            Pastikan informasi telah sesuai
+                                            dengan kriteria peminjaman Anda
+                                            sebelum melanjutkan!
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -868,19 +568,16 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                     !endTime ||
                                     !selectedFaculty))
                         }
-                        className="flex items-center px-6 py-2.5 rounded-lg text-white font-medium"
-                        style={{
-                            backgroundColor:
-                                (step === 1 && !selectedActivity) ||
-                                (step === 2 &&
-                                    (!selectedDate ||
-                                        !startTime ||
-                                        !endTime ||
-                                        !selectedFaculty))
-                                    ? "#9ca3af"
-                                    : primaryColor,
-                            opacity: isSubmitting ? 0.75 : 1,
-                        }}
+                        className={`flex items-center px-6 py-2.5 rounded-lg text-white font-medium ${
+                            (step === 1 && !selectedActivity) ||
+                            (step === 2 &&
+                                (!selectedDate ||
+                                    !startTime ||
+                                    !endTime ||
+                                    !selectedFaculty))
+                                ? "bg-gray-400"
+                                : "bg-primary"
+                        } ${isSubmitting ? "opacity-75" : ""}`}
                     >
                         {isSubmitting ? (
                             <span className="flex items-center">

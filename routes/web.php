@@ -1,5 +1,10 @@
 <?php
 
+// admin
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\ScheduleController;
+// user
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RuanganController;
@@ -18,9 +23,35 @@ Route::get('/', function () {
     ]);
 });
 
-/* Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard'); */
+// Admin
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // Room management
+    Route::get('/ruangan', [RoomController::class, 'index'])->name('admin.ruangan.index');
+    Route::get('/ruangan/create', [RoomController::class, 'create'])->name('admin.ruangan.create');
+    Route::post('/ruangan', [RoomController::class, 'store'])->name('admin.ruangan.store');
+    Route::get('/ruangan/{id}/edit', [RoomController::class, 'edit'])->name('admin.ruangan.edit');
+    Route::put('/ruangan/{id}', [RoomController::class, 'update'])->name('admin.ruangan.update');
+    Route::delete('/ruangan/{id}', [RoomController::class, 'destroy'])->name('admin.ruangan.destroy');
+
+    // Schedule management
+    Route::get('/jadwal', [ScheduleController::class, 'index'])->name('admin.jadwal.index');
+    Route::get('/jadwal/manage', [ScheduleController::class, 'manage'])->name('admin.jadwal.manage');
+    Route::post('/jadwal', [ScheduleController::class, 'store'])->name('admin.jadwal.store');
+    Route::delete('/jadwal/{id}', [ScheduleController::class, 'destroy'])->name('admin.jadwal.destroy');
+
+    // User management dan settings tetap di AdminController
+    Route::prefix('users')->group(function () {
+        Route::get('/mahasiswa', [AdminController::class, 'userIndex'])->name('admin.users.mahasiswa');
+        Route::get('/dosen', [AdminController::class, 'userIndex'])->name('admin.users.dosen');
+        Route::get('/staff', [AdminController::class, 'userIndex'])->name('admin.users.staff');
+    });
+
+    Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
+});
+
+// User
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
