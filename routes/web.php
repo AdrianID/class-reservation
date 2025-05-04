@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
     Route::get('/ruangan/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
-    Route::get('/jadwal/detail', [JadwalController::class, 'index'])->name('jadwal.detail');
+    Route::get('/jadwal/detail', [JadwalController::class, 'detail'])->name('jadwal.detail');
 });
 
 require __DIR__.'/auth.php';

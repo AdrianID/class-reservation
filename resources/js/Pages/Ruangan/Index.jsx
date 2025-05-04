@@ -12,7 +12,7 @@ import {
 import UserLayout from "@/Layouts/UserLayout";
 import RoomBookingPopup from "./RoomBookingPopup";
 
-export default function Ruangan() {
+export default function Ruangan({ faculties, buildings }) {
     const primaryColor = "#365b6d";
 
     const [popupOpen, setPopupOpen] = useState(false);
@@ -249,6 +249,8 @@ export default function Ruangan() {
                 <RoomBookingPopup
                     initialCategory={selectedCategory}
                     onClose={() => setPopupOpen(false)}
+                    faculties={faculties}
+                    buildings={buildings}
                 />
             )}
         </UserLayout>
