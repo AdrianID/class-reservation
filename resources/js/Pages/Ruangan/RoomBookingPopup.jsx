@@ -25,7 +25,7 @@ import {
 } from "date-fns";
 import { id } from "date-fns/locale";
 
-export default function RoomBookingPopup({ initialCategory, onClose }) {
+export default function RoomBookingPopup({ initialCategory, onClose, faculties, buildings }) {
     const [step, setStep] = useState(1);
     const [selectedActivity, setSelectedActivity] = useState("");
     const [customActivity, setCustomActivity] = useState("");
@@ -35,8 +35,8 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
     const [capacity, setCapacity] = useState(1);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedFaculty, setSelectedFaculty] = useState("default");
-    const [selectedBuilding, setSelectedBuilding] = useState("");
+    const [selectedFaculty, setSelectedFaculty] = useState(null);
+    const [selectedBuilding, setSelectedBuilding] = useState(null);
 
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
@@ -49,36 +49,6 @@ export default function RoomBookingPopup({ initialCategory, onClose }) {
         { id: "studi", label: "Studi Kelompok", icon: <BookOpen size={20} /> },
         { id: "lainnya", label: "Lainnya", icon: <Info size={20} /> },
     ];
-
-    const faculties = [
-        {
-            value: "fmipa",
-            label: "FMIPA - Fakultas Matematika dan Ilmu Pengetahuan Alam",
-        },
-        { value: "feb", label: "FEB - Fakultas Ekonomi dan Bisnis" },
-        { value: "fib", label: "FIB - Fakultas Ilmu Budaya" },
-        { value: "fh", label: "FH - Fakultas Hukum" },
-    ];
-
-    const buildings = {
-        fmipa: [
-            { value: "gd-mipa", label: "Gedung MIPA Terpadu" },
-            { value: "gd-chem", label: "Gedung Kimia" },
-            { value: "gd-math", label: "Gedung Matematika" },
-        ],
-        feb: [
-            { value: "gd-feb-a", label: "Gedung FEB A" },
-            { value: "gd-feb-b", label: "Gedung FEB B" },
-        ],
-        fib: [
-            { value: "gd-fib-a", label: "Gedung FIB A" },
-            { value: "gd-fib-b", label: "Gedung FIB B" },
-        ],
-        fh: [
-            { value: "gd-fh", label: "Gedung Hukum Utama" },
-            { value: "gd-fh-2", label: "Gedung Hukum 2" },
-        ],
-    };
 
     const timeSlots = [
         "07:00",
