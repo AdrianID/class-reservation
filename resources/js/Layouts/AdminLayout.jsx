@@ -86,6 +86,24 @@ export default function AdminLayout({ header, children }) {
             ],
         },
         {
+            name: "Manajemen Booking",
+            icon: <Calendar size={20} />,
+            route: "booking",
+            href: "#",
+            submenu: [
+                {
+                    name: "Daftar Booking",
+                    route: "booking.index",
+                    href: "/admin/booking",
+                },
+                {
+                    name: "Kalender",
+                    route: "calendar.index",
+                    href: "/admin/calendar",
+                },
+            ],
+        },
+        {
             name: "Jadwal",
             icon: <Calendar size={20} />,
             route: "jadwal",

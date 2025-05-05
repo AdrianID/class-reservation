@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\CalendarController;
+use App\Http\Controllers\Admin\BookingController;
 // user
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +40,13 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     // Calendar management
     Route::get('/calendar', [CalendarController::class, 'index'])->name('admin.calendar.index');
     Route::get('/calendar/events', [CalendarController::class, 'getEvents'])->name('admin.calendar.events');
+
+    // Booking management
+    Route::get('/booking', [BookingController::class, 'index'])->name('admin.booking.index');
+    Route::get('/booking/{id}', [BookingController::class, 'show'])->name('admin.booking.show');
+    Route::post('/booking/{id}/approve', [BookingController::class, 'approve'])->name('admin.booking.approve');
+    Route::post('/booking/{id}/reject', [BookingController::class, 'reject'])->name('admin.booking.reject');
+    Route::get('/booking/export', [BookingController::class, 'export'])->name('admin.booking.export');
 
     // Schedule management
     Route::get('/jadwal', [ScheduleController::class, 'index'])->name('admin.jadwal.index');
