@@ -4,6 +4,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\CalendarController;
 // user
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -34,6 +35,10 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/ruangan/{id}/edit', [RoomController::class, 'edit'])->name('admin.ruangan.edit');
     Route::put('/ruangan/{id}', [RoomController::class, 'update'])->name('admin.ruangan.update');
     Route::delete('/ruangan/{id}', [RoomController::class, 'destroy'])->name('admin.ruangan.destroy');
+
+    // Calendar management
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('admin.calendar.index');
+    Route::get('/calendar/events', [CalendarController::class, 'getEvents'])->name('admin.calendar.events');
 
     // Schedule management
     Route::get('/jadwal', [ScheduleController::class, 'index'])->name('admin.jadwal.index');

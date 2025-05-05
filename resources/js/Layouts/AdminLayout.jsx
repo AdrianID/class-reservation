@@ -101,6 +101,11 @@ export default function AdminLayout({ header, children }) {
                     route: "jadwal.manage",
                     href: "/admin/jadwal/manage",
                 },
+                {
+                    name: "Kalender",
+                    route: "calendar.index",
+                    href: "/admin/calendar",
+                },
             ],
         },
         {
