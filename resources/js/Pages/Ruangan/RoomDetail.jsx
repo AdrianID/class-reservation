@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
-import UserLayout from "@/Layouts/UserLayout";
+import UserLayout from "@/components/Layouts/UserLayout";
 import { format } from "date-fns";
 
 export default function RoomDetail() {

@@ -1,4 +1,4 @@
-import UserLayout from "@/Layouts/UserLayout";
+import UserLayout from "@/components/Layouts/UserLayout";
 import { Head, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
