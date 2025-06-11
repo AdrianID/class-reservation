@@ -1,3 +1,5 @@
+
+
 export default function ApplicationLogo({ variant = "default", ...props }) {
     let logoSrc;
 

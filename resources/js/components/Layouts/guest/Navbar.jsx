@@ -111,7 +111,7 @@ export default function Navbar() {
                             href="/login"
                             className="bg-white text-[#365b6d] px-4 py-2 rounded-full hover:bg-accent transition-all duration-300 hover:shadow-lg font-semibold"
                         >
-                            Login / Sign Up
+                            Classroom
                         </a>
                     </div>
 

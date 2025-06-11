@@ -74,14 +74,12 @@ const ProgramDetail = ({
             scrollCheckRef.current = frameId;
         };
 
-        // Tunggu 2 frame agar modal ter-render sepenuhnya
         const raf1 = requestAnimationFrame(() => {
             const raf2 = requestAnimationFrame(startPollingScroll);
             scrollCheckRef.current = raf2;
         });
         scrollCheckRef.current = raf1;
 
-        // Bersihkan animasi frame saat unmount atau dependensi berubah
         return () => {
             if (scrollCheckRef.current)
                 cancelAnimationFrame(scrollCheckRef.current);

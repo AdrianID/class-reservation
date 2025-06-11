@@ -414,7 +414,7 @@ const CTASection = () => {
                                             ? "hover"
                                             : "floating"
                                     }
-                                    className="absolute bottom-12 right-0 translate-x-1/2 translate-y-1/2"
+                                    className="absolute bottom-2 right-12 2xl:bottom-12 2xl:right-0 translate-x-1/2 translate-y-1/2"
                                 >
                                     <div className="relative group">
                                         <div className="bg-gradient-to-r from-accent-light to-accent rounded-full p-3 shadow-xl border border-accent/30 transition-all duration-300">
