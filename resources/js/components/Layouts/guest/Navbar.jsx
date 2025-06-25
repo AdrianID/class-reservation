@@ -97,7 +97,7 @@ export default function Navbar() {
                                 <a
                                     key={item.name}
                                     href={item.href}
-                                    className="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium border-transparent text-gray-300 hover:border-accent hover:text-accent transition-all duration-300"
+                                    className="inline-flex items-center px-1 pt-1 border-b-2 text-md font-medium border-transparent text-gray-300 hover:border-accent hover:text-accent transition-all duration-300"
                                 >
                                     {item.name}
                                 </a>

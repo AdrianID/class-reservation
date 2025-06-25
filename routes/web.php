@@ -61,12 +61,25 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Classroom Features - menggunakan controller yang sudah ada
+
+    // Reservasi/Peminjaman - sudah ada
+    Route::get('/reservasi', [PeminjamanController::class, 'index'])->name('reservasi.index');
     Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
+    Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
+    Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
+
+    // Ruangan - sudah ada
     Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
     Route::get('/ruangan/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
+
+    // Jadwal - sudah ada
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
     Route::get('/jadwal/detail', [JadwalController::class, 'detail'])->name('jadwal.detail');
+
+    // Route untuk navigasi dari dashboard ke fitur classroom
+    Route::get('/classroom/{feature}', [DashboardController::class, 'classroomFeature'])->name('classroom.feature');
 });
 
 require __DIR__.'/auth.php';
