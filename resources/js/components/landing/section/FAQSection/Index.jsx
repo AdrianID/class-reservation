@@ -1,12 +1,12 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
-import SectionHeader from "../SectionHeader";
-import Badge from "../Badge";
-import Button from "../Button";
-import FAQAccordion from "@/components/landing/FAQAccordion";
+import SectionHeader from "@/components/landing/SectionHeader";
+import Badge from "@/components/landing/Badge";
+import Button from "@/components/landing/Button";
+import FAQAccordion from "@/components/landing/section/FAQSection/FAQAccordion";
 
 const FAQSection = () => (
-    <section className="py-20 bg-gradient-to-br from-[#f8fafc] to-primary-light relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden bg-white/80 backdrop-blur-sm">
         <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-10 left-10 w-24 h-24 bg-accent/15 rounded-full blur-2xl animate-pulse"></div>
             <div className="absolute bottom-20 right-20 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>

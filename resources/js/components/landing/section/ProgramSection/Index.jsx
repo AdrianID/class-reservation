@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { BookOpen } from "lucide-react";
-import SectionHeader from "../SectionHeader";
-import Badge from "../Badge";
-import ProgramCard from "../ProgramCard";
-import ProgramDetail from "../ProgramDetail";
-import { programs } from "../../../data";
+import SectionHeader from "@/components/landing/SectionHeader";
+import Badge from "@/components/landing/Badge";
+import ProgramCard from "./ProgramCard";
+import ProgramDetail from "./ProgramDetail";
+import { programs } from "@/data";
 
-const ProgramsSection = () => {
+const ProgramSection = () => {
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -28,7 +28,10 @@ const ProgramsSection = () => {
 
     return (
         <>
-            <section id="programs" className="py-20 bg-white relative">
+            <section
+                id="programs"
+                className="py-20 relative bg-white/80 backdrop-blur-sm"
+            >
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/10 to-transparent"></div>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <SectionHeader
@@ -73,4 +76,4 @@ const ProgramsSection = () => {
     );
 };
 
-export default ProgramsSection;
+export default ProgramSection;

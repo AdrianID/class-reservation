@@ -3,10 +3,10 @@ import { Lightbulb } from "lucide-react";
 import SectionHeader from "../SectionHeader";
 import Badge from "../Badge";
 import FeatureCard from "../FeaturedCard";
-import { features } from "../../../data";
+import { features } from "@/data";
 
 const InnovationSection = () => (
-    <section className="py-20 bg-white relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden bg-white/80 backdrop-blur-sm">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <SectionHeader

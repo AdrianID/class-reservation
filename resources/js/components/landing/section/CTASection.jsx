@@ -7,6 +7,7 @@ import {
     Award,
     Star,
     Users,
+    Camera,
 } from "lucide-react";
 import Button from "../Button";
 import StatItem from "../StatItem";
@@ -72,7 +73,6 @@ const CTASection = () => {
         },
     };
 
-    // Variants untuk floating icons dengan transisi smooth
     const floatingIconVariants = {
         award: {
             initial: { y: 0, x: 0, scale: 1 },
@@ -263,20 +263,20 @@ const CTASection = () => {
 
                         <div className="space-y-6">
                             <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-normal tracking-tight">
-                                Ready to Start Your
+                                Experience Our
                                 <span className="block bg-gradient-to-r from-accent-light to-accent bg-clip-text text-transparent md:pb-1">
-                                    Academic Journey?
+                                    Dynamic Campus Life
                                 </span>
                             </h2>
                             <p className="text-lg lg:text-xl text-primary-light leading-relaxed max-w-xl">
-                                Join the LOD University community and unlock
-                                your potential. Applications are now open for
-                                the upcoming academic year with
+                                Whether you're ready to apply, curious about our
+                                programs, or want to explore our facilities both
+                                in person or virtually
                                 <span className="font-semibold text-accent-light">
                                     {" "}
-                                    early bird benefits
+                                    start your journey with us today
                                 </span>
-                                .
+                                . Your future begins here.
                             </p>
                         </div>
 
@@ -292,21 +292,34 @@ const CTASection = () => {
                             ))}
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                        <div className="flex flex-col gap-4 pt-4 max-w-xl">
+                            {/* Apply Now: Full Width */}
                             <Button
                                 variant="accent"
-                                className="bg-gradient-to-r from-accent to-accent-light hover:from-accent-light hover:to-accent transition-all flex items-center justify-center group"
+                                className="w-full px-6 py-3 bg-gradient-to-r from-accent to-accent-light hover:from-accent-light hover:to-accent transition-all flex items-center justify-center group"
                             >
                                 Apply Now
                                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                             </Button>
-                            <Button
-                                variant="secondary"
-                                className="flex items-center justify-center border border-accent/30 text-white hover:bg-accent/20 transition-colors"
-                            >
-                                <BookOpen className="w-5 h-5 mr-2" />
-                                Request Information
-                            </Button>
+
+                            {/* Row with 2 buttons side by side */}
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button
+                                    variant="secondary"
+                                    className="flex-1 px-6 py-3 border border-accent/30 text-white hover:bg-accent/20 transition-colors flex items-center justify-center"
+                                >
+                                    <BookOpen className="w-5 h-5 mr-2" />
+                                    Request Info
+                                </Button>
+
+                                <Button
+                                    variant="secondary"
+                                    className="flex-1 px-6 py-3 border border-accent/30 text-white hover:bg-accent-dark hover:text-white transition-colors flex items-center justify-center"
+                                >
+                                    <Camera className="w-5 h-5 mr-2" />
+                                    Virtual Tour
+                                </Button>
+                            </div>
                         </div>
                     </div>
 

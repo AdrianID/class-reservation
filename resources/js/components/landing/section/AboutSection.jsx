@@ -7,7 +7,7 @@ import StatCard from "../StatCard";
 const AboutSection = () => (
     <section
         id="about"
-        className="py-20 bg-gradient-to-br from-primary-light to-[#f8fafc] relative overflow-hidden"
+        className="py-20 relative overflow-hidden bg-white/80 backdrop-blur-sm"
     >
         <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl animate-pulse"></div>

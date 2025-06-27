@@ -12,34 +12,21 @@ import {
     Phone,
 } from "lucide-react";
 
-/**
- * Komponen ProgramDetail menampilkan informasi detail tentang sebuah program dalam modal.
- * Fitur utama:
- * - Membuka/tutup modal dengan animasi
- * - Beralih antar program dengan transisi mulus
- * - Responsif terhadap ukuran layar dan posisi scroll
- * - Mendukung drag untuk menutup modal pada perangkat mobile
- */
 const ProgramDetail = ({
-    program, // Objek program yang sedang ditampilkan
-    programs, // Daftar semua program untuk opsi "Other Programs"
-    isOpen, // Status apakah modal terbuka
-    onClose, // Fungsi untuk menutup modal
-    onProgramSwitch, // Fungsi untuk beralih ke program lain
+    program,
+    programs,
+    isOpen,
+    onClose,
+    onProgramSwitch,
 }) => {
-    // State untuk mengelola posisi scroll, status scroll, mobile, dan animasi
-    const [scrollY, setScrollY] = useState(0); // Posisi scroll vertikal
-    const [isScrolled, setIsScrolled] = useState(false); // Apakah modal sudah discroll > 50px
-    const [isMobile, setIsMobile] = useState(false); // Apakah layar < 768px (mobile)
-    const [isAnimating, setIsAnimating] = useState(false); // Status animasi saat beralih program
-    const [isClosing, setIsClosing] = useState(false); // Status animasi saat menutup modal
-    const scrollCheckRef = useRef(null); // Referensi untuk animasi frame scroll
-    const modalContentRef = useRef(null); // Referensi ke elemen konten modal
+    const [scrollY, setScrollY] = useState(0);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+    const scrollCheckRef = useRef(null);
+    const modalContentRef = useRef(null);
 
-    /**
-     * Mengecek apakah perangkat dalam mode mobile berdasarkan lebar layar
-     * - Diperbarui saat inisialisasi dan saat window di-resize
-     */
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 768);
@@ -48,15 +35,9 @@ const ProgramDetail = ({
         checkMobile();
         window.addEventListener("resize", checkMobile);
 
-        // Bersihkan event listener saat komponen unmount
         return () => window.removeEventListener("resize", checkMobile);
     }, []);
 
-    /**
-     * Mengelola posisi scroll modal dan memperbarui state
-     * - Menggunakan requestAnimationFrame untuk performa optimal
-     * - Mulai polling setelah 2 frame untuk memastikan DOM stabil
-     */
     useEffect(() => {
         if (!isOpen || !modalContentRef.current) return;
 

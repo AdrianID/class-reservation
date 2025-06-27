@@ -8,7 +8,18 @@ import {
     Lightbulb,
     Globe,
     Target,
+    Users,
+    Mic,
+    Wine,
+    Library,
+    HeartPulse,
 } from "lucide-react";
+
+export const stats = [
+    { number: "25,000+", label: "Students" },
+    { number: "200+", label: "Programs" },
+    { number: "95%", label: "Job Placement" },
+];
 
 export const programs = [
     {
@@ -299,5 +310,150 @@ export const features = [
         description:
             "Comprehensive career services and industry connections ensuring graduate success",
         color: "from-accent-dark to-primary",
+    },
+];
+
+export const facilities = [
+    {
+        id: 1,
+        name: "Grand Auditorium",
+        subtitle: "Where Ideas Take Center Stage",
+        description:
+            "Perfectly crafted for unforgettable moments, from inspiring talks to milestone gatherings in a setting that speaks prestige.",
+        capacity: "500 guests",
+        icon: Mic,
+        position: { top: "18%", left: "17%" },
+        gallery: [
+            "/images/landing/assets/grand-auditorium.jpg",
+            "/images/landing/assets/grand-auditorium.jpg",
+            "/images/landing/assets/grand-auditorium.jpg",
+            "/images/landing/assets/grand-auditorium.jpg",
+        ],
+        features: [
+            "Premium Sound System",
+            "Theatrical Lighting",
+            "HD Recording",
+        ],
+        atmosphere: "Inspiring & Professional",
+        stats: { events: "200+", satisfaction: "98%" },
+    },
+    {
+        id: 2,
+        name: "Innovation Hub",
+        subtitle: "Where Tomorrow's Solutions Begin",
+        description:
+            "A creative space designed for minds that dream big, build, collaborate, and grow ideas into reality.",
+        capacity: "100 guests",
+        icon: Lightbulb,
+        position: { top: "12%", right: "17%" },
+        gallery: [
+            "/images/landing/assets/innovation-hub.jpg",
+            "/images/landing/assets/innovation-hub.jpg",
+            "/images/landing/assets/innovation-hub.jpg",
+            "/images/landing/assets/innovation-hub.jpg",
+        ],
+        features: [
+            "Smart Collaboration Tools",
+            "Flexible Configurations",
+            "Rapid Prototyping",
+        ],
+        atmosphere: "Creative & Dynamic",
+        stats: { projects: "500+", startups: "50+" },
+    },
+    {
+        id: 3,
+        name: "Sky Lounge",
+        subtitle: "Elevating Campus Connections",
+        description:
+            "Panoramic views meet elegant ambiance, ideal for meaningful conversations and celebratory moments.",
+        capacity: "150 guests",
+        icon: Wine,
+        position: { bottom: "50%", left: "13%" },
+        gallery: [
+            "/images/landing/assets/sky-lounge.jpg",
+            "/images/landing/assets/sky-lounge.jpg",
+            "/images/landing/assets/sky-lounge.jpg",
+            "/images/landing/assets/sky-lounge.jpg",
+        ],
+        features: ["360° City Views", "Ambient Atmosphere", "Premium Catering"],
+        atmosphere: "Elegant & Relaxed",
+        stats: { events: "150+", rating: "4.9/5" },
+    },
+    {
+        id: 4,
+        name: "Library & Study Spaces",
+        subtitle: "Knowledge Sanctuary",
+        description:
+            "Quiet spaces designed for deep focus and collaborative learning in a modern academic environment.",
+        capacity: "200 guests",
+        icon: Library,
+        position: { bottom: "40%", left: "45%" },
+        gallery: [
+            "/images/landing/assets/library.jpg",
+            "/images/landing/assets/library.jpg",
+            "/images/landing/assets/library.jpg",
+            "/images/landing/assets/library.jpg",
+        ],
+        features: [
+            "Silent Study Areas",
+            "Group Discussion Rooms",
+            "Digital Resources",
+        ],
+        atmosphere: "Peaceful & Focused",
+        stats: { visitors: "1000+", resources: "50k+" },
+    },
+    {
+        id: 5,
+        name: "Health Center",
+        subtitle: "Your Campus Care Partner",
+        description:
+            "On-campus health services for students and staff, offering first aid, medical consultations, and wellness support.",
+        capacity: "Open Daily",
+        icon: HeartPulse,
+        position: { bottom: "35%", right: "18%" },
+        gallery: [
+            "/images/landing/assets/health-center.jpg",
+            "/images/landing/assets/health-center.jpg",
+            "/images/landing/assets/health-center.jpg",
+            "/images/landing/assets/health-center.jpg",
+        ],
+        features: [
+            "First Aid Services",
+            "Doctor Consultations",
+            "Wellness Programs",
+        ],
+        atmosphere: "Clean & Caring",
+        stats: { patients: "800+/year", rating: "4.8/5" },
+    },
+];
+
+export const faqs = [
+    {
+        question: "What are the admission requirements for LOD University?",
+        answer: "Admission requirements vary by program, but generally include a completed application, official transcripts, standardized test scores (SAT/ACT), letters of recommendation, and a personal statement. International students may need TOEFL/IELTS scores. Specific requirements for each program can be found on our admissions website.",
+    },
+    {
+        question: "What financial aid options are available?",
+        answer: "LOD University offers comprehensive financial aid including merit-based scholarships, need-based grants, work-study programs, and federal student loans. Over 85% of our students receive some form of financial assistance. We also offer payment plans and emergency financial aid for unexpected circumstances.",
+    },
+    {
+        question: "Can I change my major after enrollment?",
+        answer: "Yes! We encourage academic exploration. Students can change majors within their first two years without penalty. Our academic advisors work closely with students to ensure a smooth transition and help create a graduation plan that fits their new academic goals.",
+    },
+    {
+        question: "What support services are available for students?",
+        answer: "LOD University provides comprehensive support including academic tutoring, career counseling, mental health services, disability support, international student services, and 24/7 campus security. We also offer study abroad programs, internship placement, and alumni networking opportunities.",
+    },
+    {
+        question: "What is campus housing like?",
+        answer: "Our campus features modern residence halls with various living options from traditional dorms to apartment-style housing. All rooms include high-speed internet, study areas, and common spaces. First-year students are guaranteed on-campus housing, and upperclassmen can choose from on-campus or nearby off-campus options.",
+    },
+    {
+        question: "How do I schedule a campus visit?",
+        answer: "Campus visits can be scheduled through our admissions website or by calling our admissions office. We offer guided tours, information sessions, overnight stays, and virtual tours. Group visits for schools and organizations can also be arranged with advance notice.",
+    },
+    {
+        question: "Can campus facilities be rented?",
+        answer: "Yes, LOD University offers facility rentals for events such as conferences, workshops, and community gatherings. Availability and rates vary by venue. Interested parties can contact our Events Office or visit the Facility Rental section on our website for more details and booking procedures.",
     },
 ];

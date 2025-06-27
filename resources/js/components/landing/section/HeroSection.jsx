@@ -11,18 +11,13 @@ import {
 import Badge from "../Badge";
 import Button from "../Button";
 import StatItem from "../StatItem";
+import { stats } from "@/data";
 
 const HeroSection = () => {
-    const stats = [
-        { number: "25,000+", label: "Students" },
-        { number: "200+", label: "Programs" },
-        { number: "95%", label: "Job Placement" },
-    ];
-
     return (
         <section
             id="home"
-            className="relative bg-gradient-to-br from-primary-light via-white to-[#f8fafc] py-16 lg:py-24 overflow-hidden"
+            className="relative py-16 lg:py-24 overflow-hidden bg-white/80 backdrop-blur-sm"
         >
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-20 left-10 w-20 h-20 bg-accent/20 rounded-full blur-xl animate-pulse"></div>
