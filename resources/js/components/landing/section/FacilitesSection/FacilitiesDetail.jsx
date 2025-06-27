@@ -78,6 +78,7 @@ const FacilitiesDetail = ({
             {/* Modal Container - centered content */}
             <div className="relative z-10 flex items-center justify-center w-full h-full p-4 pointer-events-none">
                 <motion.div
+                    layoutId={`facility-${facility.id}`}
                     ref={modalRef}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}

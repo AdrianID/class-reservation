@@ -17,12 +17,12 @@ const FacilitiesSection = () => {
 
     const handleFacilitySelect = useCallback((facility) => {
         setSelectedFacility(facility);
-        setCurrentImageIndex(0); // Reset to first image when opening new facility
+        setCurrentImageIndex(0);
     }, []);
 
     const handleModalClose = useCallback(() => {
         setSelectedFacility(null);
-        setCurrentImageIndex(0); // Reset index when closing
+        setCurrentImageIndex(0);
     }, []);
 
     const FloatingIcon = ({ facility, index }) => {
@@ -95,6 +95,7 @@ const FacilitiesSection = () => {
                     onClick={handleCardClick}
                 >
                     <motion.div
+                        layoutId={`facility-${facility.id}`}
                         onClick={handleCardClick}
                         className="w-80 h-48 rounded-xl shadow-2xl overflow-hidden cursor-pointer md:hover:scale-105 md:transition-transform md:duration-300"
                         role="button"
