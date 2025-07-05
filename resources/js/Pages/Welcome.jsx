@@ -27,7 +27,7 @@ const WaveDivider = () => (
 
 // Divider CTA Section (before CTA)
 const DividerCTA = () => (
-    <div className="relative z-10 text-center py-20 bg-gradient-to-b from-white via-white to-primary/5">
+    <div className="relative z-10 text-center py-20 bg-gradient-to-b from-white via-white to-primary/5 px-12 md:px-0">
         <p className="text-sm font-semibold text-accent/70 uppercase tracking-wide mb-3">
             Ready to Take the Next Step?
         </p>

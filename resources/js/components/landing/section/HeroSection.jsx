@@ -58,7 +58,7 @@ const HeroSection = () => {
                                 Virtual Tour
                             </Button>
                         </div>
-                        <div className="flex items-center space-x-8 pt-6">
+                        <div className="w-full px-8 md:px-0 flex justify-between md:justify-start items-center space-x-8 pt-6">
                             {stats.map((stat, index) => (
                                 <StatItem
                                     key={index}
