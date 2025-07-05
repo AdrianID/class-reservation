@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminLayout from '@/Layouts/AdminLayout';
+import AdminLayout from '@/components/Layouts/AdminLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';

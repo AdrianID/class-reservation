@@ -241,75 +241,133 @@ export default function RoomIndex({ rooms, filters, buildings, categories, statu
                             {/* Rooms Table */}
                             <div className="overflow-x-auto">
                                 {rooms.data.length > 0 ? (
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Kode
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Nama Ruangan
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Lokasi
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Kategori
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Kapasitas
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Status
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Aksi
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
+                                    <>
+                                        {/* Desktop Table */}
+                                        <div className="hidden md:block">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Aksi
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Nama & Lokasi
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Fakultas
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Kategori
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Kapasitas
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Status
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {rooms.data.map((room) => (
+                                                        <tr key={room.id} className="hover:bg-gray-50">
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                                <div className="flex gap-2">
+                                                                    <Link
+                                                                        href={route('admin.ruangan.edit', room.id)}
+                                                                        className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
+                                                                        title="Edit"
+                                                                    >
+                                                                        <PencilSquareIcon className="h-4 w-4" />
+                                                                    </Link>
+                                                                    <button
+                                                                        onClick={() => confirmDelete(room.id, room.room_name)}
+                                                                        className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
+                                                                        title="Hapus"
+                                                                    >
+                                                                        <TrashIcon className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div>
+                                                                    <div className="text-sm font-medium text-gray-900">
+                                                                        {room.room_name}
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-500">
+                                                                        {room.building.building_name}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {room.building.faculty.faculty_name}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {room.category.category_name}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {room.capacity} orang
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(room.status)}`}>
+                                                                    {getStatusText(room.status)}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Mobile Card Layout */}
+                                        <div className="md:hidden space-y-4">
                                             {rooms.data.map((room) => (
-                                                <tr key={room.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {room.room_code}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {room.room_name}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {room.building.building_name}, {room.building.faculty.faculty_name}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {room.category.category_name}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {room.capacity} orang
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(room.status)}`}>
-                                                            {getStatusText(room.status)}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <div className="flex justify-end gap-2">
+                                                <div key={room.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div className="flex-1">
+                                                            <h3 className="text-sm font-medium text-gray-900">
+                                                                {room.room_name}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-500 mb-1">
+                                                                {room.building.building_name}
+                                                            </p>
+                                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(room.status)}`}>
+                                                                {getStatusText(room.status)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex gap-2 ml-2">
                                                             <Link
                                                                 href={route('admin.ruangan.edit', room.id)}
-                                                                className="text-indigo-600 hover:text-indigo-900"
+                                                                className="text-indigo-600 hover:text-indigo-900 p-2 rounded-md hover:bg-indigo-50"
                                                             >
-                                                                <PencilSquareIcon className="h-5 w-5" />
+                                                                <PencilSquareIcon className="h-4 w-4" />
                                                             </Link>
                                                             <button
                                                                 onClick={() => confirmDelete(room.id, room.room_name)}
-                                                                className="text-red-600 hover:text-red-900"
+                                                                className="text-red-600 hover:text-red-900 p-2 rounded-md hover:bg-red-50"
                                                             >
-                                                                <TrashIcon className="h-5 w-5" />
+                                                                <TrashIcon className="h-4 w-4" />
                                                             </button>
                                                         </div>
-                                                    </td>
-                                                </tr>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                                        <div>
+                                                            <span className="text-gray-500">Fakultas:</span>
+                                                            <p className="font-medium text-gray-900">{room.building.faculty.faculty_name}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-gray-500">Kategori:</span>
+                                                            <p className="font-medium text-gray-900">{room.category.category_name}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-gray-500">Kapasitas:</span>
+                                                            <p className="font-medium text-gray-900">{room.capacity} orang</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             ))}
-                                        </tbody>
-                                    </table>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className="text-center py-10">
                                         <p className="text-gray-500">Tidak ada data ruangan yang ditemukan</p>

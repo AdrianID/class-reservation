@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '@/Layouts/AdminLayout';
+import AdminLayout from '@/components/Layouts/AdminLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { 
     MagnifyingGlassIcon, 
