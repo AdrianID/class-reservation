@@ -1,4 +1,4 @@
-import AdminLayout from "@/Layouts/AdminLayout";
+import AdminLayout from "@/components/Layouts/AdminLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useState, useRef } from "react";
 import { XMarkIcon, PlusCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
