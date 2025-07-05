@@ -1,8 +1,9 @@
+// Dashboard.jsx
 import UserLayout from "@/components/Layouts/UserLayout";
 import { Head, usePage, Link } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
-import { enUS } from "date-fns/locale"; // Changed to English locale
+import { enUS } from "date-fns/locale";
 import {
     CheckCircle,
     X,
@@ -22,246 +23,104 @@ import {
     TrendingUp,
     FileText,
     Monitor,
+    Zap,
+    ArrowRight,
+    Info,
 } from "lucide-react";
 import RoomBookingPopup from "./Ruangan/RoomBookingPopup";
+
+// Import data statis
+import {
+    primaryMenuItems,
+    secondaryMenuItems,
+    pendingRequestsData,
+    activitiesData,
+    statsData,
+} from "./dashboardData";
 
 export default function Dashboard() {
     const { props } = usePage();
     const user = props.user;
     const faculties = props.faculties || [];
     const buildings = props.buildings || [];
-
-    // Get flash message from Inertia
     const { flash } = usePage().props;
 
-    // State for showing flash message
     const [showFlash, setShowFlash] = useState(!!flash?.message);
-
-    // State for reservation modal
     const [reservationModalOpen, setReservationModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
+    const [pendingrequests, setPendingRequests] = useState(pendingRequestsData);
+    const [activities, setActivities] = useState(activitiesData);
 
-    // Auto-hide flash message after 5 seconds
+    // Auto-hide flash message
     useEffect(() => {
         if (flash?.message) {
             const timer = setTimeout(() => {
                 setShowFlash(false);
             }, 5000);
-
             return () => clearTimeout(timer);
         }
     }, [flash?.message]);
 
-    // Function to handle reservation menu click
+    // Mapping untuk ikon
+    const iconMap = {
+        CheckCircle, X, Calendar, Clock, MapPin, Users, BookOpen, Settings,
+        Activity, PlusCircle, History, HelpCircle, AlertCircle, ChevronRight,
+        Bell, TrendingUp, FileText, Monitor, Zap, ArrowRight, Info,
+    };
+
     const handleReservationClick = () => {
         setSelectedCategory("Room Reservation");
         setReservationModalOpen(true);
     };
 
-    // Menu items for classroom universal - Updated with custom color scheme
-    const primaryMenuItems = [
-        {
-            id: "reservasi",
-            name: "Room Reservation",
-            icon: Calendar,
-            description: "Book classrooms and campus facilities",
-            active: true,
-            onClick: handleReservationClick,
-            bgColor: "bg-primary",
-            hoverColor: "hover:bg-primary-dark",
-        },
-        {
-            id: "jadwal",
-            name: "Class Schedule",
-            icon: Clock,
-            description: "Manage and view class schedules",
-            active: true,
-            route: "jadwal.index",
-            bgColor: "bg-accent",
-            hoverColor: "hover:bg-accent-dark",
-        },
-        {
-            id: "ruangan",
-            name: "Room List",
-            icon: MapPin,
-            description: "Complete information on available rooms",
-            active: true,
-            route: "ruangan.index",
-            bgColor: "bg-primary-dark",
-            hoverColor: "hover:bg-primary",
-        },
-    ];
-
-    const secondaryMenuItems = [
-        {
-            id: "presensi",
-            name: "Attendance",
-            icon: Users,
-            description: "Attendance and presence system",
-            active: false,
-            route: null,
-        },
-        {
-            id: "materi",
-            name: "Class Materials",
-            icon: BookOpen,
-            description: "Upload and access learning materials",
-            active: false,
-            route: null,
-        },
-        {
-            id: "pengaturan",
-            name: "Settings",
-            icon: Settings,
-            description: "Classroom system configuration",
-            active: false,
-            route: null,
-        },
-    ];
-
-    // Pending reservation requests
-    const [pendingrequests, setPendingRequests] = useState([
-        {
-            id: "RSV567",
-            ruangan: "Engineering Faculty Auditorium",
-            tanggal: "2025-05-10T13:00:00",
-            durasi: "2 hours",
-            tujuan: "Technology Seminar",
-            status: "Awaiting Approval",
-            estimasi: "1-2 working days",
-            priority: "high",
-        },
-        {
-            id: "RSV568",
-            ruangan: "Room 301 Building B",
-            tanggal: "2025-05-15T10:00:00",
-            durasi: "3 hours",
-            tujuan: "Student Organization Meeting",
-            status: "Awaiting Approval",
-            estimasi: "1-2 working days",
-            priority: "medium",
-        },
-    ]);
-
-    // Recent activities - Updated with better structure
-    const [activities, setActivities] = useState([
-        {
-            icon: CheckCircle,
-            message:
-                "Reservation #RSV123 for Computer Laboratory has been approved",
-            timestamp: "2025-05-03T09:30:00",
-            type: "success",
-            details: "Computer Lab A - 2:00 PM-5:00 PM",
-        },
-        {
-            icon: Calendar,
-            message: "Reservation #RSV567 is being processed",
-            timestamp: "2025-05-02T14:20:00",
-            type: "pending",
-            details: "Engineering Faculty Auditorium",
-        },
-        {
-            icon: CheckCircle,
-            message: "Reservation #RSV456 has been completed",
-            timestamp: "2025-05-01T16:45:00",
-            type: "completed",
-            details: "Library Discussion Room",
-        },
-        {
-            icon: Clock,
-            message: "Web Programming class schedule has been updated",
-            timestamp: "2025-04-30T11:20:00",
-            type: "info",
-            details: "Time change: Monday 8:00 AM-10:00 AM",
-        },
-    ]);
-
     const formatDate = (dateString) => {
         try {
             const date = parseISO(dateString);
-            return format(date, "MMMM dd, yyyy, h:mm a", { locale: enUS }); // Updated to English format
+            return format(date, "MMM dd, yyyy • h:mm a", { locale: enUS });
         } catch (error) {
             return dateString;
         }
     };
 
-    // Status badge colors - Updated with custom colors
     const getStatusColor = (status) => {
         switch (status) {
             case "success":
-                return "bg-accent-light text-primary border border-accent";
+                return "bg-emerald-50 text-emerald-700 border-emerald-200";
             case "pending":
-                return "bg-accent text-white border border-accent";
+                return "bg-amber-50 text-amber-700 border-amber-200";
             case "completed":
-                return "bg-primary-light text-primary border border-primary";
+                return "bg-blue-50 text-blue-700 border-blue-200";
             case "info":
-                return "bg-primary-light text-primary border border-primary-light";
+                return "bg-blue-50 text-blue-700 border-blue-200";
             default:
-                return "bg-primary-light text-primary border border-primary-light";
+                return "bg-gray-50 text-gray-700 border-gray-200";
         }
     };
 
-    // Priority colors - Updated with custom colors
     const getPriorityColor = (priority) => {
         switch (priority) {
             case "high":
-                return "bg-red-500";
+                return "bg-red-400";
             case "medium":
-                return "bg-accent";
+                return "bg-amber-400";
             case "low":
-                return "bg-accent-light";
+                return "bg-emerald-400";
             default:
                 return "bg-gray-400";
         }
     };
 
-    // Stats data - Enhanced with custom colors
-    const statsData = [
-        {
-            icon: Calendar,
-            title: "Total Reservations",
-            value: "128",
-            change: "+12%",
-            trend: "up",
-            bgColor: "bg-primary",
-        },
-        {
-            icon: CheckCircle,
-            title: "Active Reservations",
-            value: "12",
-            change: "+3",
-            trend: "up",
-            bgColor: "bg-accent",
-        },
-        {
-            icon: Clock,
-            title: "Pending Processing",
-            value: pendingrequests.length,
-            change: "0",
-            trend: "neutral",
-            bgColor: "bg-accent-dark",
-        },
-        {
-            icon: AlertCircle,
-            title: "Needs Attention",
-            value: "3",
-            change: "-1",
-            trend: "down",
-            bgColor: "bg-red-500",
-        },
-    ];
-
     return (
         <UserLayout
             header={
                 <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold leading-tight text-primary">
-                        Classroom Dashboard
+                    <h2 className="text-2xl font-bold text-primary">
+                        Dashboard
                     </h2>
-                    <div className="flex items-center space-x-4">
-                        <button className="relative p-2 text-primary hover:text-primary-dark hover:bg-primary-light rounded-full transition-colors">
+                    <div className="flex items-center space-x-3">
+                        <button className="relative p-2.5 text-primary/70 hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-200">
                             <Bell className="h-5 w-5" />
-                            <span className="absolute -top-1 -right-1 h-3 w-3 bg-accent rounded-full"></span>
+                            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-accent rounded-full"></span>
                         </button>
                     </div>
                 </div>
@@ -269,23 +128,24 @@ export default function Dashboard() {
         >
             <Head title="Classroom Dashboard" />
 
-            <div className="min-h-screen bg-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="min-h-screen bg-gray-50/50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Flash Message */}
                     {showFlash && flash?.message && (
-                        <div className="mb-6">
-                            <div className="bg-white border-l-4 border-accent p-4 rounded-r-lg shadow-sm">
+                        <div className="mb-8">
+                            <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
-                                        <CheckCircle className="h-5 w-5 text-accent" />
-                                        <p className="ml-3 text-sm text-primary">
-                                            {flash.message ||
-                                                "Operation successfully completed!"}
+                                        <div className="flex-shrink-0">
+                                            <CheckCircle className="h-5 w-5 text-emerald-600" />
+                                        </div>
+                                        <p className="ml-3 text-sm font-medium text-gray-800">
+                                            {flash.message || "Operation successfully completed!"}
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => setShowFlash(false)}
-                                        className="text-primary hover:text-primary-dark transition-colors"
+                                        className="text-gray-400 hover:text-gray-600 transition-colors"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
@@ -294,144 +154,130 @@ export default function Dashboard() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        {/* Main Content - 3 columns */}
-                        <div className="lg:col-span-3 space-y-6">
-                            {/* Welcome Section */}
-                            <div className="bg-primary text-white rounded-xl shadow-lg p-6 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                                <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-white opacity-5 rounded-full"></div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h2 className="text-2xl lg:text-3xl font-bold">
-                                                Welcome, {user?.name ?? "User"}
-                                            </h2>
-                                            <p className="mt-2 text-primary-light max-w-2xl">
-                                                Integrated classroom management
-                                                system for room reservations,
-                                                class schedules, attendance, and
-                                                learning materials.
-                                            </p>
-                                            <div className="mt-4 flex items-center text-sm text-primary-light">
-                                                <div className="flex items-center mr-6">
-                                                    <div className="w-2 h-2 bg-accent rounded-full mr-2"></div>
-                                                    System Online
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <Clock className="h-4 w-4 mr-1" />
-                                                    Last updated:{" "}
-                                                    {format(
-                                                        new Date(),
-                                                        "h:mm a"
-                                                    )}
-                                                </div>
-                                            </div>
+                    {/* Hero Section */}
+                    <div className="bg-gradient-to-br from-primary via-primary to-primary-dark rounded-2xl shadow-xl p-8 mb-8 relative overflow-hidden">
+                        
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                    <div className="flex items-center mb-4">
+                                        <div className="w-2 h-2 bg-emerald-400 rounded-full mr-3 animate-pulse"></div>
+                                        <span className="text-primary-light text-sm font-medium">System Online</span>
+                                    </div>
+                                    <h1 className="text-4xl font-bold text-white mb-3">
+                                        Welcome back, {user?.name ?? "User"}!
+                                    </h1>
+                                    <p className="text-xl text-primary-light mb-6 max-w-2xl leading-relaxed">
+                                        Manage your classroom reservations, schedules, and activities all in one place.
+                                    </p>
+                                    <div className="flex items-center space-x-6 text-sm text-primary-light">
+                                        <div className="flex items-center">
+                                            <Clock className="h-4 w-4 mr-2" />
+                                            Last updated: {format(new Date(), "h:mm a")}
                                         </div>
-                                        <div className="hidden lg:flex items-center">
-                                            <Monitor className="h-16 w-16 text-primary-light" />
+                                        <div className="flex items-center">
+                                            <Activity className="h-4 w-4 mr-2" />
+                                            All systems operational
                                         </div>
                                     </div>
                                 </div>
+                                <div className="hidden lg:block">
+                                    <Monitor className="h-20 w-20 text-primary-light opacity-80" />
+                                </div>
                             </div>
+                        </div>
+                    </div>
 
-                            {/* Quick Stats */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {statsData.map((stat, index) => (
-                                    <div
-                                        key={index}
-                                        className="bg-white rounded-lg shadow-sm border border-primary-light overflow-hidden hover:shadow-md transition-shadow"
-                                    >
-                                        <div className="p-5">
+                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                        {/* Main Content */}
+                        <div className="xl:col-span-3 space-y-8">
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {statsData.map((stat, index) => {
+                                    const IconComponent = iconMap[stat.icon];
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
+                                        >
                                             <div className="flex items-center justify-between mb-4">
-                                                <div
-                                                    className={`p-3 rounded-lg ${stat.bgColor}`}
-                                                >
-                                                    <stat.icon className="h-6 w-6 text-white" />
+                                                <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
+                                                    <IconComponent className="h-6 w-6 text-white" />
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="flex items-center">
-                                                        <TrendingUp
-                                                            className={`h-4 w-4 mr-1 ${
-                                                                stat.trend ===
-                                                                "up"
-                                                                    ? "text-accent"
-                                                                    : stat.trend ===
-                                                                      "down"
-                                                                    ? "text-red-500"
-                                                                    : "text-gray-400"
-                                                            }`}
-                                                        />
-                                                        <span
-                                                            className={`text-sm font-medium ${
-                                                                stat.trend ===
-                                                                "up"
-                                                                    ? "text-accent"
-                                                                    : stat.trend ===
-                                                                      "down"
-                                                                    ? "text-red-500"
-                                                                    : "text-gray-500"
-                                                            }`}
-                                                        >
-                                                            {stat.change}
-                                                        </span>
-                                                    </div>
+                                                <div className="flex items-center">
+                                                    <TrendingUp
+                                                        className={`h-4 w-4 mr-1 ${
+                                                            stat.trend === "up"
+                                                                ? "text-emerald-500"
+                                                                : stat.trend === "down"
+                                                                ? "text-red-500"
+                                                                : "text-gray-400"
+                                                        }`}
+                                                    />
+                                                    <span
+                                                        className={`text-sm font-semibold ${
+                                                            stat.trend === "up"
+                                                                ? "text-emerald-600"
+                                                                : stat.trend === "down"
+                                                                ? "text-red-600"
+                                                                : "text-gray-500"
+                                                        }`}
+                                                    >
+                                                        {stat.change}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <p className="text-sm font-medium text-primary mb-1">
+                                            <h3 className="text-sm font-medium text-gray-600 mb-2">
                                                 {stat.title}
-                                            </p>
-                                            <p className="text-2xl lg:text-3xl font-bold text-primary">
+                                            </h3>
+                                            <p className="text-3xl font-bold text-gray-900 mb-1">
                                                 {stat.value}
                                             </p>
-                                            <p className="text-xs text-primary opacity-70 mt-1">
+                                            <p className="text-xs text-gray-500">
                                                 This month
                                             </p>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
-                            {/* Menu Classroom - Unified Menu */}
-                            <div className="space-y-4">
+                            {/* Features Grid */}
+                            <div className="space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-primary">
+                                    <h2 className="text-xl font-bold text-gray-900">
                                         Classroom Features
-                                    </h3>
+                                    </h2>
+                                    <span className="text-sm text-gray-500">
+                                        Quick access to all features
+                                    </span>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {/* Active Menu Items */}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {/* Active Features */}
                                     {primaryMenuItems.map((item) => {
-                                        const IconComponent = item.icon;
+                                        const IconComponent = iconMap[item.name.split(" ")[0]] || iconMap.Calendar;
                                         const CardContent = (
-                                            <div className="group relative bg-white rounded-lg shadow-sm border border-primary-light overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-                                                <div
-                                                    className={`h-1 ${item.bgColor}`}
-                                                ></div>
-                                                <div className="p-6">
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div
-                                                            className={`p-3 rounded-lg ${item.bgColor} shadow-lg`}
-                                                        >
-                                                            <IconComponent className="h-6 w-6 text-white" />
-                                                        </div>
-                                                        <ChevronRight className="h-5 w-5 text-primary opacity-40 group-hover:opacity-70 transition-opacity" />
+                                            <div className="group bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-primary/20 transition-all duration-300 hover:-translate-y-1">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className={`p-3 rounded-xl ${item.bgColor} shadow-sm group-hover:shadow-md transition-shadow duration-300`}>
+                                                        <IconComponent className="h-6 w-6 text-white" />
                                                     </div>
-                                                    <h3 className="text-lg font Steven text-primary mb-2">
-                                                        {item.name}
-                                                    </h3>
-                                                    <p className="text-sm text-primary opacity-80">
-                                                        {item.description}
-                                                    </p>
+                                                    <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all duration-300" />
                                                 </div>
+                                                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors duration-300">
+                                                    {item.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-600 leading-relaxed">
+                                                    {item.description}
+                                                </p>
                                             </div>
                                         );
 
-                                        if (item.onClick) {
+                                        if (item.name === "Room Reservation") {
                                             return (
                                                 <button
                                                     key={item.id}
-                                                    onClick={item.onClick}
+                                                    onClick={handleReservationClick}
                                                     className="text-left w-full"
                                                 >
                                                     {CardContent}
@@ -439,42 +285,36 @@ export default function Dashboard() {
                                             );
                                         } else if (item.route) {
                                             return (
-                                                <Link
-                                                    key={item.id}
-                                                    href={route(item.route)}
-                                                >
+                                                <Link key={item.id} href={route(item.route)}>
                                                     {CardContent}
                                                 </Link>
                                             );
                                         }
-                                        return CardContent;
+                                        return <div key={item.id}>{CardContent}</div>;
                                     })}
 
-                                    {/* Coming Soon Items */}
+                                    {/* Coming Soon Features */}
                                     {secondaryMenuItems.map((item) => {
-                                        const IconComponent = item.icon;
+                                        const IconComponent = iconMap[item.name.split(" ")[0]] || iconMap.Settings;
                                         return (
                                             <div
                                                 key={item.id}
-                                                className="bg-white rounded-lg shadow-sm border border-primary-light opacity-60 relative"
+                                                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 opacity-60 relative overflow-hidden"
                                             >
-                                                <div className="h-1 bg-gray-300"></div>
-                                                <div className="p-6">
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div className="p-3 rounded-lg bg-primary-light">
-                                                            <IconComponent className="h-6 w-6 text-primary opacity-60" />
-                                                        </div>
-                                                        <span className="text-xs bg-accent-light text-primary px-2 py-1 rounded-full font-medium">
-                                                            Coming Soon
-                                                        </span>
-                                                    </div>
-                                                    <h3 className="text-lg font-semibold text-primary opacity-70 mb-2">
-                                                        {item.name}
-                                                    </h3>
-                                                    <p className="text-sm text-primary opacity-50">
-                                                        {item.description}
-                                                    </p>
+                                                <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-400 to-orange-400 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg">
+                                                    Coming Soon
                                                 </div>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="p-3 rounded-xl bg-gray-100">
+                                                        <IconComponent className="h-6 w-6 text-gray-500" />
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-700 mb-2">
+                                                    {item.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.description}
+                                                </p>
                                             </div>
                                         );
                                     })}
@@ -482,18 +322,20 @@ export default function Dashboard() {
                             </div>
 
                             {/* Pending Reservations */}
-                            <div className="bg-white rounded-lg shadow-sm border border-primary-light">
-                                <div className="px-6 py-4 border-b border-primary-light bg-primary-light">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                <div className="p-6 border-b border-gray-100">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
-                                            <Calendar className="h-5 w-5 text-primary mr-2" />
-                                            <h2 className="text-lg font-semibold text-primary">
+                                            <Calendar className="h-5 w-5 text-primary mr-3" />
+                                            <h2 className="text-xl font-bold text-gray-900">
                                                 Pending Reservations
                                             </h2>
                                         </div>
-                                        <span className="bg-accent text-white text-xs font-medium px-2.5 py-1 rounded-full">
-                                            {pendingrequests.length} active
-                                        </span>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full">
+                                                {pendingrequests.length} pending
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="p-6">
@@ -502,59 +344,43 @@ export default function Dashboard() {
                                             {pendingrequests.map((request) => (
                                                 <div
                                                     key={request.id}
-                                                    className="border border-primary-light rounded-lg p-4 hover:bg-primary-light transition-colors"
+                                                    className="border border-gray-200 rounded-xl p-5 hover:bg-gray-50 transition-all duration-200"
                                                 >
                                                     <div className="flex items-start justify-between">
                                                         <div className="flex-1">
-                                                            <div className="flex items-center mb-2">
+                                                            <div className="flex items-center mb-3">
                                                                 <div
-                                                                    className={`w-3 h-3 rounded-full mr-3 ${getPriorityColor(
-                                                                        request.priority
-                                                                    )}`}
+                                                                    className={`w-3 h-3 rounded-full mr-3 ${getPriorityColor(request.priority)}`}
                                                                 ></div>
-                                                                <span className="text-sm font-medium text-accent">
-                                                                    #
-                                                                    {request.id}
+                                                                <span className="text-sm font-semibold text-primary">
+                                                                    #{request.id}
                                                                 </span>
-                                                                <span className="ml-2 px-2 py-1 text-xs bg-accent-light text-primary rounded-full">
-                                                                    {
-                                                                        request.status
-                                                                    }
+                                                                <span className="ml-3 px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full font-medium">
+                                                                    {request.status}
                                                                 </span>
                                                             </div>
-                                                            <h4 className="font-medium text-primary mb-1">
-                                                                {
-                                                                    request.ruangan
-                                                                }
+                                                            <h4 className="font-bold text-gray-900 mb-2">
+                                                                {request.ruangan}
                                                             </h4>
-                                                            <p className="text-sm text-primary opacity-80 mb-2">
+                                                            <p className="text-sm text-gray-600 mb-3">
                                                                 {request.tujuan}
                                                             </p>
-                                                            <div className="flex items-center text-sm text-primary opacity-70 space-x-4">
+                                                            <div className="flex items-center text-sm text-gray-500 space-x-4">
                                                                 <div className="flex items-center">
-                                                                    <Clock className="h-4 w-4 mr-1" />
-                                                                    {formatDate(
-                                                                        request.tanggal
-                                                                    )}
+                                                                    <Clock className="h-4 w-4 mr-2" />
+                                                                    {formatDate(request.tanggal)}
                                                                 </div>
                                                                 <div className="flex items-center">
-                                                                    <span>
-                                                                        Duration:{" "}
-                                                                        {
-                                                                            request.durasi
-                                                                        }
-                                                                    </span>
+                                                                    <span>Duration: {request.durasi}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
-                                                            <p className="text-xs text-primary opacity-60">
+                                                            <p className="text-xs text-gray-500 mb-1">
                                                                 Estimation
                                                             </p>
-                                                            <p className="text-sm font-medium text-primary">
-                                                                {
-                                                                    request.estimasi
-                                                                }
+                                                            <p className="text-sm font-semibold text-gray-900">
+                                                                {request.estimasi}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -562,11 +388,13 @@ export default function Dashboard() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-8">
-                                            <Calendar className="h-12 w-12 mx-auto mb-4 text-primary opacity-30" />
-                                            <p className="text-primary opacity-70">
-                                                No reservations currently being
-                                                processed
+                                        <div className="text-center py-12">
+                                            <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                                            <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                                No pending reservations
+                                            </h3>
+                                            <p className="text-gray-500">
+                                                All your reservations are up to date
                                             </p>
                                         </div>
                                     )}
@@ -574,76 +402,64 @@ export default function Dashboard() {
                             </div>
 
                             {/* Recent Activities */}
-                            <div className="bg-white rounded-lg shadow-sm border border-primary-light">
-                                <div className="px-6 py-4 border-b border-primary-light bg-primary-light">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                <div className="p-6 border-b border-gray-100">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
-                                            <Activity className="h-5 w-5 text-primary mr-2" />
-                                            <h2 className="text-lg font-semibold text-primary">
+                                            <Activity className="h-5 w-5 text-primary mr-3" />
+                                            <h2 className="text-xl font-bold text-gray-900">
                                                 Recent Activities
                                             </h2>
                                         </div>
                                         <Link
                                             href={route("peminjaman.index")}
-                                            className="text-sm text-accent hover:text-accent-dark font-medium"
+                                            className="text-sm text-primary hover:text-primary-dark font-medium flex items-center"
                                         >
                                             View All
+                                            <ArrowRight className="h-4 w-4 ml-1" />
                                         </Link>
                                     </div>
                                 </div>
                                 <div className="p-6">
                                     <div className="space-y-4">
-                                        {activities
-                                            .slice(0, 4)
-                                            .map((activity, index) => {
-                                                const IconComponent =
-                                                    activity.icon;
-                                                return (
-                                                    <div
-                                                        key={index}
-                                                        className="flex items-start space-x-3 py-3 border-b border-primary-light last:border-b-0"
-                                                    >
-                                                        <div
-                                                            className={`p-2 rounded-full ${getStatusColor(
-                                                                activity.type
-                                                            )}`}
-                                                        >
-                                                            <IconComponent className="h-4 w-4" />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm text-primary">
-                                                                {
-                                                                    activity.message
-                                                                }
-                                                            </p>
-                                                            <p className="text-xs text-primary opacity-70 mt-1">
-                                                                {
-                                                                    activity.details
-                                                                }
-                                                            </p>
-                                                            <p className="text-xs text-primary opacity-50 mt-1">
-                                                                {formatDate(
-                                                                    activity.timestamp
-                                                                )}
-                                                            </p>
-                                                        </div>
+                                        {activities.slice(0, 4).map((activity, index) => {
+                                            const IconComponent = iconMap[activity.icon];
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-start space-x-4 py-4 border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <div className={`p-2 rounded-lg ${getStatusColor(activity.type)}`}>
+                                                        <IconComponent className="h-4 w-4" />
                                                     </div>
-                                                );
-                                            })}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-gray-900 mb-1">
+                                                            {activity.message}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600 mb-2">
+                                                            {activity.details}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {formatDate(activity.timestamp)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Sidebar - 1 column */}
-                        <div className="lg:col-span-1">
-                            <div className="sticky top-20 space-y-6">
+                        {/* Sidebar */}
+                        <div className="xl:col-span-1">
+                            <div className="sticky top-24 space-y-6">
                                 {/* Quick Actions */}
-                                <div className="bg-white rounded-lg shadow-sm border border-primary-light">
-                                    <div className="px-6 py-4 border-b border-primary-light bg-primary-light">
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                    <div className="p-6 border-b border-gray-100">
                                         <div className="flex items-center">
-                                            <PlusCircle className="h-5 w-5 text-primary mr-2" />
-                                            <h3 className="text-lg font-semibold text-primary">
+                                            <Zap className="h-5 w-5 text-primary mr-3" />
+                                            <h3 className="text-lg font-bold text-gray-900">
                                                 Quick Actions
                                             </h3>
                                         </div>
@@ -651,63 +467,61 @@ export default function Dashboard() {
                                     <div className="p-6 space-y-3">
                                         <button
                                             onClick={handleReservationClick}
-                                            className="w-full py-3 px-4 rounded-lg text-white font-medium bg-primary hover:bg-primary-dark transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
+                                            className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-primary hover:bg-primary-dark transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
                                         >
                                             <Calendar className="h-5 w-5 mr-2" />
-                                            Room Reservation
+                                            New Reservation
                                         </button>
                                         <Link
                                             href={route("peminjaman.index")}
-                                            className="w-full py-3 px-4 rounded-lg text-primary font-medium bg-primary-light hover:bg-accent-light transition-colors duration-200 flex items-center justify-center shadow-sm"
+                                            className="w-full py-3 px-4 rounded-xl text-gray-700 font-medium bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
                                         >
                                             <History className="h-5 w-5 mr-2" />
                                             View History
                                         </Link>
                                         <Link
                                             href={route("ruangan.index")}
-                                            className="w-full py-3 px-4 rounded-lg text-primary font-medium bg-primary-light hover:bg-accent-light transition-colors duration-200 flex items-center justify-center shadow-sm"
+                                            className="w-full py-3 px-4 rounded-xl text-gray-700 font-medium bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
                                         >
                                             <MapPin className="h-5 w-5 mr-2" />
-                                            Room List
+                                            Browse Rooms
                                         </Link>
-                                        <button className="w-full py-3 px-4 rounded-lg text-primary font-medium bg-primary-light hover:bg-accent-light transition-colors duration-200 flex items-center justify-center shadow-sm">
+                                        <button className="w-full py-3 px-4 rounded-xl text-gray-700 font-medium bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
                                             <HelpCircle className="h-5 w-5 mr-2" />
-                                            Help
+                                            Get Help
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Info Card */}
-                                <div className="bg-primary-light rounded-lg border border-primary p-6">
-                                    <div className="flex items-center mb-3">
-                                        <FileText className="h-5 w-5 text-primary mr-2" />
-                                        <h3 className="font-semibold text-primary">
-                                            Tips & Information
+                                {/* Tips Card */}
+                                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+                                    <div className="flex items-center mb-4">
+                                        <Info className="h-5 w-5 text-blue-600 mr-3" />
+                                        <h3 className="font-bold text-blue-900">
+                                            Tips & Guidelines
                                         </h3>
                                     </div>
-                                    <ul className="space-y-2 text-sm text-primary">
-                                        <li className="flex items-start">
-                                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-2 mr-2 flex-shrink-0"></div>
-                                            Reservations can be made up to 7
-                                            days in advance
-                                        </li>
-                                        <li className="flex items-start">
-                                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-2 mr-2 flex-shrink-0"></div>
-                                            Automatic confirmation within 1-2
-                                            working days
-                                        </li>
-                                        <li className="flex items-start">
-                                            <div className="w-1.5 h-1.5 bg-accent rounded-full mt-2 mr-2 flex-shrink-0"></div>
-                                            Contact admin for urgent
-                                            reservations
-                                        </li>
-                                    </ul>
+                                    <div className="space-y-3 text-sm text-blue-800">
+                                        <div className="flex items-start">
+                                            <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                                            <span>Book rooms up to 7 days in advance</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                                            <span>Confirmations within 1-2 business days</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                                            <span>Contact admin for urgent requests</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             {/* Reservation Modal */}
             {reservationModalOpen && (
                 <RoomBookingPopup
