@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import {
     Building,
-    ArrowRight,
     Clock,
-    Bookmark,
-    History,
     Info,
-    ChevronRight,
+    Plus,
+    Eye,
+    Calendar,
+    User,
+    CheckCircle,
+    XCircle,
+    HelpCircle,
 } from "lucide-react";
 import UserLayout from "@/components/Layouts/UserLayout";
 import RoomBookingPopup from "./RoomBookingPopup";
@@ -18,69 +21,106 @@ export default function Ruangan({ faculties, buildings }) {
     const [popupOpen, setPopupOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
 
-    const handleCategoryClick = (categoryTitle) => {
-        setSelectedCategory(categoryTitle);
+    // Dummy data untuk tabel peminjaman ruangan
+    const [bookingData] = useState([
+        {
+            id: 1,
+            ruangan: "Ruang Kuliah A101",
+            gedung: "Gedung Teknik Informatika",
+            tanggal: "2025-07-10",
+            waktu: "08:00 - 10:00",
+            keperluan: "Kuliah Pemrograman Web",
+            peminjam: "Dr. Ahmad Susanto",
+            status: "Disetujui",
+            tanggal_pengajuan: "2025-07-05",
+        },
+        {
+            id: 2,
+            ruangan: "Lab Komputer 2",
+            gedung: "Gedung Teknik Informatika",
+            tanggal: "2025-07-12",
+            waktu: "13:00 - 15:00",
+            keperluan: "Praktikum Database",
+            peminjam: "Siti Nurhaliza, M.Kom",
+            status: "Menunggu",
+            tanggal_pengajuan: "2025-07-06",
+        },
+        {
+            id: 3,
+            ruangan: "Aula Serbaguna",
+            gedung: "Gedung Rektorat",
+            tanggal: "2025-07-15",
+            waktu: "09:00 - 12:00",
+            keperluan: "Seminar Nasional IT",
+            peminjam: "Budi Santoso",
+            status: "Disetujui",
+            tanggal_pengajuan: "2025-07-01",
+        },
+        {
+            id: 4,
+            ruangan: "Ruang Meeting B203",
+            gedung: "Gedung Ekonomi",
+            tanggal: "2025-07-08",
+            waktu: "14:00 - 16:00",
+            keperluan: "Rapat Koordinasi",
+            peminjam: "Andi Pratama",
+            status: "Ditolak",
+            tanggal_pengajuan: "2025-07-03",
+        },
+        {
+            id: 5,
+            ruangan: "Lab Multimedia",
+            gedung: "Gedung Teknik Informatika",
+            tanggal: "2025-07-20",
+            waktu: "10:00 - 12:00",
+            keperluan: "Workshop Video Editing",
+            peminjam: "Maya Sari, S.Kom",
+            status: "Menunggu",
+            tanggal_pengajuan: "2025-07-07",
+        },
+        {
+            id: 6,
+            ruangan: "Ruang Diskusi C301",
+            gedung: "Gedung Fakultas Hukum",
+            tanggal: "2025-07-18",
+            waktu: "15:00 - 17:00",
+            keperluan: "Diskusi Kelompok Mahasiswa",
+            peminjam: "Rahmat Hidayat",
+            status: "Disetujui",
+            tanggal_pengajuan: "2025-07-04",
+        },
+    ]);
+
+    const handleBookingClick = () => {
+        setSelectedCategory("Pinjam Ruangan");
         setPopupOpen(true);
     };
 
-    const categories = [
-        /* {
-            id: "fakultas-sendiri",
-            title: "Pinjam Ruang Fakultas Sendiri",
-            description: "Pinjam ruangan yang tersedia di fakultas Anda",
-            icon: <Building className="h-10 w-10" />,
-            route: "/ruangan/fakultas-sendiri",
-            bgClass: "bg-blue-50",
-            borderClass: "border-blue-200",
-        },
-        {
-            id: "lintas-fakultas",
-            title: "Pinjam Ruang Lintas Fakultas",
-            description: "Pinjam ruangan yang berada di fakultas lain",
-            icon: <ArrowRight className="h-10 w-10" />,
-            route: "/ruangan/lintas-fakultas",
-            bgClass: "bg-teal-50",
-            borderClass: "border-teal-200",
-        },
-        {
-            id: "umum-kampus",
-            title: "Pinjam Ruang Umum Kampus",
-            description:
-                "Pinjam ruangan umum yang dapat digunakan oleh seluruh civitas akademika",
-            icon: <Building className="h-10 w-10" />,
-            route: "/ruangan/umum-kampus",
-            bgClass: "bg-purple-50",
-            borderClass: "border-purple-200",
-        },
-        {
-            id: "khusus",
-            title: "Pinjam Ruang Khusus",
-            description:
-                "Pinjam ruangan khusus seperti laboratorium, studio, dll",
-            icon: <Bookmark className="h-10 w-10" />,
-            route: "/ruangan/khusus",
-            bgClass: "bg-amber-50",
-            borderClass: "border-amber-200",
-        }, */
-        {
-            id: "ruangan",
-            title: "Pinjam Ruangan",
-            description: "Pinjam ruangan yang tersedia di Universitas",
-            icon: <Building className="h-10 w-10" />,
-            route: "/ruangan",
-            bgClass: "bg-blue-50",
-            borderClass: "border-blue-200",
-        },
-        {
-            id: "fasilitas-umum",
-            title: "Pinjam Ruang Fasilitas Umum",
-            description: "Pinjam Fasilitas Umum yang Tersedia di Universitas",
-            icon: <Bookmark className="h-10 w-10" />,
-            route: "/ruangan/fasilitas-umum",
-            bgClass: "bg-teal-50",
-            borderClass: "border-teal-200",
-        },
-    ];
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "Disetujui":
+                return "bg-green-100 text-green-800";
+            case "Menunggu":
+                return "bg-yellow-100 text-yellow-800";
+            case "Ditolak":
+                return "bg-red-100 text-red-800";
+            default:
+                return "bg-gray-100 text-gray-800";
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "Disetujui":
+                return <CheckCircle className="text-green-500 w-5 h-5" />;
+            case "Menunggu":
+                return <Clock className="text-yellow-500 w-5 h-5" />;
+            case "Ditolak":
+                return <XCircle className="text-red-500 w-5 h-5" />;
+            default:
+                return <HelpCircle className="text-gray-400 w-5 h-5" />;
+        }
+    };
 
     return (
         <UserLayout
@@ -107,8 +147,8 @@ export default function Ruangan({ faculties, buildings }) {
                                     Peminjaman Ruangan
                                 </h1>
                                 <p className="text-gray-100">
-                                    Pilih kategori peminjaman ruangan sesuai
-                                    kebutuhan Anda
+                                    Kelola dan pantau semua peminjaman ruangan
+                                    Anda
                                 </p>
                             </div>
                             <div className="flex items-center bg-white bg-opacity-20 p-3 rounded-lg text-white">
@@ -120,103 +160,196 @@ export default function Ruangan({ faculties, buildings }) {
                         </div>
                     </div>
 
-                    {/* Category Section */}
+                    {/* Main Content - Table with sticky header */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6">
-                            <h2
-                                className="text-xl font-semibold mb-6"
-                                style={{ color: primaryColor }}
-                            >
-                                Kategori Peminjaman
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {categories.map((category) => (
-                                    <button
-                                        key={category.id}
-                                        onClick={() =>
-                                            handleCategoryClick(category.title)
-                                        }
-                                        className={`text-left w-full p-8 min-h-[160px] mb-6 border-2 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${category.bgClass} ${category.borderClass}`}
-                                    >
-                                        <div className="flex items-start space-x-4">
-                                            <div
-                                                className="p-4 rounded-full"
-                                                style={{
-                                                    backgroundColor:
-                                                        primaryColor,
-                                                }}
-                                            >
-                                                <div className="text-white">
-                                                    {category.icon}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3
-                                                    className="text-xl font-semibold"
-                                                    style={{
-                                                        color: primaryColor,
-                                                    }}
-                                                >
-                                                    {category.title}
-                                                </h3>
-                                                <p className="mt-3 text-sm text-gray-600">
-                                                    {category.description}
-                                                </p>
-                                                <div
-                                                    className="mt-4 flex items-center"
-                                                    style={{
-                                                        color: primaryColor,
-                                                    }}
-                                                >
-                                                    <span className="text-sm font-medium">
-                                                        Pilih
-                                                    </span>
-                                                    <ChevronRight className="h-4 w-4 ml-1" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))}
+                        {/* Sticky Section Header */}
+                        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 p-6 shadow-sm">
+                            <div className="flex items-center justify-between">
+                                <h2
+                                    className="text-xl font-semibold"
+                                    style={{ color: primaryColor }}
+                                >
+                                    Daftar Peminjaman Ruangan
+                                </h2>
+                                <button
+                                    onClick={handleBookingClick}
+                                    className="flex items-center px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity duration-200"
+                                    style={{ backgroundColor: primaryColor }}
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Pinjam Ruang
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    {/* History Section */}
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6">
-                            <Link
-                                href="/ruangan/riwayat"
-                                className="block p-5 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        <div
-                                            className="p-3 rounded-full mr-4"
+                        {/* Table Content */}
+                        <div>
+                            {bookingData.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50 sticky z-10">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    No
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    Ruangan & Gedung
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    Tanggal & Waktu
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    Keperluan
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    Peminjam
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    Status
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                    Aksi
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {bookingData.map(
+                                                (booking, index) => (
+                                                    <tr
+                                                        key={booking.id}
+                                                        className="hover:bg-gray-50"
+                                                    >
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {index + 1}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <Building className="h-4 w-4 text-gray-400 mr-2" />
+                                                                <div>
+                                                                    <div className="text-sm font-medium text-gray-900">
+                                                                        {
+                                                                            booking.ruangan
+                                                                        }
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-500">
+                                                                        {
+                                                                            booking.gedung
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                                                <div>
+                                                                    <div className="text-sm font-medium text-gray-900">
+                                                                        {new Date(
+                                                                            booking.tanggal
+                                                                        ).toLocaleDateString(
+                                                                            "id-ID",
+                                                                            {
+                                                                                weekday:
+                                                                                    "long",
+                                                                                year: "numeric",
+                                                                                month: "long",
+                                                                                day: "numeric",
+                                                                            }
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-500">
+                                                                        {
+                                                                            booking.waktu
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="text-sm text-gray-900 max-w-xs">
+                                                                {
+                                                                    booking.keperluan
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <User className="h-4 w-4 text-gray-400 mr-2" />
+                                                                <div className="text-sm text-gray-900">
+                                                                    {
+                                                                        booking.peminjam
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <span
+                                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                                                                    booking.status
+                                                                )}`}
+                                                            >
+                                                                <span className="mr-1">
+                                                                    {getStatusIcon(
+                                                                        booking.status
+                                                                    )}
+                                                                </span>
+                                                                {booking.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                            <button
+                                                                className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                                                                onClick={() =>
+                                                                    console.log(
+                                                                        `View details for booking ${booking.id}`
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Eye className="h-4 w-4 mr-1" />
+                                                                Detail
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-gray-500">
+                                    <Building className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                                    <p className="text-lg font-medium mb-2">
+                                        Belum ada data peminjaman ruangan
+                                    </p>
+                                    <p className="text-sm mb-6">
+                                        Mulai buat peminjaman ruangan untuk
+                                        kebutuhan Anda
+                                    </p>
+                                    <div className="flex gap-3 justify-center">
+                                        <button
+                                            onClick={handleBookingClick}
+                                            className="flex items-center px-6 py-3 rounded-lg border-2 font-medium hover:bg-gray-50 transition-colors duration-200"
+                                            style={{
+                                                borderColor: primaryColor,
+                                                color: primaryColor,
+                                            }}
+                                        >
+                                            <Building className="h-4 w-4 mr-2" />
+                                            Eksplor Ruang
+                                        </button>
+                                        <button
+                                            onClick={handleBookingClick}
+                                            className="flex items-center px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity duration-200"
                                             style={{
                                                 backgroundColor: primaryColor,
                                             }}
                                         >
-                                            <History className="h-8 w-8 text-white" />
-                                        </div>
-                                        <div>
-                                            <h3
-                                                className="text-lg font-medium"
-                                                style={{ color: primaryColor }}
-                                            >
-                                                Riwayat Peminjaman Saya
-                                            </h3>
-                                            <p className="text-gray-600">
-                                                Lihat daftar dan status
-                                                peminjaman ruangan Anda
-                                            </p>
-                                        </div>
+                                            <Plus className="h-4 w-4 mr-2" />
+                                            Pinjam Ruang
+                                        </button>
                                     </div>
-                                    <ChevronRight
-                                        className="h-6 w-6"
-                                        style={{ color: primaryColor }}
-                                    />
                                 </div>
-                            </Link>
+                            )}
                         </div>
                     </div>
 
