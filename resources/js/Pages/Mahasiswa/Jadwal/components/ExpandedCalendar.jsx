@@ -172,6 +172,7 @@ export default function ExpandedCalendar({
     // Quick date selections
     const quickSelectToday = () => {
         const today = new Date();
+        setCurrentMonth(today);
         if (isRangeMode) {
             setTempRange({ startDate: today, endDate: today });
         } else {
@@ -183,6 +184,7 @@ export default function ExpandedCalendar({
         const today = new Date();
         const weekStart = startOfWeek(today, { weekStartsOn: 0 });
         const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
+        setCurrentMonth(today);
         setTempRange({ startDate: weekStart, endDate: weekEnd });
     };
 
@@ -190,6 +192,7 @@ export default function ExpandedCalendar({
         const today = new Date();
         const monthStart = startOfMonth(today);
         const monthEnd = endOfMonth(today);
+        setCurrentMonth(today);
         setTempRange({ startDate: monthStart, endDate: monthEnd });
     };
 
@@ -259,22 +262,28 @@ export default function ExpandedCalendar({
                 {/* Quick Select Buttons (Range Mode Only) */}
                 {isRangeMode && (
                     <div className="p-4 border-b border-gray-100">
-                        <div className="flex gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                             <button
                                 onClick={quickSelectToday}
-                                className="px-3 py-1.5 text-xs rounded-full border border-gray-300 hover:bg-gray-50 transition-colors"
+                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700
+      hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4a90a4]
+      transition-all"
                             >
                                 Hari Ini
                             </button>
                             <button
                                 onClick={quickSelectWeek}
-                                className="px-3 py-1.5 text-xs rounded-full border border-gray-300 hover:bg-gray-50 transition-colors"
+                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700
+      hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4a90a4]
+      transition-all"
                             >
                                 Minggu Ini
                             </button>
                             <button
                                 onClick={quickSelectMonth}
-                                className="px-3 py-1.5 text-xs rounded-full border border-gray-300 hover:bg-gray-50 transition-colors"
+                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700
+      hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4a90a4]
+      transition-all"
                             >
                                 Bulan Ini
                             </button>

@@ -200,25 +200,32 @@ export default function Jadwal() {
     const formatDayName = (date) => format(date, "EEE", { locale: id });
     const formatDayNumber = (date) => format(date, "d", { locale: id });
     const isToday = (date) => isSameDay(date, new Date());
-    const getCurrentMonthYear = () =>
-        weekDays.length ? format(weekDays[3], "MMMM yyyy", { locale: id }) : "";
+    const getCurrentMonthYear = () => {
+        if (dateRange?.startDate && dateRange?.endDate) {
+            return format(dateRange.startDate, "MMMM yyyy", { locale: id });
+        } else if (selectedDate) {
+            return format(selectedDate, "MMMM yyyy", { locale: id });
+        }
+        return "";
+    };
+
     const getDateRangeText = () => {
         if (dateRange.startDate && dateRange.endDate) {
             const sameDay = isSameDay(dateRange.startDate, dateRange.endDate);
             if (sameDay) {
-                return format(dateRange.startDate, "dd MMM yyyy", {
+                return format(dateRange.startDate, "dd MMMM yyyy", {
                     locale: id,
                 });
             }
-            return `${format(dateRange.startDate, "dd MMM yyyy", {
+            return `${format(dateRange.startDate, "dd MMMM yyyy", {
                 locale: id,
-            })} - ${format(dateRange.endDate, "dd MMM yyyy", { locale: id })}`;
+            })} - ${format(dateRange.endDate, "dd MMMM yyyy", { locale: id })}`;
         } else if (dateRange.startDate) {
-            return `${format(dateRange.startDate, "dd MMM yyyy", {
+            return `${format(dateRange.startDate, "dd MMMM yyyy", {
                 locale: id,
             })} - Pilih tanggal akhir`;
         }
-        return format(selectedDate, "dd MMM yyyy", { locale: id });
+        return format(selectedDate, "dd MMMM yyyy", { locale: id });
     };
 
     // Check if date is in selected range
@@ -322,16 +329,30 @@ export default function Jadwal() {
                             <div className="p-5">
                                 {getRangeDuration() > 7 ? (
                                     <div
-                                        className="p-4 rounded-xl border text-center"
+                                        className="p-4 rounded-xl border flex items-center justify-between gap-3"
                                         style={{
                                             backgroundColor: primaryLightColor,
                                             borderColor: primaryColor + "20",
                                         }}
                                     >
-                                        <div className="mt-5 flex items-center gap-2 text-sm font-medium text-[#365b6d] bg-[#e9eff2] px-4 py-3 rounded-xl border border-[#365b6d]/20">
-                                            <Calendar className="w-4 h-4" />
-                                            <span>{getDateRangeText()}</span>
+                                        <div className="flex items-center gap-2 text-sm font-medium text-[#365b6d]">
+                                            {/* <Calendar className="w-4 h-4" /> */}
+                                            <span>
+                                                {format(
+                                                    dateRange.startDate,
+                                                    "dd MMMM yyyy",
+                                                    { locale: id }
+                                                )}
+                                            </span>
                                         </div>
+
+                                        <span className="text-sm font-semibold text-[#365b6d]">
+                                            {format(
+                                                dateRange.endDate,
+                                                "dd MMMM yyyy",
+                                                { locale: id }
+                                            )}
+                                        </span>
                                     </div>
                                 ) : (
                                     <>
