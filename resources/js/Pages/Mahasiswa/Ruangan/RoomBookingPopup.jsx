@@ -20,8 +20,14 @@ import { id } from "date-fns/locale";
 import TimeRangePicker from "./components/TimePicker";
 import DatePicker from "./components/DatePicker";
 
-export default function RoomBookingPopup({ initialCategory, onClose, faculties, buildings }) {
+export default function RoomBookingPopup({
+    initialCategory,
+    onClose,
+    faculties,
+    buildings,
+}) {
     const [step, setStep] = useState(1);
+    const [bookingType, setBookingType] = useState("");
     const [selectedActivity, setSelectedActivity] = useState("");
     const [customActivity, setCustomActivity] = useState("");
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -34,6 +40,21 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
 
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
+
+    const bookingTypes = [
+        {
+            id: "ruang",
+            label: "Pinjam Ruang",
+            description: "Peminjaman ruangan untuk kegiatan",
+            icon: <Building size={24} />,
+        },
+        {
+            id: "fasilitas",
+            label: "Pinjam Fasilitas",
+            description: "Peminjaman fasilitas kampus untuk kegiatan",
+            icon: <School size={24} />,
+        },
+    ];
 
     const activities = [
         { id: "kuliah", label: "Kuliah", icon: <BookOpen size={20} /> },
@@ -82,7 +103,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
     }, [selectedDate]);
 
     const handleNext = () => {
-        if (step < 3) {
+        if (step < 4) {
             setStep(step + 1);
         } else {
             setIsSubmitting(true);
@@ -105,9 +126,17 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
         return (
             <div className="h-1 w-full">
                 <div
-                    className="h-full transition-all duration-300 bg-primary"
+                    className="h-full transition-all duration-300"
                     style={{
-                        width: step === 1 ? "33%" : step === 2 ? "66%" : "100%",
+                        width:
+                            step === 1
+                                ? "30%"
+                                : step === 2
+                                ? "50%"
+                                : step === 3
+                                ? "70%"
+                                : "100%",
+                        backgroundColor: primaryColor,
                     }}
                 />
             </div>
@@ -124,7 +153,6 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
         return buildings[selectedFaculty.value] || [];
     };
 
-    // Style dropdown
     const selectStyles = {
         control: (base) => ({
             ...base,
@@ -133,7 +161,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
             borderColor: "#e5e7eb",
             boxShadow: "none",
             "&:hover": {
-                borderColor: "#365b6d",
+                borderColor: primaryColor,
             },
             paddingLeft: "36px",
         }),
@@ -155,118 +183,176 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
         }),
     };
 
+    const getStepTitle = () => {
+        switch (step) {
+            case 1:
+                return "Peminjaman - Jenis Peminjaman";
+            case 2:
+                return "Peminjaman - Tujuan Kegiatan";
+            case 3:
+                return "Peminjaman - Jadwal & Lokasi";
+            case 4:
+                return "Peminjaman - Konfirmasi";
+            default:
+                return "Peminjaman";
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden">
                 {/* Header */}
-                <div className="p-5 text-white relative bg-primary">
+                <div
+                    className="p-5 text-white relative"
+                    style={{ backgroundColor: primaryColor }}
+                >
                     <button
                         onClick={onClose}
                         className="absolute right-4 top-4 text-white hover:bg-opacity-20 hover:bg-white rounded-full p-1 transition-colors"
                     >
                         <X size={24} />
                     </button>
-                    <h2 className="text-2xl font-semibold mb-1">
-                        {step === 1 && "Peminjaman Ruangan - Tujuan Kegiatan"}
-                        {step === 2 && "Peminjaman Ruangan - Jadwal & Lokasi"}
-                        {step === 3 && "Peminjaman Ruangan - Konfirmasi"}
+                    <h2 className="text-xl font-semibold mb-1">
+                        {getStepTitle()}
                     </h2>
-                    <p className="text-white text-opacity-80 text-sm">
-                        Silakan lengkapi informasi untuk menemukan ruangan yang
-                        tersedia
+                    <p className="text-base text-white text-opacity-80">
+                        Silakan lengkapi informasi untuk menemukan ruangan atau
+                        fasilitas yang tersedia
                     </p>
                 </div>
 
                 {/* Body */}
                 <div className="p-6">
                     {step === 1 && (
-                        <div className="grid grid-cols-1">
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-medium text-gray-800">
-                                    Tujuan Kegiatan
-                                </h3>
-                                <p className="text-gray-600">
-                                    Pilih tujuan kegiatan untuk peminjaman
-                                    ruangan:
-                                </p>
+                        <div className="space-y-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                                Pilih Jenis Peminjaman
+                            </h3>
+                            <p className="text-base text-gray-600">
+                                Tentukan jenis peminjaman yang Anda butuhkan
+                            </p>
 
-                                <div className="grid grid-cols-3 gap-3 mt-4">
-                                    {activities.map((activity) => (
-                                        <button
-                                            key={activity.id}
-                                            className={`
-                                                p-4 border rounded-lg flex flex-col items-center text-center
-                                                ${
-                                                    selectedActivity ===
-                                                    activity.label
-                                                        ? "border-primary ring-2 ring-primary ring-opacity-30"
-                                                        : "hover:bg-gray-50"
-                                                }
-                                                transition-all
-                                            `}
-                                            style={{
-                                                backgroundColor:
-                                                    selectedActivity ===
-                                                    activity.label
-                                                        ? "bg-primaryLight"
-                                                        : "",
-                                            }}
-                                            onClick={() =>
-                                                setSelectedActivity(
-                                                    activity.label
-                                                )
-                                            }
-                                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                                {bookingTypes.map((type) => (
+                                    <button
+                                        key={type.id}
+                                        className={`p-6 border-2 rounded-xl text-left transition-all duration-200 ${
+                                            bookingType === type.id
+                                                ? "border-primary bg-blue-50 shadow-lg"
+                                                : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                                        }`}
+                                        onClick={() => setBookingType(type.id)}
+                                    >
+                                        <div className="flex items-start space-x-4">
                                             <div
-                                                className={`
-                                                    p-3 rounded-full mb-2
-                                                    ${
-                                                        selectedActivity ===
-                                                        activity.label
-                                                            ? "bg-[#d0dce2] text-primary"
-                                                            : "bg-gray-100 text-gray-500"
-                                                    }
-                                                `}
+                                                className={`p-3 rounded-lg ${
+                                                    bookingType === type.id
+                                                        ? "text-white"
+                                                        : "bg-gray-100 text-gray-600"
+                                                }`}
+                                                style={{
+                                                    backgroundColor:
+                                                        bookingType === type.id
+                                                            ? primaryColor
+                                                            : "",
+                                                }}
                                             >
-                                                {activity.icon}
+                                                {type.icon}
                                             </div>
-                                            <span className="text-sm font-medium">
-                                                {activity.label}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {selectedActivity === "Lainnya" && (
-                                    <div className="mt-4">
-                                        <label className="block text-gray-700 font-medium mb-2">
-                                            Tuliskan Kegiatan:
-                                        </label>
-                                        <input
-                                            type="text"
-                                            className="w-full p-3 border rounded-lg focus:ring focus:ring-primary focus:ring-opacity-30 focus:border-primary"
-                                            placeholder="Masukkan nama kegiatan"
-                                            value={customActivity}
-                                            onChange={(e) =>
-                                                setCustomActivity(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                )}
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-semibold text-gray-800 mb-1">
+                                                    {type.label}
+                                                </h4>
+                                                <p className="text-base text-gray-600">
+                                                    {type.description}
+                                                </p>
+                                            </div>
+                                            {bookingType === type.id && (
+                                                <div className="text-primary">
+                                                    <Check size={20} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}
+
                     {step === 2 && (
                         <div className="space-y-6">
-                            <h3 className="text-lg font-medium text-gray-800 mb-4">
-                                Detail Peminjaman Ruangan
+                            <h3 className="text-lg font-semibold text-gray-800">
+                                Tujuan Kegiatan
+                            </h3>
+                            <p className="text-base text-gray-600">
+                                Pilih tujuan kegiatan untuk peminjaman:
+                            </p>
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                                {activities.map((activity) => (
+                                    <button
+                                        key={activity.id}
+                                        className={`p-4 border rounded-lg flex flex-col items-center text-center transition-all ${
+                                            selectedActivity === activity.label
+                                                ? "border-primary ring-2 ring-primary ring-opacity-30"
+                                                : "hover:bg-gray-50"
+                                        }`}
+                                        style={{
+                                            backgroundColor:
+                                                selectedActivity ===
+                                                activity.label
+                                                    ? primaryLightColor
+                                                    : "",
+                                        }}
+                                        onClick={() =>
+                                            setSelectedActivity(activity.label)
+                                        }
+                                    >
+                                        <div
+                                            className={`p-3 rounded-full mb-2 ${
+                                                selectedActivity ===
+                                                activity.label
+                                                    ? "bg-[#d0dce2] text-primary"
+                                                    : "bg-gray-100 text-gray-500"
+                                            }`}
+                                        >
+                                            {activity.icon}
+                                        </div>
+                                        <span className="text-base font-medium">
+                                            {activity.label}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {selectedActivity === "Lainnya" && (
+                                <div className="mt-4">
+                                    <label className="block text-base font-medium text-gray-700 mb-2">
+                                        Tuliskan Kegiatan:
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-3 border rounded-lg focus:ring focus:ring-primary focus:ring-opacity-30 focus:border-primary"
+                                        placeholder="Masukkan nama kegiatan"
+                                        value={customActivity}
+                                        onChange={(e) =>
+                                            setCustomActivity(e.target.value)
+                                        }
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="space-y-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                Detail Peminjaman
                             </h3>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                                    <h4 className="text-base font-medium text-gray-700 mb-5 flex items-center">
+                                    <h4 className="text-lg font-medium text-gray-700 mb-5 flex items-center">
                                         <Calendar
                                             size={18}
                                             className="mr-2 text-gray-500"
@@ -289,7 +375,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                         />
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                                            <label className="block text-base font-medium text-gray-600 mb-2">
                                                 Kapasitas yang dibutuhkan:
                                             </label>
                                             <div className="relative">
@@ -318,17 +404,17 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                 </div>
 
                                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                                    <h4 className="text-base font-medium text-gray-700 mb-5 flex items-center">
+                                    <h4 className="text-lg font-medium text-gray-700 mb-5 flex items-center">
                                         <MapPin
                                             size={18}
                                             className="mr-2 text-gray-500"
                                         />
-                                        Lokasi Ruangan
+                                        Lokasi
                                     </h4>
 
                                     <div className="space-y-5">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                                            <label className="block text-base font-medium text-gray-600 mb-2">
                                                 Fakultas:
                                             </label>
                                             <div className="relative">
@@ -354,7 +440,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                                            <label className="block text-base font-medium text-gray-600 mb-2">
                                                 Gedung:
                                             </label>
                                             <div className="relative">
@@ -383,7 +469,7 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                         </div>
 
                                         <div className="bg-blue-50 p-4 rounded-lg mt-4">
-                                            <p className="text-sm text-blue-700 flex items-start">
+                                            <p className="text-base text-blue-700 flex items-start">
                                                 <svg
                                                     className="h-5 w-5 mr-2 flex-shrink-0"
                                                     fill="currentColor"
@@ -396,9 +482,8 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                                     />
                                                 </svg>
                                                 Sistem akan menampilkan ruangan
-                                                yang tersedia berdasarkan
-                                                fakultas, gedung, kapasitas, dan
-                                                waktu yang dipilih.
+                                                atau fasilitas yang tersedia
+                                                berdasarkan pilihan Anda.
                                             </p>
                                         </div>
                                     </div>
@@ -406,138 +491,143 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                             </div>
                         </div>
                     )}
-                    {step === 3 && (
-                        <div className="max-w-3xl mx-auto space-y-6">
-                            <div className="text-center sm:text-left">
-                                <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+
+                    {step === 4 && (
+                        <div className="space-y-6">
+                            <div className="text-left">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-2">
                                     Konfirmasi Peminjaman
                                 </h3>
-                                <p className="text-gray-600">
+                                <p className="text-base text-gray-600">
                                     Silakan periksa detail peminjaman Anda
                                     sebelum melanjutkan
                                 </p>
                             </div>
 
-                            {/* Booking Summary Card */}
                             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow">
-                                {/* Card Header */}
-                                <div className="bg-primary p-4 flex items-center">
+                                <div
+                                    className="p-4 flex items-center"
+                                    style={{ backgroundColor: primaryColor }}
+                                >
                                     <Info
                                         size={20}
                                         className="text-white mr-2"
                                     />
-                                    <h4 className="font-medium text-white">
+                                    <h4 className="text-lg font-medium text-white">
                                         Ringkasan Peminjaman
                                     </h4>
                                 </div>
 
-                                {/* Card Content */}
-                                <div className="p-6">
-                                    {/* Grid Layout for Booking Details */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 mb-6">
-                                        {/* Left Column */}
+                                <div className="p-6 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <h5 className="text-gray-700 font-medium mb-4 pb-2 border-b border-gray-100">
+                                            <h5 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b border-gray-100">
                                                 Informasi Kegiatan
                                             </h5>
-                                            <div className="space-y-4">
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                            <dl className="space-y-4">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
+                                                        Jenis Peminjaman
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
+                                                        {bookingTypes.find(
+                                                            (type) =>
+                                                                type.id ===
+                                                                bookingType
+                                                        )?.label ||
+                                                            "Belum dipilih"}
+                                                    </dd>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Kegiatan
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {selectedActivity ===
                                                         "Lainnya"
                                                             ? customActivity ||
                                                               "Belum ditentukan"
                                                             : selectedActivity ||
                                                               "Belum ditentukan"}
-                                                    </span>
+                                                    </dd>
                                                 </div>
-
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Tanggal
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {format(
                                                             selectedDate,
                                                             "d MMMM yyyy",
                                                             { locale: id }
                                                         )}
-                                                    </span>
+                                                    </dd>
                                                 </div>
-
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Hari
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {format(
                                                             selectedDate,
                                                             "EEEE",
                                                             { locale: id }
                                                         )}
-                                                    </span>
+                                                    </dd>
                                                 </div>
-                                            </div>
+                                            </dl>
                                         </div>
 
-                                        {/* Right Column */}
                                         <div>
-                                            <h5 className="text-gray-700 font-medium mb-4 pb-2 border-b border-gray-100">
-                                                Informasi Ruangan
+                                            <h5 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b border-gray-100">
+                                                Informasi Ruangan/Fasilitas
                                             </h5>
-                                            <div className="space-y-4">
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                            <dl className="space-y-4">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Waktu
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {startTime} - {endTime}
-                                                    </span>
+                                                    </dd>
                                                 </div>
-
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Kapasitas
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {capacity} orang
-                                                    </span>
+                                                    </dd>
                                                 </div>
-
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Fakultas
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {selectedFaculty?.label ||
                                                             "Belum dipilih"}
-                                                    </span>
+                                                    </dd>
                                                 </div>
-
-                                                <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                    <span className="text-gray-500 mb-1 sm:mb-0">
+                                                <div className="flex justify-between">
+                                                    <dt className="text-base text-gray-500">
                                                         Gedung
-                                                    </span>
-                                                    <span className="font-medium text-gray-800">
+                                                    </dt>
+                                                    <dd className="text-base font-medium text-gray-800">
                                                         {selectedBuilding?.label ||
                                                             "Belum dipilih"}
-                                                    </span>
+                                                    </dd>
                                                 </div>
-                                            </div>
+                                            </dl>
                                         </div>
                                     </div>
 
-                                    <div className="bg-blue-50 p-4 rounded-lg flex items-start ">
+                                    <div className="bg-blue-50 p-4 rounded-lg flex items-start">
                                         <Check
                                             className="text-primary mt-0.5 mr-3 flex-shrink-0"
                                             size={20}
                                         />
-                                        <p className="text-sm text-gray-700">
+                                        <p className="text-base text-gray-700">
                                             Pastikan informasi telah sesuai
-                                            dengan kriteria peminjaman Anda
                                             sebelum melanjutkan!
                                         </p>
                                     </div>
@@ -561,23 +651,28 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                         onClick={handleNext}
                         disabled={
                             isSubmitting ||
-                            (step === 1 && !selectedActivity) ||
-                            (step === 2 &&
+                            (step === 1 && !bookingType) ||
+                            (step === 2 && !selectedActivity) ||
+                            (step === 3 &&
                                 (!selectedDate ||
                                     !startTime ||
                                     !endTime ||
                                     !selectedFaculty))
                         }
-                        className={`flex items-center px-6 py-2.5 rounded-lg text-white font-medium ${
-                            (step === 1 && !selectedActivity) ||
-                            (step === 2 &&
-                                (!selectedDate ||
-                                    !startTime ||
-                                    !endTime ||
-                                    !selectedFaculty))
-                                ? "bg-gray-400"
-                                : "bg-primary"
-                        } ${isSubmitting ? "opacity-75" : ""}`}
+                        className={`flex items-center px-6 py-2.5 rounded-lg text-white font-medium`}
+                        style={{
+                            backgroundColor:
+                                (step === 1 && !bookingType) ||
+                                (step === 2 && !selectedActivity) ||
+                                (step === 3 &&
+                                    (!selectedDate ||
+                                        !startTime ||
+                                        !endTime ||
+                                        !selectedFaculty))
+                                    ? "#9ca3af"
+                                    : primaryColor,
+                            opacity: isSubmitting ? "0.75" : "1",
+                        }}
                     >
                         {isSubmitting ? (
                             <span className="flex items-center">
@@ -601,11 +696,11 @@ export default function RoomBookingPopup({ initialCategory, onClose, faculties, 
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                     ></path>
                                 </svg>
-                                Mencari Ruangan...
+                                Mencari...
                             </span>
                         ) : (
                             <>
-                                {step === 3 ? "Cari Ruangan" : "Lanjutkan"}
+                                {step === 4 ? "Cari" : "Lanjutkan"}
                                 <ChevronRight size={18} className="ml-1" />
                             </>
                         )}
