@@ -1,7 +1,8 @@
-import AdminLayout from "@/Layouts/AdminLayout";
+import AdminLayout from "@/components/Layouts/AdminLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useState, useRef, useEffect } from "react";
 import { XMarkIcon, PlusCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
+
 
 export default function RoomEdit({ room, faculties, buildings, categories }) {
     const [buildingsByFaculty, setBuildingsByFaculty] = useState({});

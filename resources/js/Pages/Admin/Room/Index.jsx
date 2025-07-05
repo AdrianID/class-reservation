@@ -1,4 +1,4 @@
-import AdminLayout from "@/Layouts/AdminLayout";
+import AdminLayout from "@/components/Layouts/AdminLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { Transition } from '@headlessui/react';

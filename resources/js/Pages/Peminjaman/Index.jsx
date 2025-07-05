@@ -1,4 +1,4 @@
-import UserLayout from "@/Layouts/UserLayout";
+import UserLayout from "@/components/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
 import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";

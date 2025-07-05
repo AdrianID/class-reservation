@@ -9,7 +9,7 @@ import {
     Info,
     ChevronRight,
 } from "lucide-react";
-import UserLayout from "@/Layouts/UserLayout";
+import UserLayout from "@/components/Layouts/UserLayout";
 import RoomBookingPopup from "./RoomBookingPopup";
 
 export default function Ruangan({ faculties, buildings }) {
