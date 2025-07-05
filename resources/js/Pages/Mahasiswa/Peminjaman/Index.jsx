@@ -17,6 +17,70 @@ export default function Peminjaman() {
 
     const [showExpandedCalendar, setShowExpandedCalendar] = useState(false);
 
+    // Sample class data
+    const classRooms = [
+        {
+            id: 1,
+            name: "Kelas A",
+            status: "tersedia",
+            image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            location: "Jakarta Pusat",
+            capacity: "50 orang",
+            facilities: ["AC", "Proyektor", "Sound System"],
+            badgeColor: "bg-green-100 text-green-800",
+        },
+        {
+            id: 2,
+            name: "Kelas B",
+            status: "digunakan",
+            image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            location: "Jakarta Selatan",
+            capacity: "40 orang",
+            facilities: ["AC", "Sound System"],
+            badgeColor: "bg-yellow-100 text-yellow-800",
+        },
+        {
+            id: 3,
+            name: "Kelas C",
+            status: "maintenance",
+            image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            location: "Jakarta Barat",
+            capacity: "30 orang",
+            facilities: ["AC", "Proyektor", "Wi-Fi"],
+            badgeColor: "bg-red-100 text-red-800",
+        },
+        {
+            id: 4,
+            name: "Kelas D",
+            status: "tersedia",
+            image: "https://media.istockphoto.com/id/1087223748/photo/modern-classroom-with-large-panoramic-windows-and-white-desks-bright-interior.webp?a=1&s=612x612&w=0&k=20&c=Ht3bVO3-WL7eGtlLHGYmQIz63AUmiAugflbo-acl7qI=",
+            location: "Jakarta Utara",
+            capacity: "45 orang",
+            facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
+            badgeColor: "bg-green-100 text-green-800",
+        },
+        {
+            id: 5,
+            name: "Kelas E",
+            status: "tersedia",
+            image: "https://images.unsplash.com/photo-1635424239131-32dc44986b56?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            location: "Jakarta Timur",
+            capacity: "35 orang",
+            facilities: ["AC", "Wi-Fi"],
+            badgeColor: "bg-green-100 text-green-800",
+        },
+        {
+            id: 6,
+            name: "Kelas F",
+            status: "digunakan",
+            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            location: "Depok",
+            capacity: "40 orang",
+            facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
+            badgeColor: "bg-yellow-100 text-yellow-800",
+        },
+    ];
+
     // Filter classes based on search term
     useEffect(() => {
         const filtered = classRooms.filter(

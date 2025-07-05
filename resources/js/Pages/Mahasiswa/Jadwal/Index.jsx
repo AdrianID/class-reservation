@@ -1,21 +1,37 @@
+import clsx from "clsx";
 import UserLayout from "@/components/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
 import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
-import { format, addDays, subDays, isSameDay } from "date-fns";
+import {
+    format,
+    addDays,
+    subDays,
+    isSameDay,
+    startOfWeek,
+    endOfWeek,
+    differenceInDays,
+} from "date-fns";
 import { id } from "date-fns/locale";
 import { Link } from "@inertiajs/react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 export default function Jadwal() {
     // Brand colors
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
+    const accentColor = "#4a90a4";
+
+    // State fused States
+    const [dateRange, setDateRange] = useState({
+        startDate: null,
+        endDate: null,
+    });
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [weekDays, setWeekDays] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredClasses, setFilteredClasses] = useState([]);
-
     const [showExpandedCalendar, setShowExpandedCalendar] = useState(false);
 
     // Sample class data
@@ -29,7 +45,7 @@ export default function Jadwal() {
             capacity: "50 orang",
             facilities: ["AC", "Proyektor", "Sound System"],
             badgeColor: "bg-green-100 text-green-800",
-            scheduleStatus: "ada jadwal", // Added schedule status
+            scheduleStatus: "ada jadwal",
         },
         {
             id: 2,
@@ -40,7 +56,7 @@ export default function Jadwal() {
             capacity: "40 orang",
             facilities: ["AC", "Sound System"],
             badgeColor: "bg-yellow-100 text-yellow-800",
-            scheduleStatus: "ada jadwal", // Added schedule status
+            scheduleStatus: "ada jadwal",
         },
         {
             id: 3,
@@ -51,7 +67,7 @@ export default function Jadwal() {
             capacity: "30 orang",
             facilities: ["AC", "Proyektor", "Wi-Fi"],
             badgeColor: "bg-red-100 text-red-800",
-            scheduleStatus: "tidak ada jadwal", // Added schedule status
+            scheduleStatus: "tidak ada jadwal",
         },
         {
             id: 4,
@@ -62,7 +78,7 @@ export default function Jadwal() {
             capacity: "45 orang",
             facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
             badgeColor: "bg-green-100 text-green-800",
-            scheduleStatus: "ada jadwal", // Added schedule status
+            scheduleStatus: "ada jadwal",
         },
         {
             id: 5,
@@ -73,7 +89,7 @@ export default function Jadwal() {
             capacity: "35 orang",
             facilities: ["AC", "Wi-Fi"],
             badgeColor: "bg-green-100 text-green-800",
-            scheduleStatus: "tidak ada jadwal", // Added schedule status
+            scheduleStatus: "tidak ada jadwal",
         },
         {
             id: 6,
@@ -84,7 +100,7 @@ export default function Jadwal() {
             capacity: "40 orang",
             facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
             badgeColor: "bg-yellow-100 text-yellow-800",
-            scheduleStatus: "ada jadwal", // Added schedule status
+            scheduleStatus: "ada jadwal",
         },
     ];
 
@@ -102,7 +118,38 @@ export default function Jadwal() {
         setFilteredClasses(filtered);
     }, [searchTerm]);
 
-    // Get status color
+    // Generate week days for calendar
+    /* useEffect(() => {
+        const today = new Date();
+        const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+        const days = [];
+
+        // Generate 7 days starting from week start
+        for (let i = 0; i < 7; i++) {
+            days.push(addDays(weekStart, i));
+        }
+
+        setWeekDays(days);
+    }, []); */
+    useEffect(() => {
+        const isValidRange =
+            dateRange.startDate &&
+            dateRange.endDate &&
+            differenceInDays(dateRange.endDate, dateRange.startDate) <= 6;
+
+        const baseDate = isValidRange ? dateRange.startDate : new Date();
+
+        const weekStart = startOfWeek(baseDate, { weekStartsOn: 0 });
+        const days = [];
+
+        for (let i = 0; i < 7; i++) {
+            days.push(addDays(weekStart, i));
+        }
+
+        setWeekDays(days);
+    }, [dateRange]);
+
+    // Status utilities
     const getStatusColor = (status) => {
         switch (status) {
             case "tersedia":
@@ -116,7 +163,6 @@ export default function Jadwal() {
         }
     };
 
-    // Status label
     const getStatusLabel = (status) => {
         switch (status) {
             case "tersedia":
@@ -130,7 +176,6 @@ export default function Jadwal() {
         }
     };
 
-    // Schedule status badge color
     const getScheduleStatusBadge = (status) => {
         switch (status) {
             case "ada jadwal":
@@ -142,58 +187,57 @@ export default function Jadwal() {
         }
     };
 
-    // Generate week days
-    useEffect(() => {
-        const today = new Date();
-        const days = [];
-
-        // Generate 3 days before today
-        for (let i = 3; i > 0; i--) {
-            days.push(subDays(today, i));
-        }
-
-        // Add today
-        days.push(today);
-
-        // Generate 3 days after today
-        for (let i = 1; i <= 3; i++) {
-            days.push(addDays(today, i));
-        }
-
-        setWeekDays(days);
-    }, []);
-
-    // Navigate to previous week
+    // Navigation handlers
     const previousWeek = () => {
-        const newDays = weekDays.map((day) => subDays(day, 7));
-        setWeekDays(newDays);
+        setWeekDays(weekDays.map((day) => subDays(day, 7)));
     };
 
-    // Navigate to next week
     const nextWeek = () => {
-        const newDays = weekDays.map((day) => addDays(day, 7));
-        setWeekDays(newDays);
+        setWeekDays(weekDays.map((day) => addDays(day, 7)));
     };
 
-    // Format day name
-    const formatDayName = (date) => {
-        return format(date, "EEE", { locale: id });
+    // Date formatting utilities
+    const formatDayName = (date) => format(date, "EEE", { locale: id });
+    const formatDayNumber = (date) => format(date, "d", { locale: id });
+    const isToday = (date) => isSameDay(date, new Date());
+    const getCurrentMonthYear = () =>
+        weekDays.length ? format(weekDays[3], "MMMM yyyy", { locale: id }) : "";
+    const getDateRangeText = () => {
+        if (dateRange.startDate && dateRange.endDate) {
+            const sameDay = isSameDay(dateRange.startDate, dateRange.endDate);
+            if (sameDay) {
+                return format(dateRange.startDate, "dd MMM yyyy", {
+                    locale: id,
+                });
+            }
+            return `${format(dateRange.startDate, "dd MMM yyyy", {
+                locale: id,
+            })} - ${format(dateRange.endDate, "dd MMM yyyy", { locale: id })}`;
+        } else if (dateRange.startDate) {
+            return `${format(dateRange.startDate, "dd MMM yyyy", {
+                locale: id,
+            })} - Pilih tanggal akhir`;
+        }
+        return format(selectedDate, "dd MMM yyyy", { locale: id });
     };
 
-    // Format day number
-    const formatDayNumber = (date) => {
-        return format(date, "d", { locale: id });
+    // Check if date is in selected range
+    const isInRange = (date) => {
+        if (!dateRange.startDate || !dateRange.endDate) return false;
+        return (
+            isSameDay(date, dateRange.startDate) ||
+            isSameDay(date, dateRange.endDate) ||
+            (date >= dateRange.startDate && date <= dateRange.endDate)
+        );
     };
 
-    // Check if date is today
-    const isToday = (date) => {
-        return isSameDay(date, new Date());
-    };
-
-    // Get current month and year
-    const getCurrentMonthYear = () => {
-        if (weekDays.length === 0) return "";
-        return format(weekDays[3], "MMMM yyyy", { locale: id });
+    // Calculate date range duration
+    const getRangeDuration = () => {
+        if (!dateRange.startDate || !dateRange.endDate) return 0;
+        return (
+            Math.abs(differenceInDays(dateRange.startDate, dateRange.endDate)) +
+            1
+        );
     };
 
     return (
@@ -216,182 +260,156 @@ export default function Jadwal() {
                                 style={{ backgroundColor: primaryColor }}
                             >
                                 <div className="flex items-center justify-between">
-                                    <h3
-                                        className="text-lg font-medium"
-                                        style={{ color: primaryLightColor }}
-                                    >
-                                        Tanggal Jadwal
-                                    </h3>
-                                    <div className="flex items-center space-x-4">
-                                        <button
-                                            onClick={previousWeek}
-                                            className="p-1.5 rounded-full hover:bg-white/50 transition-colors"
-                                            style={{ color: primaryLightColor }}
-                                        >
-                                            <svg
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
+                                    {/* Kiri: Label */}
+                                    <div className="flex items-center gap-3">
+                                        <Calendar className="w-5 h-5 text-white" />
+                                        <h3 className="text-lg font-semibold text-white">
+                                            Tanggal Jadwal
+                                        </h3>
+                                    </div>
+
+                                    {/* Kanan: Navigasi dan aksi */}
+                                    <div className="flex items-center gap-4">
+                                        {/* Navigasi minggu */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={previousWeek}
+                                                className="p-2 rounded-full hover:bg-white/20 transition"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M15 19l-7-7 7-7"
-                                                />
-                                            </svg>
-                                        </button>
-                                        <span className="font-medium text-[#e9eff2]">
-                                            {getCurrentMonthYear()}
-                                        </span>
-                                        <button
-                                            onClick={nextWeek}
-                                            className="p-1.5 rounded-full hover:bg-white/50 transition-colors"
-                                            style={{ color: primaryLightColor }}
-                                        >
-                                            <svg
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
+                                                <ChevronLeft className="w-5 h-5 text-white" />
+                                            </button>
+                                            <span className="text-white font-semibold">
+                                                {getCurrentMonthYear()}
+                                            </span>
+                                            <button
+                                                onClick={nextWeek}
+                                                className="p-2 rounded-full hover:bg-white/20 transition"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 5l7 7-7 7"
-                                                />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setShowExpandedCalendar(true)
-                                            }
-                                            className="ml-4 p-1.5 rounded-full hover:bg-white/50 transition-colors"
-                                            style={{ color: primaryLightColor }}
-                                            title="Expand calendar"
-                                        >
-                                            <svg
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
+                                                <ChevronRight className="w-5 h-5 text-white" />
+                                            </button>
+                                        </div>
+
+                                        {/* Aksi: Hari Ini & Kalender */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const today = new Date();
+                                                    setSelectedDate(today);
+                                                    setDateRange({
+                                                        startDate: today,
+                                                        endDate: today,
+                                                    });
+                                                }}
+                                                className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-md transition"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                                                />
-                                            </svg>
-                                        </button>
+                                                Hari Ini
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    setShowExpandedCalendar(
+                                                        true
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-md transition"
+                                            >
+                                                <Calendar className="w-4 h-4" />
+                                                Lihat Kalender
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="p-5">
-                                <div className="grid grid-cols-7 gap-3">
-                                    {weekDays.map((day, index) => (
-                                        <div
-                                            key={index}
-                                            className={`flex flex-col items-center p-3 rounded-lg cursor-pointer border-2 transition-all ${
-                                                isSameDay(day, selectedDate)
-                                                    ? "border-2"
-                                                    : isToday(day)
-                                                    ? "bg-opacity-20 border-opacity-50"
-                                                    : "hover:bg-gray-50 border-transparent"
-                                            }`}
-                                            style={{
-                                                backgroundColor: isSameDay(
-                                                    day,
-                                                    selectedDate
-                                                )
-                                                    ? primaryColor
-                                                    : isToday(day)
-                                                    ? primaryLightColor
-                                                    : "",
-                                                borderColor: isSameDay(
-                                                    day,
-                                                    selectedDate
-                                                )
-                                                    ? primaryColor
-                                                    : isToday(day)
-                                                    ? primaryColor
-                                                    : "transparent",
-                                            }}
-                                            onClick={() => setSelectedDate(day)}
-                                        >
-                                            <span
-                                                className={`text-xs font-medium mb-1 ${
-                                                    isSameDay(day, selectedDate)
-                                                        ? "text-white"
-                                                        : isToday(day)
-                                                        ? `text-[${primaryColor}]`
-                                                        : "text-gray-500"
-                                                }`}
-                                            >
-                                                {formatDayName(day)}
-                                            </span>
-                                            <span
-                                                className={`text-xl font-medium ${
-                                                    isSameDay(day, selectedDate)
-                                                        ? "text-white"
-                                                        : isToday(day)
-                                                        ? `text-[${primaryColor}]`
-                                                        : "text-gray-800"
-                                                }`}
-                                            >
-                                                {formatDayNumber(day)}
-                                            </span>
+                                {getRangeDuration() > 7 ? (
+                                    <div
+                                        className="p-4 rounded-xl border text-center"
+                                        style={{
+                                            backgroundColor: primaryLightColor,
+                                            borderColor: primaryColor + "20",
+                                        }}
+                                    >
+                                        <div className="mt-5 flex items-center gap-2 text-sm font-medium text-[#365b6d] bg-[#e9eff2] px-4 py-3 rounded-xl border border-[#365b6d]/20">
+                                            <Calendar className="w-4 h-4" />
+                                            <span>{getDateRangeText()}</span>
                                         </div>
-                                    ))}
-                                </div>
-                                <div
-                                    className="mt-5 p-3 rounded-lg"
-                                    style={{
-                                        backgroundColor: primaryLightColor,
-                                    }}
-                                >
-                                    <div className="flex items-center">
-                                        <div
-                                            className="w-3 h-3 rounded-full mr-2"
-                                            style={{
-                                                backgroundColor: primaryColor,
-                                            }}
-                                        ></div>
-                                        <span
-                                            className="text-sm font-medium"
-                                            style={{ color: primaryColor }}
-                                        >
-                                            Tanggal terpilih:{" "}
-                                            {format(
-                                                selectedDate,
-                                                "dd MMMM yyyy",
-                                                { locale: id }
-                                            )}
-                                        </span>
                                     </div>
-                                </div>
+                                ) : (
+                                    <>
+                                        <div className="grid grid-cols-7 gap-3">
+                                            {weekDays.map((day, index) => (
+                                                <button
+                                                    key={index}
+                                                    className={clsx(
+                                                        "flex flex-col items-center p-3 rounded-xl transition-all duration-150",
+                                                        isInRange(day)
+                                                            ? "bg-[#4a90a4] text-white shadow-md"
+                                                            : isToday(day)
+                                                            ? "border-2 border-[#365b6d] font-semibold text-[#365b6d]"
+                                                            : "hover:bg-gray-100 text-gray-800"
+                                                    )}
+                                                    onClick={() => {
+                                                        setSelectedDate(day);
+                                                        setDateRange({
+                                                            startDate: day,
+                                                            endDate: day,
+                                                        });
+                                                    }}
+                                                >
+                                                    <span className="text-xs uppercase tracking-wide">
+                                                        {formatDayName(day)}
+                                                    </span>
+                                                    <span className="text-lg font-semibold">
+                                                        {formatDayNumber(day)}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div
+                                            className="mt-5 p-4 rounded-xl border"
+                                            style={{
+                                                backgroundColor:
+                                                    primaryLightColor,
+                                                borderColor:
+                                                    primaryColor + "20",
+                                            }}
+                                        >
+                                            <div className="flex items-center w-full justify-center">
+                                                <div
+                                                    className="w-3 h-3 rounded-full mr-3 flex-shrink-0"
+                                                    style={{
+                                                        backgroundColor:
+                                                            primaryColor,
+                                                    }}
+                                                ></div>
+                                                <span
+                                                    className="text-sm font-semibold"
+                                                    style={{
+                                                        color: primaryColor,
+                                                    }}
+                                                >
+                                                    {getDateRangeText()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
                         {/* Class Rooms Section */}
                         <div>
-                            <div className="mb-6 flex flex-wrap items-center justify-between">
+                            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                                 <h3
-                                    className="text-xl font-medium mb-2 sm:mb-0"
+                                    className="text-xl font-semibold"
                                     style={{ color: primaryColor }}
                                 >
                                     Daftar Kelas
                                 </h3>
-                                <div className="relative w-full sm:w-auto mt-2 sm:mt-0">
+                                <div className="relative w-full sm:w-64">
                                     <input
                                         type="text"
                                         placeholder="Cari kelas..."
-                                        className="w-full px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                                        style={{
-                                            focusRing: primaryLightColor,
-                                        }}
+                                        className="w-full px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[${primaryColor}] focus:border-transparent transition-all"
                                         value={searchTerm}
                                         onChange={(e) =>
                                             setSearchTerm(e.target.value)
@@ -428,7 +446,7 @@ export default function Jadwal() {
                                             d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                         />
                                     </svg>
-                                    <h4 className="text-lg font-medium text-gray-800 mb-2">
+                                    <h4 className="text-lg font-semibold text-gray-800 mb-2">
                                         Tidak ada kelas ditemukan
                                     </h4>
                                     <p className="text-gray-600">
@@ -441,9 +459,9 @@ export default function Jadwal() {
                                     {filteredClasses.map((classRoom) => (
                                         <div
                                             key={classRoom.id}
-                                            className="bg-white shadow rounded-lg overflow-hidden flex flex-col transition-transform hover:translate-y-[-4px] hover:shadow-md"
+                                            className="bg-white shadow rounded-lg overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-md"
                                         >
-                                            <div className="h-52 bg-gray-200 relative">
+                                            <div className="h-52 relative">
                                                 <img
                                                     src={classRoom.image}
                                                     alt={classRoom.name}
@@ -451,7 +469,7 @@ export default function Jadwal() {
                                                 />
                                                 <div className="absolute top-3 right-3 flex flex-col gap-2">
                                                     <span
-                                                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
                                                             classRoom.status
                                                         )}`}
                                                     >
@@ -460,7 +478,7 @@ export default function Jadwal() {
                                                         )}
                                                     </span>
                                                     <span
-                                                        className={`px-3 py-1 rounded-full text-xs font-medium ${getScheduleStatusBadge(
+                                                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getScheduleStatusBadge(
                                                             classRoom.scheduleStatus
                                                         )}`}
                                                     >
@@ -473,14 +491,14 @@ export default function Jadwal() {
                                             </div>
                                             <div className="p-5 flex-1">
                                                 <h4
-                                                    className="text-lg font-medium mb-2"
+                                                    className="text-lg font-semibold mb-3"
                                                     style={{
                                                         color: primaryColor,
                                                     }}
                                                 >
                                                     {classRoom.name}
                                                 </h4>
-                                                <div className="space-y-2 text-sm text-gray-600">
+                                                <div className="space-y-3 text-sm text-gray-600">
                                                     <div className="flex items-center">
                                                         <svg
                                                             className="h-4 w-4 mr-2 flex-shrink-0"
@@ -498,7 +516,7 @@ export default function Jadwal() {
                                                                 strokeLinecap="round"
                                                                 strokeLinejoin="round"
                                                                 strokeWidth="2"
-                                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                d="M15 11a3 3 0 11-6 0 3 3 0 0114 0z"
                                                             />
                                                         </svg>
                                                         {classRoom.location}
@@ -519,49 +537,47 @@ export default function Jadwal() {
                                                         </svg>
                                                         {classRoom.capacity}
                                                     </div>
-                                                    <div>
-                                                        <div className="flex items-start">
-                                                            <svg
-                                                                className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth="2"
-                                                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                                                                />
-                                                            </svg>
-                                                            <div>
-                                                                <span className="block mb-1">
-                                                                    Fasilitas:
-                                                                </span>
-                                                                <div className="flex flex-wrap gap-1">
-                                                                    {classRoom.facilities.map(
-                                                                        (
-                                                                            facility,
-                                                                            idx
-                                                                        ) => (
-                                                                            <span
-                                                                                key={
-                                                                                    idx
-                                                                                }
-                                                                                className="text-xs px-2 py-1 rounded-full mr-1 mb-1"
-                                                                                style={{
-                                                                                    backgroundColor:
-                                                                                        primaryLightColor,
-                                                                                    color: primaryColor,
-                                                                                }}
-                                                                            >
-                                                                                {
-                                                                                    facility
-                                                                                }
-                                                                            </span>
-                                                                        )
-                                                                    )}
-                                                                </div>
+                                                    <div className="flex items-start">
+                                                        <svg
+                                                            className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                                                            />
+                                                        </svg>
+                                                        <div>
+                                                            <span className="block mb-1 font-semibold">
+                                                                Fasilitas:
+                                                            </span>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {classRoom.facilities.map(
+                                                                    (
+                                                                        facility,
+                                                                        idx
+                                                                    ) => (
+                                                                        <span
+                                                                            key={
+                                                                                idx
+                                                                            }
+                                                                            className="text-xs px-2 py-1 rounded-full"
+                                                                            style={{
+                                                                                backgroundColor:
+                                                                                    primaryLightColor,
+                                                                                color: primaryColor,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                facility
+                                                                            }
+                                                                        </span>
+                                                                    )
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -570,13 +586,14 @@ export default function Jadwal() {
                                             <div className="px-5 py-4 border-t border-gray-200">
                                                 <Link
                                                     href={`/jadwal/detail`}
-                                                    className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-medium transition duration-150 ease-in-out block text-center"
+                                                    className="block w-full py-2.5 px-4 rounded-lg text-sm font-semibold text-center transition duration-150"
                                                     style={{
                                                         backgroundColor:
                                                             classRoom.scheduleStatus ===
                                                             "ada jadwal"
                                                                 ? primaryColor
                                                                 : "gray",
+                                                        color: "white",
                                                         opacity:
                                                             classRoom.scheduleStatus ===
                                                             "ada jadwal"
@@ -607,8 +624,13 @@ export default function Jadwal() {
             </div>
             {showExpandedCalendar && (
                 <ExpandedCalendar
-                    selectedDate={selectedDate}
-                    onDateSelect={setSelectedDate}
+                    dateRange={dateRange}
+                    isRangeMode={true}
+                    onDateSelect={(range) => {
+                        setDateRange(range);
+                        setSelectedDate(range.startDate);
+                        setShowExpandedCalendar(false);
+                    }}
                     onClose={() => setShowExpandedCalendar(false)}
                 />
             )}
