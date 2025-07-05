@@ -29,10 +29,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        
+        // Load user dengan role jika user sudah login
+        if ($user) {
+            $userWithRole = \App\Models\User::with('role')->find($user->id);
+            $user = $userWithRole;
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
         ];
     }

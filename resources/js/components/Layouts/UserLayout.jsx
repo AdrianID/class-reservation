@@ -146,7 +146,7 @@ export default function MahasiswaLayout({ header, children }) {
                             <Dropdown>
                                 <Dropdown.Trigger>
                                     <button className="flex items-center text-sm font-medium text-white hover:text-gray-200">
-                                        <div>{user.name}</div>
+                                        <div>{user.full_name}</div>
                                         <svg
                                             className="ml-2 h-4 w-4"
                                             xmlns="http://www.w3.org/2000/svg"
