@@ -32,17 +32,17 @@ class RuanganController extends Controller
                 })->toArray();
             });
 
-        return Inertia::render('Ruangan/Index', [
+        return Inertia::render('Mahasiswa/Ruangan/Index', [
             'faculties' => $faculties,
             'buildings' => $buildings,
         ]);
     }
     public function list()
     {
-        return Inertia::render('Ruangan/RoomList');
+        return Inertia::render('Mahasiswa/Ruangan/RoomList');
     }
     public function detail()
     {
-        return Inertia::render('Ruangan/RoomDetail');
+        return Inertia::render('Mahasiswa/Ruangan/RoomDetail');
     }
 }

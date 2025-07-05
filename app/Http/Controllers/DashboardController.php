@@ -33,7 +33,7 @@ class DashboardController extends Controller
                 })->toArray();
             });
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Mahasiswa/Dashboard', [
             'user' => Auth::user(),
             'faculties' => $faculties,
             'buildings' => $buildings,
