@@ -1,16 +1,21 @@
 import AdminLayout from "@/components/Layouts/AdminLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { XMarkIcon, PlusCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
-export default function RoomCreate({ faculties, buildings, categories }) {
+export default function RoomCreate({ faculties, buildings, categories, facilities }) {
     const [buildingsByFaculty, setBuildingsByFaculty] = useState({});
     const [selectedFaculty, setSelectedFaculty] = useState("");
     const fileInputRef = useRef(null);
     const [imagePreview, setImagePreview] = useState(null);
-    const [facilities, setFacilities] = useState([
-        { facility_name: "", quantity: 1, description: "" }
+    const [roomFacilities, setRoomFacilities] = useState([
+        { facility_id: "", quantity: 1, notes: "" }
     ]);
+
+    // Refs untuk immediate values (prevent fast input issues)
+    const capacityRef = useRef("");
+    const roomCodeRef = useRef("");
+    const roomNameRef = useRef("");
 
     const { data, setData, post, processing, errors, reset } = useForm({
         building_id: "",
@@ -22,8 +27,36 @@ export default function RoomCreate({ faculties, buildings, categories }) {
         description: "",
         status: "available",
         image: null,
-        facilities: facilities
+        facilities: roomFacilities
     });
+
+    // Debounced input handlers
+    const debouncedSetData = useCallback((key, value) => {
+        setTimeout(() => {
+            setData(key, value);
+        }, 0);
+    }, [setData]);
+
+    // Handle input dengan ref untuk prevent fast input issues
+    const handleInputChange = useCallback((field, value) => {
+        if (field === 'capacity') {
+            capacityRef.current = value;
+        } else if (field === 'room_code') {
+            roomCodeRef.current = value;
+        } else if (field === 'room_name') {
+            roomNameRef.current = value;
+        }
+        
+        debouncedSetData(field, value);
+    }, [debouncedSetData]);
+
+    // Handle quantity input untuk facilities
+    const handleQuantityChange = useCallback((index, value) => {
+        const newFacilities = [...roomFacilities];
+        newFacilities[index].quantity = value;
+        setRoomFacilities(newFacilities);
+        debouncedSetData("facilities", newFacilities);
+    }, [roomFacilities, debouncedSetData]);
 
     // Filter buildings by faculty
     const handleFacultyChange = (facultyId) => {
@@ -33,24 +66,24 @@ export default function RoomCreate({ faculties, buildings, categories }) {
 
     // Add more facility fields
     const addFacility = () => {
-        const newFacilities = [...facilities, { facility_name: "", quantity: 1, description: "" }];
-        setFacilities(newFacilities);
+        const newFacilities = [...roomFacilities, { facility_id: "", quantity: 1, notes: "" }];
+        setRoomFacilities(newFacilities);
         setData("facilities", newFacilities);
     };
 
     // Remove facility field
     const removeFacility = (index) => {
-        const newFacilities = [...facilities];
+        const newFacilities = [...roomFacilities];
         newFacilities.splice(index, 1);
-        setFacilities(newFacilities);
+        setRoomFacilities(newFacilities);
         setData("facilities", newFacilities);
     };
 
     // Update facility fields
     const updateFacility = (index, field, value) => {
-        const newFacilities = [...facilities];
+        const newFacilities = [...roomFacilities];
         newFacilities[index][field] = value;
-        setFacilities(newFacilities);
+        setRoomFacilities(newFacilities);
         setData("facilities", newFacilities);
     };
 
@@ -67,25 +100,60 @@ export default function RoomCreate({ faculties, buildings, categories }) {
         }
     };
 
+    // Pre-submit validation dengan ref values
+    const validateForm = () => {
+        // Sync ref values sebelum submit
+        if (capacityRef.current !== data.capacity) {
+            setData('capacity', capacityRef.current);
+        }
+        if (roomCodeRef.current !== data.room_code) {
+            setData('room_code', roomCodeRef.current);
+        }
+        if (roomNameRef.current !== data.room_name) {
+            setData('room_name', roomNameRef.current);
+        }
+    };
+
     // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("admin.ruangan.store"), {
-            onSuccess: () => {
-                reset();
-                setFacilities([{ facility_name: "", quantity: 1, description: "" }]);
-                setImagePreview(null);
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
+        
+        // Validate dan sync data sebelum submit
+        validateForm();
+        
+        // Delay submit sedikit untuk memastikan state ter-update
+        setTimeout(() => {
+            post(route("admin.ruangan.store"), {
+                onSuccess: () => {
+                    reset();
+                    setRoomFacilities([{ facility_id: "", quantity: 1, notes: "" }]);
+                    setImagePreview(null);
+                    capacityRef.current = "";
+                    roomCodeRef.current = "";
+                    roomNameRef.current = "";
+                    if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                    }
+                },
+                onError: (errors) => {
+                    console.log('Form errors:', errors);
                 }
-            }
-        });
+            });
+        }, 100);
     };
 
     // Filter the available buildings based on selected faculty
-    const filteredBuildings = selectedFaculty
-        ? buildings.filter(building => building.faculty_id == selectedFaculty)
-        : buildings;
+    const filteredBuildings = useMemo(() => {
+        return selectedFaculty
+            ? buildings.filter(building => building.faculty_id == selectedFaculty)
+            : buildings;
+    }, [selectedFaculty, buildings]);
+
+    // Get facility name by ID
+    const getFacilityName = (facilityId) => {
+        const facility = facilities.find(f => f.id == facilityId);
+        return facility ? facility.facility_name : '';
+    };
 
     return (
         <AdminLayout
@@ -117,8 +185,9 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                     errors.room_code ? "border-red-500" : ""
                                                 }`}
-                                                value={data.room_code}
-                                                onChange={(e) => setData("room_code", e.target.value)}
+                                                defaultValue={data.room_code}
+                                                onChange={(e) => handleInputChange("room_code", e.target.value)}
+                                                onBlur={(e) => setData("room_code", e.target.value)}
                                                 placeholder="Contoh: R101"
                                             />
                                             {errors.room_code && (
@@ -140,8 +209,9 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                     errors.room_name ? "border-red-500" : ""
                                                 }`}
-                                                value={data.room_name}
-                                                onChange={(e) => setData("room_name", e.target.value)}
+                                                defaultValue={data.room_name}
+                                                onChange={(e) => handleInputChange("room_name", e.target.value)}
+                                                onBlur={(e) => setData("room_name", e.target.value)}
                                                 placeholder="Contoh: Ruang Kuliah 101"
                                             />
                                             {errors.room_name && (
@@ -232,8 +302,9 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                     errors.capacity ? "border-red-500" : ""
                                                 }`}
-                                                value={data.capacity}
-                                                onChange={(e) => setData("capacity", e.target.value)}
+                                                defaultValue={data.capacity}
+                                                onChange={(e) => handleInputChange("capacity", e.target.value)}
+                                                onBlur={(e) => setData("capacity", e.target.value)}
                                                 placeholder="Jumlah orang"
                                             />
                                             {errors.capacity && (
@@ -363,11 +434,11 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                         </button>
                                     </div>
 
-                                    {facilities.map((facility, index) => (
+                                    {roomFacilities.map((facility, index) => (
                                         <div key={index} className="border border-gray-200 rounded-md p-4 mb-4">
                                             <div className="flex justify-between items-center mb-2">
                                                 <h4 className="text-sm font-medium text-gray-700">Fasilitas #{index + 1}</h4>
-                                                {facilities.length > 1 && (
+                                                {roomFacilities.length > 1 && (
                                                     <button
                                                         type="button"
                                                         onClick={() => removeFacility(index)}
@@ -379,21 +450,26 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label htmlFor={`facility_name_${index}`} className="block text-sm font-medium text-gray-700">
-                                                        Nama Fasilitas <span className="text-red-500">*</span>
+                                                    <label htmlFor={`facility_id_${index}`} className="block text-sm font-medium text-gray-700">
+                                                        Jenis Fasilitas <span className="text-red-500">*</span>
                                                     </label>
-                                                    <input
-                                                        type="text"
-                                                        id={`facility_name_${index}`}
+                                                    <select
+                                                        id={`facility_id_${index}`}
                                                         className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                                                            errors[`facilities.${index}.facility_name`] ? "border-red-500" : ""
+                                                            errors[`facilities.${index}.facility_id`] ? "border-red-500" : ""
                                                         }`}
-                                                        value={facility.facility_name}
-                                                        onChange={(e) => updateFacility(index, "facility_name", e.target.value)}
-                                                        placeholder="Contoh: Proyektor, Papan Tulis, AC"
-                                                    />
-                                                    {errors[`facilities.${index}.facility_name`] && (
-                                                        <p className="mt-1 text-sm text-red-500">{errors[`facilities.${index}.facility_name`]}</p>
+                                                        value={facility.facility_id}
+                                                        onChange={(e) => updateFacility(index, "facility_id", e.target.value)}
+                                                    >
+                                                        <option value="">Pilih Fasilitas</option>
+                                                        {facilities.map((fac) => (
+                                                            <option key={fac.id} value={fac.id}>
+                                                                {fac.facility_name} ({fac.facility_code})
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    {errors[`facilities.${index}.facility_id`] && (
+                                                        <p className="mt-1 text-sm text-red-500">{errors[`facilities.${index}.facility_id`]}</p>
                                                     )}
                                                 </div>
                                                 <div>
@@ -407,8 +483,9 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                                         className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                             errors[`facilities.${index}.quantity`] ? "border-red-500" : ""
                                                         }`}
-                                                        value={facility.quantity}
-                                                        onChange={(e) => updateFacility(index, "quantity", e.target.value)}
+                                                        defaultValue={facility.quantity}
+                                                        onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                                        onBlur={(e) => updateFacility(index, "quantity", e.target.value)}
                                                     />
                                                     {errors[`facilities.${index}.quantity`] && (
                                                         <p className="mt-1 text-sm text-red-500">{errors[`facilities.${index}.quantity`]}</p>
@@ -416,21 +493,21 @@ export default function RoomCreate({ faculties, buildings, categories }) {
                                                 </div>
                                             </div>
                                             <div className="mt-2">
-                                                <label htmlFor={`description_${index}`} className="block text-sm font-medium text-gray-700">
-                                                    Deskripsi Fasilitas
+                                                <label htmlFor={`notes_${index}`} className="block text-sm font-medium text-gray-700">
+                                                    Catatan
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    id={`description_${index}`}
+                                                    id={`notes_${index}`}
                                                     className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                                                        errors[`facilities.${index}.description`] ? "border-red-500" : ""
+                                                        errors[`facilities.${index}.notes`] ? "border-red-500" : ""
                                                     }`}
-                                                    value={facility.description || ""}
-                                                    onChange={(e) => updateFacility(index, "description", e.target.value)}
-                                                    placeholder="Detail tambahan tentang fasilitas"
+                                                    value={facility.notes || ""}
+                                                    onChange={(e) => updateFacility(index, "notes", e.target.value)}
+                                                    placeholder="Catatan tambahan tentang fasilitas"
                                                 />
-                                                {errors[`facilities.${index}.description`] && (
-                                                    <p className="mt-1 text-sm text-red-500">{errors[`facilities.${index}.description`]}</p>
+                                                {errors[`facilities.${index}.notes`] && (
+                                                    <p className="mt-1 text-sm text-red-500">{errors[`facilities.${index}.notes`]}</p>
                                                 )}
                                             </div>
                                         </div>

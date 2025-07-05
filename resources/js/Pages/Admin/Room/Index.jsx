@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { Transition } from '@headlessui/react';
 import { PlusIcon, MagnifyingGlassIcon, XMarkIcon, PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-export default function RoomIndex({ rooms, filters, buildings, categories, statuses, flash }) {
+export default function RoomIndex({ rooms, filters, buildings, categories, facilities, statuses, flash }) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [selectedFilters, setSelectedFilters] = useState({
         building_id: filters.building_id || '',
         category_id: filters.category_id || '',
         status: filters.status || '',
+        facility_id: filters.facility_id || '',
     });
     const [showFlash, setShowFlash] = useState(!!flash);
     
@@ -47,6 +48,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, statu
             building_id: '',
             category_id: '',
             status: '',
+            facility_id: '',
         });
         setSearchTerm('');
         router.get(route('admin.ruangan.index'));
@@ -160,7 +162,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, statu
                                 </form>
 
                                 {isFiltersOpen && (
-                                    <div className="grid md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-md">
+                                    <div className="grid md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-md">
                                         <div>
                                             <label htmlFor="building_id" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Gedung
@@ -200,6 +202,25 @@ export default function RoomIndex({ rooms, filters, buildings, categories, statu
                                             </select>
                                         </div>
                                         <div>
+                                            <label htmlFor="facility_id" className="block text-sm font-medium text-gray-700 mb-1">
+                                                Fasilitas
+                                            </label>
+                                            <select
+                                                id="facility_id"
+                                                name="facility_id"
+                                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                                value={selectedFilters.facility_id}
+                                                onChange={handleFilterChange}
+                                            >
+                                                <option value="">Semua Fasilitas</option>
+                                                {facilities.map(facility => (
+                                                    <option key={facility.id} value={facility.id}>
+                                                        {facility.facility_name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
                                             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Status
                                             </label>
@@ -218,7 +239,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, statu
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className="md:col-span-3 flex justify-end gap-2">
+                                        <div className="md:col-span-4 flex justify-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={resetFilters}

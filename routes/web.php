@@ -35,9 +35,13 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:Super Admin,Admin'
     Route::get('/ruangan', [RoomController::class, 'index'])->name('admin.ruangan.index');
     Route::get('/ruangan/create', [RoomController::class, 'create'])->name('admin.ruangan.create');
     Route::post('/ruangan', [RoomController::class, 'store'])->name('admin.ruangan.store');
+    Route::get('/ruangan/{id}', [RoomController::class, 'show'])->name('admin.ruangan.show');
     Route::get('/ruangan/{id}/edit', [RoomController::class, 'edit'])->name('admin.ruangan.edit');
     Route::put('/ruangan/{id}', [RoomController::class, 'update'])->name('admin.ruangan.update');
     Route::delete('/ruangan/{id}', [RoomController::class, 'destroy'])->name('admin.ruangan.destroy');
+    
+    // API endpoint untuk mendapatkan ruangan berdasarkan fasilitas
+    Route::get('/api/ruangan/by-facility', [RoomController::class, 'getRoomsByFacility'])->name('admin.ruangan.by-facility');
 
     // Calendar management
     Route::get('/calendar', [CalendarController::class, 'index'])->name('admin.calendar.index');

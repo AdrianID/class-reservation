@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Building;
 use App\Models\Faculty;
+use App\Models\Facility;
 use App\Models\Room;
 use App\Models\RoomCategory;
-use App\Models\RoomFacility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -34,16 +34,59 @@ class RoomController extends Controller
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
+            })
+            ->when($request->facility_id, function ($query, $facilityId) {
+                $query->withFacility($facilityId);
+            })
+            ->when($request->facilities, function ($query, $facilities) {
+                if (is_array($facilities) && !empty($facilities)) {
+                    $query->withFacilities($facilities);
+                }
             });
 
         $rooms = $query->latest()->paginate(10)->withQueryString();
 
+        // Transform facilities data untuk frontend
+        $rooms->getCollection()->transform(function ($room) {
+            $room->facilities_list = $room->facilities->map(function ($facility) {
+                return [
+                    'id' => $facility->id,
+                    'facility_name' => $facility->facility_name,
+                    'quantity' => $facility->pivot->quantity,
+                    'notes' => $facility->pivot->notes,
+                ];
+            });
+            return $room;
+        });
+
         return Inertia::render('Admin/Room/Index', [
             'rooms' => $rooms,
-            'filters' => $request->only(['search', 'building_id', 'category_id', 'status']),
+            'filters' => $request->only(['search', 'building_id', 'category_id', 'status', 'facility_id', 'facilities']),
             'buildings' => Building::with('faculty')->get(),
             'categories' => RoomCategory::all(),
+            'facilities' => Facility::active()->get(),
             'statuses' => ['available', 'maintenance', 'booked'],
+        ]);
+    }
+
+    public function show($id)
+    {
+        $room = Room::with(['building.faculty', 'category', 'facilities'])->findOrFail($id);
+
+        // Transform facilities data untuk detail view
+        $room->facilities_list = $room->facilities->map(function ($facility) {
+            return [
+                'id' => $facility->id,
+                'facility_name' => $facility->facility_name,
+                'facility_code' => $facility->facility_code,
+                'quantity' => $facility->pivot->quantity,
+                'notes' => $facility->pivot->notes,
+                'unit' => $facility->unit,
+            ];
+        });
+
+        return Inertia::render('Admin/Room/Show', [
+            'room' => $room,
         ]);
     }
 
@@ -53,6 +96,7 @@ class RoomController extends Controller
             'faculties' => Faculty::all(),
             'buildings' => Building::with('faculty')->get(),
             'categories' => RoomCategory::all(),
+            'facilities' => Facility::active()->get(),
         ]);
     }
 
@@ -69,9 +113,9 @@ class RoomController extends Controller
             'status' => 'required|in:available,maintenance,booked',
             'image' => 'nullable|image|max:2048', // max 2MB
             'facilities' => 'nullable|array',
-            'facilities.*.facility_name' => 'required|string|max:255',
+            'facilities.*.facility_id' => 'required|exists:facilities,id',
             'facilities.*.quantity' => 'required|integer|min:1',
-            'facilities.*.description' => 'nullable|string',
+            'facilities.*.notes' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -83,13 +127,12 @@ class RoomController extends Controller
 
             $room = Room::create($validatedData);
 
-            // Save facilities
+            // Save facilities using many-to-many relationship
             if (!empty($validatedData['facilities'])) {
                 foreach ($validatedData['facilities'] as $facility) {
-                    $room->facilities()->create([
-                        'facility_name' => $facility['facility_name'],
+                    $room->facilities()->attach($facility['facility_id'], [
                         'quantity' => $facility['quantity'],
-                        'description' => $facility['description'] ?? null,
+                        'notes' => $facility['notes'] ?? null,
                     ]);
                 }
             }
@@ -108,11 +151,22 @@ class RoomController extends Controller
     {
         $room = Room::with(['building.faculty', 'facilities', 'category'])->findOrFail($id);
 
+        // Transform facilities data untuk form edit
+        $room->facilities_list = $room->facilities->map(function ($facility) {
+            return [
+                'facility_id' => $facility->id,
+                'facility_name' => $facility->facility_name,
+                'quantity' => $facility->pivot->quantity,
+                'notes' => $facility->pivot->notes,
+            ];
+        });
+
         return Inertia::render('Admin/Room/Edit', [
             'room' => $room,
             'faculties' => Faculty::all(),
             'buildings' => Building::with('faculty')->get(),
             'categories' => RoomCategory::all(),
+            'facilities' => Facility::active()->get(),
         ]);
     }
 
@@ -131,10 +185,9 @@ class RoomController extends Controller
             'status' => 'required|in:available,maintenance,booked',
             'image' => 'nullable|image|max:2048', // max 2MB
             'facilities' => 'nullable|array',
-            'facilities.*.id' => 'nullable|exists:room_facilities,id',
-            'facilities.*.facility_name' => 'required|string|max:255',
+            'facilities.*.facility_id' => 'required|exists:facilities,id',
             'facilities.*.quantity' => 'required|integer|min:1',
-            'facilities.*.description' => 'nullable|string',
+            'facilities.*.notes' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -151,36 +204,22 @@ class RoomController extends Controller
 
             $room->update($validatedData);
 
-            // Update facilities
+            // Update facilities using many-to-many relationship
             if (!empty($validatedData['facilities'])) {
-                // Get IDs of existing facilities that are being kept
-                $keepFacilityIds = collect($validatedData['facilities'])
-                    ->pluck('id')
-                    ->filter()
-                    ->toArray();
-                
-                // Delete facilities not in the list
-                $room->facilities()->whereNotIn('id', $keepFacilityIds)->delete();
-                
-                // Update or create facilities
+                // Prepare sync data
+                $syncData = [];
                 foreach ($validatedData['facilities'] as $facility) {
-                    if (!empty($facility['id'])) {
-                        $room->facilities()->where('id', $facility['id'])->update([
-                            'facility_name' => $facility['facility_name'],
-                            'quantity' => $facility['quantity'],
-                            'description' => $facility['description'] ?? null,
-                        ]);
-                    } else {
-                        $room->facilities()->create([
-                            'facility_name' => $facility['facility_name'],
-                            'quantity' => $facility['quantity'],
-                            'description' => $facility['description'] ?? null,
-                        ]);
-                    }
+                    $syncData[$facility['facility_id']] = [
+                        'quantity' => $facility['quantity'],
+                        'notes' => $facility['notes'] ?? null,
+                    ];
                 }
+                
+                // Sync facilities (this will add new ones and remove ones not in the list)
+                $room->facilities()->sync($syncData);
             } else {
-                // Delete all facilities if none provided
-                $room->facilities()->delete();
+                // Detach all facilities if none provided
+                $room->facilities()->detach();
             }
 
             DB::commit();
@@ -209,8 +248,8 @@ class RoomController extends Controller
                 Storage::disk('public')->delete($room->image_path);
             }
             
-            // Delete related facilities
-            $room->facilities()->delete();
+            // Detach facilities (many-to-many relationship)
+            $room->facilities()->detach();
             
             // Delete the room
             $room->delete();
@@ -221,5 +260,47 @@ class RoomController extends Controller
             return redirect()->back()
                 ->with('flash', ['type' => 'error', 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Get rooms by facility (API endpoint)
+     */
+    public function getRoomsByFacility(Request $request)
+    {
+        $facilityId = $request->get('facility_id');
+        $facilityIds = $request->get('facility_ids', []);
+
+        $query = Room::with(['building.faculty', 'category', 'facilities'])
+            ->where('status', 'available');
+
+        if ($facilityId) {
+            $query->withFacility($facilityId);
+        }
+
+        if (!empty($facilityIds) && is_array($facilityIds)) {
+            $query->withFacilities($facilityIds);
+        }
+
+        $rooms = $query->get();
+
+        // Transform facilities data
+        $rooms->transform(function ($room) {
+            $room->facilities_list = $room->facilities->map(function ($facility) {
+                return [
+                    'id' => $facility->id,
+                    'facility_name' => $facility->facility_name,
+                    'facility_code' => $facility->facility_code,
+                    'quantity' => $facility->pivot->quantity,
+                    'notes' => $facility->pivot->notes,
+                    'unit' => $facility->unit,
+                ];
+            });
+            return $room;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $rooms,
+        ]);
     }
 }
