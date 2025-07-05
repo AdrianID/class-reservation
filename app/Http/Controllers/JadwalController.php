@@ -8,11 +8,11 @@ class JadwalController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Jadwal/Index');
+        return Inertia::render('Mahasiswa/Jadwal/Index');
     }
     public function detail()
     {
-        return Inertia::render('Jadwal/JadwalKelas');
+        return Inertia::render('Mahasiswa/Jadwal/JadwalKelas');
     }
 }
 

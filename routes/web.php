@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\BookingController;
+
+
 // user
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
