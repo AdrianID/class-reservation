@@ -91,7 +91,7 @@ Route::middleware(['auth', 'role:Mahasiswa,Dosen,Dekan'])->group(function () {
     // Ruangan - sudah ada
     Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
-    Route::get('/ruangan/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
+    Route::get('/ruangan/{id}/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
 
     // Jadwal - sudah ada
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');

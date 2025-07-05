@@ -1,25 +1,41 @@
 import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import UserLayout from "@/components/Layouts/UserLayout";
+import ImageSkeleton from "@/components/ui/ImageSkeleton";
 import { format } from "date-fns";
 
-export default function RoomDetail() {
+export default function RoomDetail({ roomDetail }) {
     // Brand colors
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
 
-    // Mock data for room details
-    const roomDetail = {
-        id: 1,
-        name: "Kelas A",
-        status: "tersedia",
-        image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        location: "Jakarta Pusat",
-        capacity: "50 orang",
-        facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
-        description:
-            "Ruangan kelas yang nyaman dengan fasilitas lengkap untuk kegiatan belajar mengajar dan presentasi. Tersedia meja dan kursi yang dapat diatur sesuai kebutuhan.",
-    };
+    // Default data jika tidak ada dari backend
+    if (!roomDetail) {
+        return (
+            <UserLayout>
+                <div className="py-6">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="text-center">
+                            <h3 className="text-lg font-medium text-gray-900">
+                                Ruangan tidak ditemukan
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Maaf, data ruangan tidak dapat ditemukan.
+                            </p>
+                            <div className="mt-6">
+                                <Link
+                                    href={route("ruangan.list")}
+                                    className="text-indigo-600 hover:text-indigo-500"
+                                >
+                                    Kembali ke Daftar Ruangan
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </UserLayout>
+        );
+    }
 
     const preselectedData = {
         date: format(new Date(), "yyyy-MM-dd"),
@@ -151,11 +167,18 @@ export default function RoomDetail() {
                         {/* Room Details Section */}
                         <div className="md:col-span-2 bg-white shadow rounded-lg overflow-hidden border border-gray-200">
                             <div className="h-80 bg-gray-200 relative">
-                                <img
-                                    src={roomDetail.image}
-                                    alt={roomDetail.name}
-                                    className="h-full w-full object-cover"
-                                />
+                                {roomDetail.image ? (
+                                    <img
+                                        src={roomDetail.image}
+                                        alt={roomDetail.name}
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <ImageSkeleton
+                                        className="h-full w-full"
+                                        alt={roomDetail.name}
+                                    />
+                                )}
                             </div>
                             <div className="p-6">
                                 <h3
@@ -222,21 +245,34 @@ export default function RoomDetail() {
                                         <h4 className="text-lg font-medium mb-3 text-gray-700">
                                             Fasilitas
                                         </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {roomDetail.facilities.map(
-                                                (facility, idx) => (
-                                                    <span
-                                                        key={idx}
-                                                        className="text-xs px-3 py-1.5 rounded-full"
-                                                        style={{
-                                                            backgroundColor:
-                                                                primaryLightColor,
-                                                            color: primaryColor,
-                                                        }}
-                                                    >
-                                                        {facility}
-                                                    </span>
+                                        <div className="space-y-2">
+                                            {roomDetail.facilities && roomDetail.facilities.length > 0 ? (
+                                                roomDetail.facilities.map(
+                                                    (facility, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="flex items-center justify-between p-2 rounded-lg border border-gray-200"
+                                                        >
+                                                            <span className="text-sm font-medium text-gray-700">
+                                                                {facility.name}
+                                                            </span>
+                                                            <div className="flex items-center space-x-2">
+                                                                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                                                                    {facility.quantity}
+                                                                </span>
+                                                                {facility.notes && (
+                                                                    <span className="text-xs text-gray-500 italic">
+                                                                        {facility.notes}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )
                                                 )
+                                            ) : (
+                                                <p className="text-sm text-gray-500">
+                                                    Tidak ada fasilitas yang tersedia
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -247,7 +283,7 @@ export default function RoomDetail() {
                                         Deskripsi
                                     </h4>
                                     <p className="text-gray-600">
-                                        {roomDetail.description}
+                                        {roomDetail.description || "Belum ada deskripsi untuk ruangan ini."}
                                     </p>
                                 </div>
 

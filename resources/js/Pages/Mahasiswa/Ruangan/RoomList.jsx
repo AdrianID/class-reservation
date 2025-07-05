@@ -1,99 +1,58 @@
 import UserLayout from "@/components/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
-import { Head, Link } from "@inertiajs/react";
+import ImageSkeleton from "@/components/ui/ImageSkeleton";
+import { Head, Link, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { id } from "date-fns/locale";
 
-export default function RoomList() {
+export default function RoomList({ classRooms, filters }) {
     // Brand colors
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [weekDays, setWeekDays] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filteredClasses, setFilteredClasses] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(filters?.search || "");
+    const [filteredClasses, setFilteredClasses] = useState(classRooms || []);
 
     const [showExpandedCalendar, setShowExpandedCalendar] = useState(false);
 
-    // Sample class data
-    const classRooms = [
-        {
-            id: 1,
-            name: "Kelas A",
-            status: "tersedia",
-            image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Pusat",
-            capacity: "50 orang",
-            facilities: ["AC", "Proyektor", "Sound System"],
-            badgeColor: "bg-green-100 text-green-800",
-        },
-        {
-            id: 2,
-            name: "Kelas B",
-            status: "digunakan",
-            image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Selatan",
-            capacity: "40 orang",
-            facilities: ["AC", "Sound System"],
-            badgeColor: "bg-yellow-100 text-yellow-800",
-        },
-        {
-            id: 3,
-            name: "Kelas C",
-            status: "maintenance",
-            image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Barat",
-            capacity: "30 orang",
-            facilities: ["AC", "Proyektor", "Wi-Fi"],
-            badgeColor: "bg-red-100 text-red-800",
-        },
-        {
-            id: 4,
-            name: "Kelas D",
-            status: "tersedia",
-            image: "https://media.istockphoto.com/id/1087223748/photo/modern-classroom-with-large-panoramic-windows-and-white-desks-bright-interior.webp?a=1&s=612x612&w=0&k=20&c=Ht3bVO3-WL7eGtlLHGYmQIz63AUmiAugflbo-acl7qI=",
-            location: "Jakarta Utara",
-            capacity: "45 orang",
-            facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
-            badgeColor: "bg-green-100 text-green-800",
-        },
-        {
-            id: 5,
-            name: "Kelas E",
-            status: "tersedia",
-            image: "https://images.unsplash.com/photo-1635424239131-32dc44986b56?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Timur",
-            capacity: "35 orang",
-            facilities: ["AC", "Wi-Fi"],
-            badgeColor: "bg-green-100 text-green-800",
-        },
-        {
-            id: 6,
-            name: "Kelas F",
-            status: "digunakan",
-            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Depok",
-            capacity: "40 orang",
-            facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
-            badgeColor: "bg-yellow-100 text-yellow-800",
-        },
-    ];
-
     // Filter classes based on search term
     useEffect(() => {
-        const filtered = classRooms.filter(
-            (classRoom) =>
-                classRoom.name
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase()) ||
-                classRoom.location
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-        );
-        setFilteredClasses(filtered);
-    }, [searchTerm]);
+        if (classRooms) {
+            const filtered = classRooms.filter(
+                (classRoom) =>
+                    classRoom.name
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    classRoom.location
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    classRoom.building_name
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    classRoom.faculty_name
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+            );
+            setFilteredClasses(filtered);
+        }
+    }, [searchTerm, classRooms]);
+
+    // Handle search with server-side filtering
+    const handleSearch = (searchValue) => {
+        setSearchTerm(searchValue);
+        
+        // Debounce search untuk mengurangi request ke server
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(() => {
+            router.get(route('ruangan.list'), 
+                { search: searchValue },
+                { preserveState: true, preserveScroll: true }
+            );
+        }, 500);
+    };
 
     // Get status color
     const getStatusColor = (status) => {
@@ -368,14 +327,14 @@ export default function RoomList() {
                                 <div className="relative w-full sm:w-auto mt-2 sm:mt-0">
                                     <input
                                         type="text"
-                                        placeholder="Cari kelas..."
+                                        placeholder="Cari kelas, gedung, atau fakultas..."
                                         className="w-full px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                                         style={{
                                             focusRing: primaryLightColor,
                                         }}
                                         value={searchTerm}
                                         onChange={(e) =>
-                                            setSearchTerm(e.target.value)
+                                            handleSearch(e.target.value)
                                         }
                                     />
                                     <svg
@@ -425,11 +384,18 @@ export default function RoomList() {
                                             className="bg-white shadow rounded-lg overflow-hidden flex flex-col transition-transform hover:translate-y-[-4px] hover:shadow-md"
                                         >
                                             <div className="h-52 bg-gray-200 relative">
-                                                <img
-                                                    src={classRoom.image}
-                                                    alt={classRoom.name}
-                                                    className="h-full w-full object-cover"
-                                                />
+                                                {classRoom.image ? (
+                                                    <img
+                                                        src={classRoom.image}
+                                                        alt={classRoom.name}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <ImageSkeleton
+                                                        className="h-full w-full"
+                                                        alt={classRoom.name}
+                                                    />
+                                                )}
                                                 <span
                                                     className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                                                         classRoom.status
@@ -508,7 +474,7 @@ export default function RoomList() {
                                                                     Fasilitas:
                                                                 </span>
                                                                 <div className="flex flex-wrap gap-1">
-                                                                    {classRoom.facilities.map(
+                                                                    {classRoom.facilities.length > 0 ? classRoom.facilities.map(
                                                                         (
                                                                             facility,
                                                                             idx
@@ -529,6 +495,10 @@ export default function RoomList() {
                                                                                 }
                                                                             </span>
                                                                         )
+                                                                    ) : (
+                                                                        <span className="text-xs text-gray-400">
+                                                                            Tidak ada fasilitas
+                                                                        </span>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -539,7 +509,8 @@ export default function RoomList() {
                                             <div className="px-5 py-4 border-t border-gray-200">
                                                 <Link
                                                     href={route(
-                                                        "ruangan.detail"
+                                                        "ruangan.detail",
+                                                        { id: classRoom.id }
                                                     )}
                                                     className="w-full block text-center py-2.5 px-4 rounded-lg text-white text-sm font-medium transition duration-150 ease-in-out"
                                                     style={{
@@ -574,7 +545,7 @@ export default function RoomList() {
                             {filteredClasses.length > 0 && (
                                 <div className="mt-6 text-center text-sm text-gray-600">
                                     Menampilkan {filteredClasses.length} dari{" "}
-                                    {classRooms.length} kelas
+                                    {classRooms?.length || 0} kelas
                                 </div>
                             )}
                         </div>
