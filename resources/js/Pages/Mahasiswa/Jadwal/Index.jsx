@@ -12,23 +12,56 @@ import {
     endOfWeek,
     differenceInDays,
 } from "date-fns";
-import { id } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { Link } from "@inertiajs/react";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import {
+    ChevronLeft,
+    ChevronRight,
+    Calendar,
+    MapPin,
+    Users,
+    Award,
+    Search,
+    Frown,
+} from "lucide-react";
 
-export default function Jadwal() {
-    // Brand colors
-    const primaryColor = "#365b6d";
-    const primaryLightColor = "#e9eff2";
-    const accentColor = "#4a90a4";
-
-    // State fused States
-    const [dateRange, setDateRange] = useState({
-        startDate: null,
-        endDate: null,
+export default function Schedule() {
+    const [dateRange, setDateRange] = useState(() => {
+        const savedRange = localStorage.getItem("schedule-date-range");
+        if (savedRange) {
+            const parsed = JSON.parse(savedRange);
+            return {
+                startDate: parsed.startDate ? new Date(parsed.startDate) : null,
+                endDate: parsed.endDate ? new Date(parsed.endDate) : null,
+            };
+        }
+        return { startDate: null, endDate: null };
+    });
+    const [selectedDate, setSelectedDate] = useState(() => {
+        const savedRange = localStorage.getItem("schedule-date-range");
+        if (savedRange) {
+            const parsed = JSON.parse(savedRange);
+            return parsed.startDate ? new Date(parsed.startDate) : new Date();
+        }
+        return new Date();
     });
 
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    useEffect(() => {
+        if (dateRange.startDate || dateRange.endDate) {
+            localStorage.setItem(
+                "schedule-date-range",
+                JSON.stringify({
+                    startDate: dateRange.startDate
+                        ? dateRange.startDate.toISOString()
+                        : null,
+                    endDate: dateRange.endDate
+                        ? dateRange.endDate.toISOString()
+                        : null,
+                })
+            );
+        }
+    }, [dateRange]);
+
     const [weekDays, setWeekDays] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredClasses, setFilteredClasses] = useState([]);
@@ -38,69 +71,69 @@ export default function Jadwal() {
     const classRooms = [
         {
             id: 1,
-            name: "Kelas A",
-            status: "tersedia",
+            name: "Class A",
+            status: "available",
             image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Pusat",
-            capacity: "50 orang",
-            facilities: ["AC", "Proyektor", "Sound System"],
+            location: "Central Jakarta",
+            capacity: "50 people",
+            facilities: ["AC", "Projector", "Sound System"],
             badgeColor: "bg-green-100 text-green-800",
-            scheduleStatus: "ada jadwal",
+            scheduleStatus: "has schedule",
         },
         {
             id: 2,
-            name: "Kelas B",
-            status: "digunakan",
+            name: "Class B",
+            status: "in use",
             image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Selatan",
-            capacity: "40 orang",
+            location: "South Jakarta",
+            capacity: "40 people",
             facilities: ["AC", "Sound System"],
             badgeColor: "bg-yellow-100 text-yellow-800",
-            scheduleStatus: "ada jadwal",
+            scheduleStatus: "has schedule",
         },
         {
             id: 3,
-            name: "Kelas C",
+            name: "Class C",
             status: "maintenance",
             image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Barat",
-            capacity: "30 orang",
-            facilities: ["AC", "Proyektor", "Wi-Fi"],
+            location: "West Jakarta",
+            capacity: "30 people",
+            facilities: ["AC", "Projector", "Wi-Fi"],
             badgeColor: "bg-red-100 text-red-800",
-            scheduleStatus: "tidak ada jadwal",
+            scheduleStatus: "no schedule",
         },
         {
             id: 4,
-            name: "Kelas D",
-            status: "tersedia",
+            name: "Class D",
+            status: "available",
             image: "https://media.istockphoto.com/id/1087223748/photo/modern-classroom-with-large-panoramic-windows-and-white-desks-bright-interior.webp?a=1&s=612x612&w=0&k=20&c=Ht3bVO3-WL7eGtlLHGYmQIz63AUmiAugflbo-acl7qI=",
-            location: "Jakarta Utara",
-            capacity: "45 orang",
-            facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
+            location: "North Jakarta",
+            capacity: "45 people",
+            facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
             badgeColor: "bg-green-100 text-green-800",
-            scheduleStatus: "ada jadwal",
+            scheduleStatus: "has schedule",
         },
         {
             id: 5,
-            name: "Kelas E",
-            status: "tersedia",
+            name: "Class E",
+            status: "available",
             image: "https://images.unsplash.com/photo-1635424239131-32dc44986b56?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Jakarta Timur",
-            capacity: "35 orang",
+            location: "East Jakarta",
+            capacity: "35 people",
             facilities: ["AC", "Wi-Fi"],
             badgeColor: "bg-green-100 text-green-800",
-            scheduleStatus: "tidak ada jadwal",
+            scheduleStatus: "no schedule",
         },
         {
             id: 6,
-            name: "Kelas F",
-            status: "digunakan",
+            name: "Class F",
+            status: "in use",
             image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             location: "Depok",
-            capacity: "40 orang",
-            facilities: ["AC", "Proyektor", "Sound System", "Wi-Fi"],
+            capacity: "40 people",
+            facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
             badgeColor: "bg-yellow-100 text-yellow-800",
-            scheduleStatus: "ada jadwal",
+            scheduleStatus: "has schedule",
         },
     ];
 
@@ -119,18 +152,6 @@ export default function Jadwal() {
     }, [searchTerm]);
 
     // Generate week days for calendar
-    /* useEffect(() => {
-        const today = new Date();
-        const weekStart = startOfWeek(today, { weekStartsOn: 0 });
-        const days = [];
-
-        // Generate 7 days starting from week start
-        for (let i = 0; i < 7; i++) {
-            days.push(addDays(weekStart, i));
-        }
-
-        setWeekDays(days);
-    }, []); */
     useEffect(() => {
         const isValidRange =
             dateRange.startDate &&
@@ -152,9 +173,9 @@ export default function Jadwal() {
     // Status utilities
     const getStatusColor = (status) => {
         switch (status) {
-            case "tersedia":
+            case "available":
                 return "bg-green-100 text-green-800";
-            case "digunakan":
+            case "in use":
                 return "bg-yellow-100 text-yellow-800";
             case "maintenance":
                 return "bg-red-100 text-red-800";
@@ -165,10 +186,10 @@ export default function Jadwal() {
 
     const getStatusLabel = (status) => {
         switch (status) {
-            case "tersedia":
-                return "Tersedia";
-            case "digunakan":
-                return "Digunakan";
+            case "available":
+                return "Available";
+            case "in use":
+                return "In Use";
             case "maintenance":
                 return "Maintenance";
             default:
@@ -178,9 +199,9 @@ export default function Jadwal() {
 
     const getScheduleStatusBadge = (status) => {
         switch (status) {
-            case "ada jadwal":
+            case "has schedule":
                 return "bg-blue-100 text-blue-800";
-            case "tidak ada jadwal":
+            case "no schedule":
                 return "bg-gray-100 text-gray-500";
             default:
                 return "bg-gray-100 text-gray-800";
@@ -197,14 +218,14 @@ export default function Jadwal() {
     };
 
     // Date formatting utilities
-    const formatDayName = (date) => format(date, "EEE", { locale: id });
-    const formatDayNumber = (date) => format(date, "d", { locale: id });
+    const formatDayName = (date) => format(date, "EEE", { locale: enUS });
+    const formatDayNumber = (date) => format(date, "d", { locale: enUS });
     const isToday = (date) => isSameDay(date, new Date());
     const getCurrentMonthYear = () => {
         if (dateRange?.startDate && dateRange?.endDate) {
-            return format(dateRange.startDate, "MMMM yyyy", { locale: id });
+            return format(dateRange.startDate, "MMMM yyyy", { locale: enUS });
         } else if (selectedDate) {
-            return format(selectedDate, "MMMM yyyy", { locale: id });
+            return format(selectedDate, "MMMM yyyy", { locale: enUS });
         }
         return "";
     };
@@ -214,18 +235,20 @@ export default function Jadwal() {
             const sameDay = isSameDay(dateRange.startDate, dateRange.endDate);
             if (sameDay) {
                 return format(dateRange.startDate, "dd MMMM yyyy", {
-                    locale: id,
+                    locale: enUS,
                 });
             }
             return `${format(dateRange.startDate, "dd MMMM yyyy", {
-                locale: id,
-            })} - ${format(dateRange.endDate, "dd MMMM yyyy", { locale: id })}`;
+                locale: enUS,
+            })} - ${format(dateRange.endDate, "dd MMMM yyyy", {
+                locale: enUS,
+            })}`;
         } else if (dateRange.startDate) {
             return `${format(dateRange.startDate, "dd MMMM yyyy", {
-                locale: id,
-            })} - Pilih tanggal akhir`;
+                locale: enUS,
+            })} - Select end date`;
         }
-        return format(selectedDate, "dd MMMM yyyy", { locale: id });
+        return format(selectedDate, "dd MMMM yyyy", { locale: enUS });
     };
 
     // Check if date is in selected range
@@ -251,33 +274,30 @@ export default function Jadwal() {
         <UserLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Jadwal Kelas
+                    Class Schedule
                 </h2>
             }
         >
-            <Head title="Jadwal Kelas" />
+            <Head title="Class Schedule" />
 
             <div className="py-6 min-h-screen">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8">
                         {/* Calendar Section */}
                         <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                            <div
-                                className="p-5 border-b border-gray-200"
-                                style={{ backgroundColor: primaryColor }}
-                            >
+                            <div className="p-5 border-b border-gray-200 bg-primary">
                                 <div className="flex items-center justify-between">
-                                    {/* Kiri: Label */}
+                                    {/* Left: Label */}
                                     <div className="flex items-center gap-3">
                                         <Calendar className="w-5 h-5 text-white" />
                                         <h3 className="text-lg font-semibold text-white">
-                                            Tanggal Jadwal
+                                            Schedule Date
                                         </h3>
                                     </div>
 
-                                    {/* Kanan: Navigasi dan aksi */}
+                                    {/* Right: Navigation and actions */}
                                     <div className="flex items-center gap-4">
-                                        {/* Navigasi minggu */}
+                                        {/* Week navigation */}
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={previousWeek}
@@ -296,7 +316,7 @@ export default function Jadwal() {
                                             </button>
                                         </div>
 
-                                        {/* Aksi: Hari Ini & Kalender */}
+                                        {/* Actions: Today & Calendar */}
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => {
@@ -309,7 +329,7 @@ export default function Jadwal() {
                                                 }}
                                                 className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-md transition"
                                             >
-                                                Hari Ini
+                                                Today
                                             </button>
                                             <button
                                                 onClick={() =>
@@ -320,7 +340,7 @@ export default function Jadwal() {
                                                 className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-md transition"
                                             >
                                                 <Calendar className="w-4 h-4" />
-                                                Lihat Kalender
+                                                Select Date Range
                                             </button>
                                         </div>
                                     </div>
@@ -328,29 +348,22 @@ export default function Jadwal() {
                             </div>
                             <div className="p-5">
                                 {getRangeDuration() > 7 ? (
-                                    <div
-                                        className="p-4 rounded-xl border flex items-center justify-between gap-3"
-                                        style={{
-                                            backgroundColor: primaryLightColor,
-                                            borderColor: primaryColor + "20",
-                                        }}
-                                    >
-                                        <div className="flex items-center gap-2 text-sm font-medium text-[#365b6d]">
-                                            {/* <Calendar className="w-4 h-4" /> */}
+                                    <div className="p-4 rounded-xl border flex items-center justify-between gap-3 bg-primary-light border-primary/20">
+                                        <div className="flex items-center gap-2 text-sm font-medium text-primary">
                                             <span>
                                                 {format(
                                                     dateRange.startDate,
                                                     "dd MMMM yyyy",
-                                                    { locale: id }
+                                                    { locale: enUS }
                                                 )}
                                             </span>
                                         </div>
 
-                                        <span className="text-sm font-semibold text-[#365b6d]">
+                                        <span className="text-sm font-semibold text-primary">
                                             {format(
                                                 dateRange.endDate,
                                                 "dd MMMM yyyy",
-                                                { locale: id }
+                                                { locale: enUS }
                                             )}
                                         </span>
                                     </div>
@@ -363,9 +376,9 @@ export default function Jadwal() {
                                                     className={clsx(
                                                         "flex flex-col items-center p-3 rounded-xl transition-all duration-150",
                                                         isInRange(day)
-                                                            ? "bg-[#4a90a4] text-white shadow-md"
+                                                            ? "bg-accent text-white shadow-md"
                                                             : isToday(day)
-                                                            ? "border-2 border-[#365b6d] font-semibold text-[#365b6d]"
+                                                            ? "border-2 border-primary font-semibold text-primary"
                                                             : "hover:bg-gray-100 text-gray-800"
                                                     )}
                                                     onClick={() => {
@@ -385,29 +398,10 @@ export default function Jadwal() {
                                                 </button>
                                             ))}
                                         </div>
-                                        <div
-                                            className="mt-5 p-4 rounded-xl border"
-                                            style={{
-                                                backgroundColor:
-                                                    primaryLightColor,
-                                                borderColor:
-                                                    primaryColor + "20",
-                                            }}
-                                        >
+                                        <div className="mt-5 p-4 rounded-xl border bg-primary-light border-primary/20">
                                             <div className="flex items-center w-full justify-center">
-                                                <div
-                                                    className="w-3 h-3 rounded-full mr-3 flex-shrink-0"
-                                                    style={{
-                                                        backgroundColor:
-                                                            primaryColor,
-                                                    }}
-                                                ></div>
-                                                <span
-                                                    className="text-sm font-semibold"
-                                                    style={{
-                                                        color: primaryColor,
-                                                    }}
-                                                >
+                                                <div className="w-3 h-3 rounded-full mr-3 flex-shrink-0 bg-primary"></div>
+                                                <span className="text-sm font-semibold text-primary">
                                                     {getDateRangeText()}
                                                 </span>
                                             </div>
@@ -420,59 +414,32 @@ export default function Jadwal() {
                         {/* Class Rooms Section */}
                         <div>
                             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                                <h3
-                                    className="text-xl font-semibold"
-                                    style={{ color: primaryColor }}
-                                >
-                                    Daftar Kelas
+                                <h3 className="text-xl font-semibold text-primary">
+                                    Class List
                                 </h3>
                                 <div className="relative w-full sm:w-64">
                                     <input
                                         type="text"
-                                        placeholder="Cari kelas..."
-                                        className="w-full px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[${primaryColor}] focus:border-transparent transition-all"
+                                        placeholder="Search class..."
+                                        className="w-full px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={searchTerm}
                                         onChange={(e) =>
                                             setSearchTerm(e.target.value)
                                         }
                                     />
-                                    <svg
-                                        className="absolute right-3 top-3 h-4 w-4 text-gray-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                        />
-                                    </svg>
+                                    <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
                                 </div>
                             </div>
 
                             {filteredClasses.length === 0 ? (
                                 <div className="bg-white shadow rounded-lg p-8 text-center">
-                                    <svg
-                                        className="h-12 w-12 mx-auto mb-4 text-gray-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                    </svg>
+                                    <Frown className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                                     <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                                        Tidak ada kelas ditemukan
+                                        No classes found
                                     </h4>
                                     <p className="text-gray-600">
-                                        Coba gunakan kata kunci lain untuk
-                                        pencarian Anda.
+                                        Try using different keywords for your
+                                        search.
                                     </p>
                                 </div>
                             ) : (
@@ -504,77 +471,30 @@ export default function Jadwal() {
                                                         )}`}
                                                     >
                                                         {classRoom.scheduleStatus ===
-                                                        "ada jadwal"
-                                                            ? "Ada Jadwal"
-                                                            : "Tidak Ada Jadwal"}
+                                                        "has schedule"
+                                                            ? "Has Schedule"
+                                                            : "No Schedule"}
                                                     </span>
                                                 </div>
                                             </div>
                                             <div className="p-5 flex-1">
-                                                <h4
-                                                    className="text-lg font-semibold mb-3"
-                                                    style={{
-                                                        color: primaryColor,
-                                                    }}
-                                                >
+                                                <h4 className="text-lg font-semibold mb-3 text-primary">
                                                     {classRoom.name}
                                                 </h4>
                                                 <div className="space-y-3 text-sm text-gray-600">
                                                     <div className="flex items-center">
-                                                        <svg
-                                                            className="h-4 w-4 mr-2 flex-shrink-0"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                            />
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M15 11a3 3 0 11-6 0 3 3 0 0114 0z"
-                                                            />
-                                                        </svg>
+                                                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                                                         {classRoom.location}
                                                     </div>
                                                     <div className="flex items-center">
-                                                        <svg
-                                                            className="h-4 w-4 mr-2 flex-shrink-0"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                                            />
-                                                        </svg>
+                                                        <Users className="h-4 w-4 mr-2 flex-shrink-0" />
                                                         {classRoom.capacity}
                                                     </div>
                                                     <div className="flex items-start">
-                                                        <svg
-                                                            className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                                                            />
-                                                        </svg>
+                                                        <Award className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
                                                         <div>
                                                             <span className="block mb-1 font-semibold">
-                                                                Fasilitas:
+                                                                Facilities:
                                                             </span>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {classRoom.facilities.map(
@@ -586,12 +506,7 @@ export default function Jadwal() {
                                                                             key={
                                                                                 idx
                                                                             }
-                                                                            className="text-xs px-2 py-1 rounded-full"
-                                                                            style={{
-                                                                                backgroundColor:
-                                                                                    primaryLightColor,
-                                                                                color: primaryColor,
-                                                                            }}
+                                                                            className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary"
                                                                         >
                                                                             {
                                                                                 facility
@@ -607,25 +522,17 @@ export default function Jadwal() {
                                             <div className="px-5 py-4 border-t border-gray-200">
                                                 <Link
                                                     href={`/jadwal/detail`}
-                                                    className="block w-full py-2.5 px-4 rounded-lg text-sm font-semibold text-center transition duration-150"
-                                                    style={{
-                                                        backgroundColor:
-                                                            classRoom.scheduleStatus ===
-                                                            "ada jadwal"
-                                                                ? primaryColor
-                                                                : "gray",
-                                                        color: "white",
-                                                        opacity:
-                                                            classRoom.scheduleStatus ===
-                                                            "ada jadwal"
-                                                                ? 1
-                                                                : 0.6,
-                                                    }}
+                                                    className={`block w-full py-2.5 px-4 rounded-lg text-sm font-semibold text-center transition duration-150 ${
+                                                        classRoom.scheduleStatus ===
+                                                        "has schedule"
+                                                            ? "bg-primary text-white"
+                                                            : "bg-gray-300 text-gray-500"
+                                                    }`}
                                                 >
                                                     {classRoom.scheduleStatus ===
-                                                    "ada jadwal"
-                                                        ? "Lihat Jadwal"
-                                                        : "Tidak Ada Jadwal"}
+                                                    "has schedule"
+                                                        ? "View Schedule"
+                                                        : "No Schedule"}
                                                 </Link>
                                             </div>
                                         </div>
@@ -635,8 +542,8 @@ export default function Jadwal() {
 
                             {filteredClasses.length > 0 && (
                                 <div className="mt-6 text-center text-sm text-gray-600">
-                                    Menampilkan {filteredClasses.length} dari{" "}
-                                    {classRooms.length} kelas
+                                    Showing {filteredClasses.length} of{" "}
+                                    {classRooms.length} classes
                                 </div>
                             )}
                         </div>

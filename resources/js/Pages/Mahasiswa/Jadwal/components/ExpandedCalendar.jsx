@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
     format,
@@ -16,28 +15,42 @@ import {
     isBefore,
     isAfter,
 } from "date-fns";
-import { id } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, X, Calendar } from "lucide-react";
 
 export default function ExpandedCalendar({
-    selectedDate,
     dateRange,
     isRangeMode = false,
     onDateSelect,
     onClose,
 }) {
-    const primaryColor = "#365b6d";
-    const primaryLightColor = "#e9eff2";
-    const accentColor = "#4a90a4";
-
     const [currentMonth, setCurrentMonth] = useState(
-        selectedDate || new Date()
+        dateRange?.startDate || new Date()
     );
 
     const [tempRange, setTempRange] = useState({
-        startDate: dateRange?.startDate || null,
-        endDate: dateRange?.endDate || null,
+        startDate: null,
+        endDate: null,
     });
+
+    useEffect(() => {
+        const storedRange = localStorage.getItem("calendar-temp-range");
+        if (storedRange) {
+            const parsed = JSON.parse(storedRange);
+            setTempRange({
+                startDate: parsed.startDate ? new Date(parsed.startDate) : null,
+                endDate: parsed.endDate ? new Date(parsed.endDate) : null,
+            });
+            if (parsed.startDate) {
+                setCurrentMonth(new Date(parsed.startDate));
+            }
+        } else {
+            setTempRange({
+                startDate: dateRange?.startDate || null,
+                endDate: dateRange?.endDate || null,
+            });
+        }
+    }, []);
 
     const [hoverDate, setHoverDate] = useState(null);
 
@@ -77,7 +90,7 @@ export default function ExpandedCalendar({
                 (tempRange.endDate && isSameDay(date, tempRange.endDate))
             );
         } else {
-            return selectedDate && isSameDay(date, selectedDate);
+            return dateRange.startDate && isSameDay(date, dateRange.startDate);
         }
     };
 
@@ -139,9 +152,25 @@ export default function ExpandedCalendar({
                 }
             }
         } else {
-            onDateSelect(date);
+            onDateSelect({ startDate: date, endDate: date });
         }
     };
+
+    useEffect(() => {
+        if (tempRange.startDate || tempRange.endDate) {
+            localStorage.setItem(
+                "calendar-temp-range",
+                JSON.stringify({
+                    startDate: tempRange.startDate
+                        ? tempRange.startDate.toISOString()
+                        : null,
+                    endDate: tempRange.endDate
+                        ? tempRange.endDate.toISOString()
+                        : null,
+                })
+            );
+        }
+    }, [tempRange]);
 
     // Handle date hover for range preview
     const handleDateHover = (date) => {
@@ -167,6 +196,17 @@ export default function ExpandedCalendar({
         if (isRangeMode) {
             onDateSelect(tempRange);
         }
+        localStorage.removeItem("calendar-temp-range");
+        onClose();
+    };
+
+    // Handle cancel selection
+    const handleCancel = () => {
+        setTempRange({
+            startDate: dateRange?.startDate || null,
+            endDate: dateRange?.endDate || null,
+        });
+        localStorage.removeItem("calendar-temp-range");
         onClose();
     };
 
@@ -177,7 +217,7 @@ export default function ExpandedCalendar({
         if (isRangeMode) {
             setTempRange({ startDate: today, endDate: today });
         } else {
-            onDateSelect(today);
+            onDateSelect({ startDate: today, endDate: today });
         }
     };
 
@@ -199,36 +239,36 @@ export default function ExpandedCalendar({
 
     // Get current month year display
     const getCurrentMonthYear = () => {
-        return format(currentMonth, "MMMM yyyy", { locale: id });
+        return format(currentMonth, "MMMM yyyy", { locale: enUS });
     };
 
     // Get date range display text
     const getDateRangeText = () => {
         if (!isRangeMode) {
-            return selectedDate
-                ? `Terpilih: ${format(selectedDate, "dd MMMM yyyy", {
-                      locale: id,
+            return dateRange.startDate
+                ? `Selected: ${format(dateRange.startDate, "dd MMMM yyyy", {
+                      locale: enUS,
                   })}`
-                : "Pilih tanggal";
+                : "Select date";
         } else {
             if (tempRange.startDate && tempRange.endDate) {
                 return `${format(tempRange.startDate, "dd MMM yyyy", {
-                    locale: id,
+                    locale: enUS,
                 })} - ${format(tempRange.endDate, "dd MMM yyyy", {
-                    locale: id,
+                    locale: enUS,
                 })}`;
             } else if (tempRange.startDate) {
                 return `${format(tempRange.startDate, "dd MMM yyyy", {
-                    locale: id,
-                })} - Pilih tanggal akhir`;
+                    locale: enUS,
+                })} - Select end date`;
             } else {
-                return "Pilih rentang tanggal";
+                return "Select date range";
             }
         }
     };
 
     const calendarDays = generateCalendarDays();
-    const weekDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+    const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     return (
         <div
@@ -240,16 +280,11 @@ export default function ExpandedCalendar({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div
-                    className="p-6 border-b flex items-center justify-between"
-                    style={{ backgroundColor: primaryColor }}
-                >
+                <div className="p-6 border-b flex items-center justify-between bg-primary">
                     <div className="flex items-center gap-3">
                         <Calendar className="w-5 h-5 text-white" />
                         <h3 className="text-lg font-semibold text-white">
-                            {isRangeMode
-                                ? "Pilih Rentang Tanggal"
-                                : "Pilih Tanggal"}
+                            {isRangeMode ? "Select Date Range" : "Select Date"}
                         </h3>
                     </div>
                     <button
@@ -266,27 +301,21 @@ export default function ExpandedCalendar({
                         <div className="grid grid-cols-3 gap-2">
                             <button
                                 onClick={quickSelectToday}
-                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700
-      hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4a90a4]
-      transition-all"
+                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent transition-all"
                             >
-                                Hari Ini
+                                Today
                             </button>
                             <button
                                 onClick={quickSelectWeek}
-                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700
-      hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4a90a4]
-      transition-all"
+                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent transition-all"
                             >
-                                Minggu Ini
+                                This Week
                             </button>
                             <button
                                 onClick={quickSelectMonth}
-                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700
-      hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4a90a4]
-      transition-all"
+                                className="w-full text-sm font-medium py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 active:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent transition-all"
                             >
-                                Bulan Ini
+                                This Month
                             </button>
                         </div>
                     </div>
@@ -297,21 +326,16 @@ export default function ExpandedCalendar({
                     <div className="flex items-center justify-between mb-4">
                         <button
                             onClick={previousMonth}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                            style={{ color: primaryColor }}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors text-primary"
                         >
                             <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <h4
-                            className="text-lg font-semibold"
-                            style={{ color: primaryColor }}
-                        >
+                        <h4 className="text-lg font-semibold text-primary">
                             {getCurrentMonthYear()}
                         </h4>
                         <button
                             onClick={nextMonth}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                            style={{ color: primaryColor }}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors text-primary"
                         >
                             <ChevronRight className="w-5 h-5" />
                         </button>
@@ -356,14 +380,10 @@ export default function ExpandedCalendar({
                                         }
                                         ${
                                             dayIsSelected
-                                                ? "text-white font-semibold shadow-lg"
+                                                ? "font-semibold shadow-lg"
                                                 : ""
                                         }
-                                        ${
-                                            dayIsInRange && !dayIsSelected
-                                                ? "font-medium text-white"
-                                                : ""
-                                        }
+                                        ${dayIsInRange ? "font-medium" : ""}
                                         ${
                                             dayIsToday && !dayIsSelected
                                                 ? "border-2 font-semibold"
@@ -374,18 +394,19 @@ export default function ExpandedCalendar({
                                                 ? "z-10"
                                                 : ""
                                         }
-                                    `}
-                                    style={{
-                                        backgroundColor: dayIsSelected
-                                            ? primaryColor
-                                            : dayIsInRange
-                                            ? accentColor
-                                            : "transparent",
-                                        borderColor:
+                                        ${
+                                            dayIsSelected
+                                                ? "bg-primary text-white"
+                                                : dayIsInRange
+                                                ? "bg-accent text-white"
+                                                : ""
+                                        }
+                                        ${
                                             dayIsToday && !dayIsSelected
-                                                ? primaryColor
-                                                : "transparent",
-                                    }}
+                                                ? "border-primary"
+                                                : ""
+                                        }
+                                    `}
                                 >
                                     <span className="relative z-10">
                                         {format(day, "d")}
@@ -398,22 +419,10 @@ export default function ExpandedCalendar({
 
                 {/* Footer */}
                 <div className="p-4">
-                    <div
-                        className="p-4 rounded-xl mb-4 border"
-                        style={{
-                            backgroundColor: primaryLightColor,
-                            borderColor: primaryColor + "20",
-                        }}
-                    >
+                    <div className="p-4 rounded-xl mb-4 border border-primary border-opacity-20 bg-primary-light">
                         <div className="flex items-center">
-                            <div
-                                className="w-3 h-3 rounded-full mr-3 flex-shrink-0"
-                                style={{ backgroundColor: primaryColor }}
-                            />
-                            <span
-                                className="text-sm font-medium"
-                                style={{ color: primaryColor }}
-                            >
+                            <div className="w-3 h-3 rounded-full mr-3 flex-shrink-0 bg-primary" />
+                            <span className="text-sm font-medium text-primary">
                                 {getDateRangeText()}
                             </span>
                         </div>
@@ -421,21 +430,26 @@ export default function ExpandedCalendar({
 
                     <div className="flex gap-3">
                         <button
-                            onClick={onClose}
+                            onClick={handleCancel}
                             className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                         >
-                            Batal
+                            Cancel
                         </button>
+
                         <button
                             onClick={handleConfirm}
-                            className="flex-1 px-4 py-2.5 rounded-lg text-white transition-colors font-medium shadow-lg hover:shadow-xl"
-                            style={{ backgroundColor: primaryColor }}
+                            className={`flex-1 px-4 py-2.5 rounded-lg text-white transition-colors font-medium shadow-lg hover:shadow-xl ${
+                                isRangeMode &&
+                                (!tempRange.startDate || !tempRange.endDate)
+                                    ? "bg-disable cursor-not-allowed shadow-none hover:shadow-none"
+                                    : "bg-primary"
+                            }`}
                             disabled={
                                 isRangeMode &&
                                 (!tempRange.startDate || !tempRange.endDate)
                             }
                         >
-                            Selesai
+                            Done
                         </button>
                     </div>
                 </div>
