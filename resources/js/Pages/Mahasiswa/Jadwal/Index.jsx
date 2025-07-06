@@ -137,19 +137,38 @@ export default function Schedule() {
         },
     ];
 
-    // Filter classes based on search term
+    // Initialize filtered classes
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [locationFilter, setLocationFilter] = useState("all");
+    const [facilityFilter, setFacilityFilter] = useState("all");
+
+    // Filter class rooms based on search and filters
     useEffect(() => {
-        const filtered = classRooms.filter(
-            (classRoom) =>
+        let filtered = classRooms.filter((classRoom) => {
+            const matchSearch =
                 classRoom.name
                     .toLowerCase()
                     .includes(searchTerm.toLowerCase()) ||
                 classRoom.location
                     .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-        );
+                    .includes(searchTerm.toLowerCase());
+
+            const matchStatus =
+                statusFilter === "all" || classRoom.status === statusFilter;
+
+            const matchLocation =
+                locationFilter === "all" ||
+                classRoom.location === locationFilter;
+
+            const matchFacility =
+                facilityFilter === "all" ||
+                classRoom.facilities.includes(facilityFilter);
+
+            return matchSearch && matchStatus && matchLocation && matchFacility;
+        });
+
         setFilteredClasses(filtered);
-    }, [searchTerm]);
+    }, [searchTerm, statusFilter, locationFilter, facilityFilter]);
 
     // Generate week days for calendar
     useEffect(() => {
@@ -413,21 +432,96 @@ export default function Schedule() {
 
                         {/* Class Rooms Section */}
                         <div>
-                            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                                <h3 className="text-xl font-semibold text-primary">
+                            <div className="mb-6 px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                {/* Left: Title */}
+                                <h3 className="text-lg lg:text-xl font-semibold text-primary">
                                     Class List
                                 </h3>
-                                <div className="relative w-full sm:w-64">
-                                    <input
-                                        type="text"
-                                        placeholder="Search class..."
-                                        className="w-full px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                        value={searchTerm}
+
+                                {/* Right: Search + Filters */}
+                                <div className="flex flex-wrap items-center gap-3">
+                                    {/* Search */}
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Search class..."
+                                            className="w-[180px] lg:w-[200px] px-4 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                            value={searchTerm}
+                                            onChange={(e) =>
+                                                setSearchTerm(e.target.value)
+                                            }
+                                        />
+                                        <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                                    </div>
+
+                                    {/* Status Filter */}
+                                    <select
+                                        className="text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        value={statusFilter}
                                         onChange={(e) =>
-                                            setSearchTerm(e.target.value)
+                                            setStatusFilter(e.target.value)
                                         }
-                                    />
-                                    <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                                    >
+                                        <option value="all">All Status</option>
+                                        <option value="available">
+                                            Available
+                                        </option>
+                                        <option value="in use">In Use</option>
+                                        <option value="maintenance">
+                                            Maintenance
+                                        </option>
+                                    </select>
+
+                                    {/* Location Filter */}
+                                    <select
+                                        className="text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        value={locationFilter}
+                                        onChange={(e) =>
+                                            setLocationFilter(e.target.value)
+                                        }
+                                    >
+                                        <option value="all">
+                                            All Locations
+                                        </option>
+                                        {[
+                                            ...new Set(
+                                                classRooms.map(
+                                                    (c) => c.location
+                                                )
+                                            ),
+                                        ].map((loc) => (
+                                            <option key={loc} value={loc}>
+                                                {loc}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    {/* Facility Filter */}
+                                    <select
+                                        className="text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        value={facilityFilter}
+                                        onChange={(e) =>
+                                            setFacilityFilter(e.target.value)
+                                        }
+                                    >
+                                        <option value="all">
+                                            All Facilities
+                                        </option>
+                                        {[
+                                            ...new Set(
+                                                classRooms.flatMap(
+                                                    (c) => c.facilities
+                                                )
+                                            ),
+                                        ].map((facility) => (
+                                            <option
+                                                key={facility}
+                                                value={facility}
+                                            >
+                                                {facility}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 

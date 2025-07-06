@@ -1,4 +1,3 @@
-// components/ExpandedCalendar.jsx
 import {
     format,
     addMonths,
