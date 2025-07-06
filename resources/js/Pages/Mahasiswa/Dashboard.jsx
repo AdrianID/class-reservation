@@ -1,40 +1,37 @@
+import React from "react";
 import UserLayout from "@/components/Layouts/UserLayout";
 import { Head, usePage, Link } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { enUS } from "date-fns/locale";
 import {
-    ClipboardPlusIcon,
-    CheckCircle,
-    X,
-    Calendar,
-    Clock,
-    MapPin,
-    Users,
-    BookOpen,
     Activity,
-    PlusCircle,
-    History,
-    HelpCircle,
-    AlertCircle,
-    ChevronRight,
-    Bell,
-    TrendingUp,
-    FileText,
-    Monitor,
-    Zap,
-    ArrowRight,
-    Info,
-    Eye,
-    Edit,
-    Trash2,
-    CheckSquare,
     AlertTriangle,
+    ArrowRight,
+    Bell,
+    Calendar,
     CalendarSearchIcon,
-    XCircle,
+    CheckCircle,
+    CheckSquare,
+    ChevronRight,
+    ClipboardPlusIcon,
+    Clock,
+    Edit,
+    Eye,
+    HelpCircle,
+    History,
+    Info,
+    MapPin,
     Menu,
+    Monitor,
+    PlusCircle,
+    Trash2,
+    TrendingUp,
+    X,
+    XCircle,
+    Zap,
 } from "lucide-react";
-import RoomBookingPopup from "./Ruangan/RoomBookingModal";
+import RoomBookingModal from "./Ruangan/RoomBookingModal";
 
 // Consolidated data imports
 import {
@@ -45,7 +42,7 @@ import {
     statsData,
 } from "../dashboardData";
 
-// Utility functions
+// Utility Functions
 const getStatusColor = (status) => {
     const statusColors = {
         success: "bg-success-light text-success-dark border-success",
@@ -89,6 +86,7 @@ const getPriorityText = (priority) => {
     return priorityTexts[priority] || "Normal";
 };
 
+// Main Dashboard Component
 export default function Dashboard() {
     const { props } = usePage();
     const { user, faculties, buildings, flash } = props;
@@ -98,7 +96,7 @@ export default function Dashboard() {
     const [selectedCategory] = useState("Room Reservation");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Auto-hide flash message
+    // Auto-hide flash message after 5 seconds
     useEffect(() => {
         if (flash?.message) {
             const timer = setTimeout(() => setShowFlash(false), 5000);
@@ -120,7 +118,7 @@ export default function Dashboard() {
         }
     };
 
-    // Reusable components
+    // Reusable Components
     const StatusBadge = ({ status }) => (
         <div
             className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
@@ -135,14 +133,15 @@ export default function Dashboard() {
     );
 
     const StatsCard = ({ stat }) => {
-        const IconComponent = stat.icon;
         return (
             <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-disable-light hover:shadow-md transition-all duration-200">
                 <div className="flex items-center justify-between mb-4">
                     <div
                         className={`p-2 sm:p-3 rounded-xl ${stat.bgColor} shadow-sm`}
                     >
-                        <IconComponent className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                        {React.createElement(stat.icon, {
+                            className: "h-4 w-4 sm:h-6 sm:w-6 text-white",
+                        })}
                     </div>
                     <div className="flex items-center">
                         <TrendingUp
@@ -224,7 +223,6 @@ export default function Dashboard() {
                                     <X className="h-5 w-5" />
                                 </button>
                             </div>
-
                             <div className="space-y-4">
                                 <button
                                     onClick={handleReservationClick}
@@ -233,7 +231,6 @@ export default function Dashboard() {
                                     <span>New Reservation</span>
                                     <Calendar className="h-5 w-5" />
                                 </button>
-
                                 <div className="space-y-2">
                                     {primaryMenuItems.map((item) => (
                                         <Link
@@ -249,7 +246,6 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         </div>
-
                         <div className="p-6">
                             <h4 className="text-sm font-medium text-disable-dark uppercase mb-3">
                                 Other
@@ -305,7 +301,7 @@ export default function Dashboard() {
                     )}
 
                     {/* Hero Section */}
-                    <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl shadow-xl p-8 mb-8 relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-primary  to-primary-dark rounded-2xl shadow-xl p-8 mb-8 relative overflow-hidden">
                         <div className="relative z-10">
                             <div className="flex items-center justify-between">
                                 <div className="flex-1">
@@ -371,6 +367,7 @@ export default function Dashboard() {
                                         </span>
                                     </Link>
                                     <Link
+                                        empel
                                         href={route("jadwal.index")}
                                         className="py-3 px-4 rounded-xl text-disable-dark font-medium bg-disable-light hover:bg-gray-100 transition-colors duration-200 flex flex-col items-center justify-center"
                                     >
@@ -604,7 +601,13 @@ export default function Dashboard() {
                                                                     activity.type
                                                                 )} shadow-sm`}
                                                             >
-                                                                <activity.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                                {React.createElement(
+                                                                    activity.icon,
+                                                                    {
+                                                                        className:
+                                                                            "h-4 w-4 sm:h-5 sm:w-5",
+                                                                    }
+                                                                )}
                                                             </div>
                                                             {index !== 3 && (
                                                                 <div className="absolute top-10 sm:top-12 left-1/2 transform -translate-x-1/2 w-0.5 h-5 sm:h-6 bg-disable-light"></div>
@@ -727,7 +730,8 @@ export default function Dashboard() {
 
             {/* Reservation Modal */}
             {reservationModalOpen && (
-                <RoomBookingPopup
+                <RoomBookingModal
+                    persistKey="roomBooking.dashboard"
                     initialCategory={selectedCategory}
                     onClose={() => setReservationModalOpen(false)}
                     faculties={faculties}
