@@ -14,7 +14,7 @@ import {
     ChevronRight,
 } from "lucide-react";
 import UserLayout from "@/components/Layouts/UserLayout";
-import RoomBookingPopup from "./RoomBookingModal";
+import RoomBookingModal from "./RoomBookingModal";
 
 export default function Rooms({ faculties, buildings }) {
     const [popupOpen, setPopupOpen] = useState(false);
@@ -353,7 +353,8 @@ export default function Rooms({ faculties, buildings }) {
                 </div>
             </div>
             {popupOpen && (
-                <RoomBookingPopup
+                <RoomBookingModal
+                    persistKey="roomBooking.index"
                     initialCategory={selectedCategory}
                     onClose={() => setPopupOpen(false)}
                     faculties={faculties}
