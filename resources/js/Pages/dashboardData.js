@@ -127,7 +127,7 @@ export const statsData = [
         value: pendingRequestsData.length,
         change: "0",
         trend: "neutral",
-        bgColor: "bg-accent-dark",
+        bgColor: "bg-warning",
     },
     {
         icon: "AlertCircle",
@@ -135,6 +135,6 @@ export const statsData = [
         value: "3",
         change: "-1",
         trend: "down",
-        bgColor: "bg-red-500",
+        bgColor: "bg-danger",
     },
 ];
