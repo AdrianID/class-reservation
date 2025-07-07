@@ -33,6 +33,8 @@ const isDateBefore = (date1, date2) => isBefore(date1, date2);
 const formatDate = (date, formatStr) => format(date, formatStr);
 
 const RoomBookingModal = ({
+    mode = "create",
+    initialBookingData = null,
     initialCategory,
     onClose,
     faculties,
@@ -50,9 +52,32 @@ const RoomBookingModal = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
+    const [dateRange, setDateRange] = useState(null);
     const [isRangeMode, setIsRangeMode] = useState(false);
     const [endDate, setEndDate] = useState(getToday());
     const [dateRangeError, setDateRangeError] = useState("");
+
+    // Initialize state based on initial booking data if in edit mode
+    useEffect(() => {
+        if (mode === "edit" && initialBookingData) {
+            setBookingType(initialBookingData.bookingType || "");
+            setSelectedActivity(initialBookingData.selectedActivity || "");
+            setCustomActivity(initialBookingData.customActivity || "");
+            setSelectedDate(new Date(initialBookingData.selectedDate));
+            setEndDate(
+                initialBookingData.endDate
+                    ? new Date(initialBookingData.endDate)
+                    : new Date()
+            );
+            setStartTime(initialBookingData.startTime || "");
+            setEndTime(initialBookingData.endTime || "");
+            /* setCapacity(initialBookingData.capacity || 1); */
+            setCapacity(Number(initialBookingData.capacity) || 1);
+            setSelectedFaculty(initialBookingData.selectedFaculty || null);
+            setSelectedBuilding(initialBookingData.selectedBuilding || null);
+            setIsRangeMode(initialBookingData.isRangeMode || false);
+        }
+    }, [mode, initialBookingData]);
 
     // Generate time slots
     const timeSlots = useMemo(() => {
@@ -147,14 +172,26 @@ const RoomBookingModal = ({
                 return;
             setStep(step + 1);
         } else {
+            const bookingData = {
+                bookingType,
+                selectedActivity,
+                customActivity,
+                selectedDate,
+                endDate,
+                isRangeMode,
+                startTime,
+                endTime,
+                capacity,
+                selectedFaculty,
+                selectedBuilding,
+            };
+
             setIsSubmitting(true);
             setTimeout(() => {
                 clearPersistedData();
-                const url = new URL(window.location);
-                url.searchParams.delete("step");
-                window.history.replaceState({}, "", url.pathname);
-                setIsSubmitting(false);
-                router.visit("/ruangan/list");
+                const encoded = encodeURIComponent(JSON.stringify(bookingData));
+                router.get(`/ruangan/list?booking=${encoded}`);
+                handleClose();
             }, 1500);
         }
     };
@@ -296,6 +333,8 @@ const RoomBookingModal = ({
 
     // Persist data
     useEffect(() => {
+        if (mode === "edit") return;
+
         const saved = localStorage.getItem(persistKey);
         if (saved) {
             try {
@@ -307,6 +346,7 @@ const RoomBookingModal = ({
                     localStorage.removeItem(persistKey);
                     return;
                 }
+
                 setStep(data.step || 1);
                 setBookingType(data.bookingType || "");
                 setSelectedActivity(data.selectedActivity || "");
@@ -317,11 +357,7 @@ const RoomBookingModal = ({
                 setEndDate(data.endDate ? new Date(data.endDate) : getToday());
                 setStartTime(data.startTime || "");
                 setEndTime(data.endTime || "");
-                setCapacity(
-                    data.capacity !== undefined
-                        ? setCapacity(data.capacity)
-                        : setCapacity(1)
-                );
+                setCapacity(data.capacity !== undefined ? data.capacity : 1);
                 setSelectedFaculty(data.selectedFaculty || null);
                 setSelectedBuilding(data.selectedBuilding || null);
                 setIsRangeMode(data.isRangeMode || false);
@@ -329,7 +365,7 @@ const RoomBookingModal = ({
                 console.error("Restore error:", e);
             }
         }
-    }, [persistKey]);
+    }, [persistKey, mode]);
 
     // Save data
     useEffect(() => {
@@ -1022,11 +1058,15 @@ const RoomBookingModal = ({
                         {isSubmitting ? (
                             <span className="flex items-center">
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Searching...
+                                {mode === "edit" ? "Saving..." : "Searching..."}
                             </span>
                         ) : (
                             <>
-                                {step === 4 ? "Search" : "Continue"}
+                                {step === 4
+                                    ? mode === "edit"
+                                        ? "Save Changes"
+                                        : "Search"
+                                    : "Continue"}
                                 <ChevronRight size={18} className="ml-1" />
                             </>
                         )}

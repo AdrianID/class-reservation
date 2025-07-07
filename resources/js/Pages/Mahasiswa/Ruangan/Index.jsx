@@ -354,7 +354,8 @@ export default function Rooms({ faculties, buildings }) {
             </div>
             {popupOpen && (
                 <RoomBookingModal
-                    persistKey="roomBooking.index"
+                    mode="create"
+                    persistKey="roomBooking.room"
                     initialCategory={selectedCategory}
                     onClose={() => setPopupOpen(false)}
                     faculties={faculties}

@@ -731,6 +731,7 @@ export default function Dashboard() {
             {/* Reservation Modal */}
             {reservationModalOpen && (
                 <RoomBookingModal
+                    mode="create"
                     persistKey="roomBooking.dashboard"
                     initialCategory={selectedCategory}
                     onClose={() => setReservationModalOpen(false)}

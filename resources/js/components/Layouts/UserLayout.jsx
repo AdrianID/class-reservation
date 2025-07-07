@@ -244,7 +244,7 @@ export default function MahasiswaLayout({ header, children }) {
 
             {/* Main Content */}
             <main className="flex-1">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto sm:p-6 xl:p-0">
                     {children}
                 </div>
             </main>
