@@ -48,6 +48,8 @@ export default {
                     DEFAULT: "#22c55e",
                     dark: "#15803d",
                 },
+
+                /* accent new = DEFAULT: "#82f9be", */
             },
         },
     },

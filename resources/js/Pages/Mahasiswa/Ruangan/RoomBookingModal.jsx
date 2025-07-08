@@ -190,7 +190,24 @@ const RoomBookingModal = ({
             setTimeout(() => {
                 clearPersistedData();
                 const encoded = encodeURIComponent(JSON.stringify(bookingData));
-                router.get(`/ruangan/list?booking=${encoded}`);
+
+                const currentParams = new URLSearchParams(
+                    window.location.search
+                );
+                const existingBookingParam =
+                    currentParams.get("booking") ||
+                    localStorage.getItem("roomBooking.lastBookingParam");
+
+                if (mode === "edit") {
+                    localStorage.setItem(
+                        "roomBooking.lastBookingParam",
+                        encoded
+                    );
+                    router.get(`/ruangan/list?booking=${encoded}`);
+                } else {
+                    router.get(`/ruangan/list?booking=${encoded}`);
+                }
+
                 handleClose();
             }, 1500);
         }
@@ -208,10 +225,20 @@ const RoomBookingModal = ({
         }
     };
 
+    /* const handleClose = () => {
+        const url = new URL(window.location);
+        url.searchParams.delete("step");
+        window.history.replaceState({}, "", url.pathname);
+        onClose();
+    }; */
+
     const handleClose = () => {
         const url = new URL(window.location);
         url.searchParams.delete("step");
         window.history.replaceState({}, "", url.pathname);
+        if (mode === "edit") {
+            localStorage.removeItem("roomBooking.lastBookingParam");
+        }
         onClose();
     };
 
@@ -239,6 +266,7 @@ const RoomBookingModal = ({
         selectedDate &&
         startTime &&
         endTime &&
+        capacity >= 5 &&
         selectedFaculty &&
         (!isRangeMode || (endDate && !dateRangeError));
 
@@ -403,11 +431,13 @@ const RoomBookingModal = ({
 
     // Sync current step to URL
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        params.set("step", step.toString());
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
-        window.history.replaceState({}, "", newUrl);
-    }, [step]);
+        if (mode !== "edit") {
+            const params = new URLSearchParams(window.location.search);
+            params.set("step", step.toString());
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, "", newUrl);
+        }
+    }, [step, mode]);
 
     // Clear persisted data
     const clearPersistedData = () => localStorage.removeItem(persistKey);
@@ -751,7 +781,7 @@ const RoomBookingModal = ({
                                                 </div>
                                                 <input
                                                     type="number"
-                                                    min="1"
+                                                    min="5"
                                                     max="200"
                                                     className="w-full p-2.5 pl-10 border rounded-lg focus:ring focus:ring-primary focus:ring-opacity-30 focus:border-primary"
                                                     placeholder="Number of people"
@@ -762,6 +792,12 @@ const RoomBookingModal = ({
                                                         )
                                                     }
                                                 />
+                                                {capacity < 5 && (
+                                                    <p className="text-sm text-danger mt-1">
+                                                        Minimum room capacity is
+                                                        5 people.
+                                                    </p>
+                                                )}
                                             </div>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 Ensure room size matches your

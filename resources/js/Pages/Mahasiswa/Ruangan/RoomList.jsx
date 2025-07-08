@@ -24,6 +24,7 @@ import {
     BookOpen,
     Edit,
     Filter,
+    Info,
 } from "lucide-react";
 
 export default function RoomList() {
@@ -175,6 +176,13 @@ export default function RoomList() {
             setFilteredClasses(classRooms);
         }
     }, []);
+
+    // Save URL Params
+    useEffect(() => {
+        if (bookingRaw) {
+            localStorage.setItem("roomBooking.lastBookingParam", bookingRaw);
+        }
+    }, [bookingRaw]);
 
     // Filter classes based on search term
     useEffect(() => {
