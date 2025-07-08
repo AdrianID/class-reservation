@@ -14,7 +14,7 @@ import {
     ChevronRight,
 } from "lucide-react";
 import UserLayout from "@/components/Layouts/UserLayout";
-import RoomBookingModal from "./RoomBookingModal";
+import RoomBookingModal from "./modal/RoomBookingModal";
 
 export default function Rooms({ faculties, buildings }) {
     const [popupOpen, setPopupOpen] = useState(false);

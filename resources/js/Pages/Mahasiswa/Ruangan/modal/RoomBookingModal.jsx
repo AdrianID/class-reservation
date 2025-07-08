@@ -16,7 +16,7 @@ import {
     HelpCircle,
 } from "lucide-react";
 import { format, isToday, isAfter, isBefore } from "date-fns";
-import DatePicker from "./components/DatePicker";
+import DatePicker from "../components/DatePicker";
 
 // Helper function to get today's date and time
 const getToday = () => new Date();
@@ -48,7 +48,7 @@ const RoomBookingModal = ({
     const [selectedDate, setSelectedDate] = useState(getToday());
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
-    const [capacity, setCapacity] = useState(1);
+    const [capacity, setCapacity] = useState(5);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
@@ -792,16 +792,17 @@ const RoomBookingModal = ({
                                                         )
                                                     }
                                                 />
-                                                {capacity < 5 && (
-                                                    <p className="text-sm text-danger mt-1">
-                                                        Minimum room capacity is
-                                                        5 people.
-                                                    </p>
-                                                )}
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                Ensure room size matches your
-                                                needs
+                                            <p
+                                                className={`text-xs mt-1 ${
+                                                    capacity < 5
+                                                        ? "text-danger"
+                                                        : "text-gray-500"
+                                                }`}
+                                            >
+                                                {capacity < 5
+                                                    ? "Minimum room capacity is 5 people."
+                                                    : "Ensure room size matches your needs"}
                                             </p>
                                         </div>
                                         <div>
@@ -809,7 +810,7 @@ const RoomBookingModal = ({
                                                 Quick Select:
                                             </label>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {[5, 15, 30, 100].map(
+                                                {[15, 30, 100, 200].map(
                                                     (size) => (
                                                         <button
                                                             key={size}
@@ -826,11 +827,11 @@ const RoomBookingModal = ({
                                                                     : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
                                                             }`}
                                                         >
-                                                            {size <= 5
+                                                            {size <= 15
                                                                 ? "Small"
-                                                                : size <= 15
-                                                                ? "Medium"
                                                                 : size <= 30
+                                                                ? "Medium"
+                                                                : size <= 100
                                                                 ? "Large"
                                                                 : "XL"}{" "}
                                                             ({size})

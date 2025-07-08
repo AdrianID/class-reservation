@@ -1,7 +1,8 @@
 import UserLayout from "@/components/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
-import RoomBookingModal from "./RoomBookingModal";
-import { Head, Link } from "@inertiajs/react";
+import RoomBookingModal from "./modal/RoomBookingModal";
+import RoomDetailModal from "./modal/RoomDetailModal";
+import { Head, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -42,6 +43,8 @@ export default function RoomList() {
     const [isStickyActive, setIsStickyActive] = useState(false);
 
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const [showRoomDetail, setShowRoomDetail] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -289,17 +292,6 @@ export default function RoomList() {
         return format(weekDays[3], "MMMM yyyy", { locale: enUS });
     };
 
-    const getScheduleStatusBadge = (status) => {
-        switch (status) {
-            case "has schedule":
-                return "bg-blue-100 text-blue-800";
-            case "no schedule":
-                return "bg-gray-100 text-gray-500";
-            default:
-                return "bg-gray-100 text-gray-800";
-        }
-    };
-
     const isInRange = (date) => {
         if (!dateRange || !dateRange.start || !dateRange.end) return false;
         return (
@@ -307,6 +299,17 @@ export default function RoomList() {
             isSameDay(date, dateRange.end) ||
             (date > dateRange.start && date < dateRange.end)
         );
+    };
+
+    const handleRoomClick = (room) => {
+        if (room.status !== "available") return;
+        setSelectedRoom(room);
+        setShowRoomDetail(true);
+    };
+
+    // Handle room booking from modal
+    const handleBookRoom = () => {
+        router.visit(route("peminjaman.create"));
     };
 
     return (
@@ -894,7 +897,15 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                         {filteredClasses.map((classRoom) => (
                                             <div
                                                 key={classRoom.id}
-                                                className="bg-white shadow rounded-lg overflow-hidden flex flex-col transition-transform hover:translate-y-[-4px] hover:shadow-md"
+                                                onClick={() =>
+                                                    handleRoomClick(classRoom)
+                                                }
+                                                className={`bg-white shadow rounded-lg overflow-hidden flex flex-col transition-all duration-200 ${
+                                                    classRoom.status ===
+                                                    "available"
+                                                        ? "cursor-pointer hover:shadow-lg hover:-translate-y-1"
+                                                        : "opacity-70 cursor-not-allowed"
+                                                }`}
                                             >
                                                 <div className="h-52 bg-gray-200 relative">
                                                     <img
@@ -902,28 +913,38 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                         alt={classRoom.name}
                                                         className="h-full w-full object-cover"
                                                     />
-                                                    <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+                                                    <div className="absolute top-3 right-3">
                                                         <span
-                                                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                                                classRoom.status
-                                                            )}`}
+                                                            className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                                                classRoom.status ===
+                                                                "available"
+                                                                    ? "bg-green-100 text-green-800 border-green-200"
+                                                                    : classRoom.status ===
+                                                                      "occupied"
+                                                                    ? "bg-orange-100 text-orange-800 border-orange-200"
+                                                                    : "bg-red-100 text-red-800 border-red-200"
+                                                            }`}
                                                         >
                                                             {getStatusLabel(
                                                                 classRoom.status
                                                             )}
                                                         </span>
-                                                        <span
-                                                            className={`px-3 py-1 rounded-full text-xs font-medium ${getScheduleStatusBadge(
-                                                                classRoom.scheduleStatus
-                                                            )}`}
-                                                        >
-                                                            {classRoom.scheduleStatus ===
-                                                            "has schedule"
-                                                                ? "Has Schedule"
-                                                                : "No Schedule"}
-                                                        </span>
                                                     </div>
+
+                                                    {/* Overlay for non-available rooms */}
+                                                    {classRoom.status !==
+                                                        "available" && (
+                                                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                                            <span className="text-white font-medium text-sm bg-black/60 px-3 py-1 rounded">
+                                                                {classRoom.status ===
+                                                                "occupied"
+                                                                    ? "Currently Occupied"
+                                                                    : "Under Maintenance"}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
+
                                                 <div className="p-5 flex-1">
                                                     <h4 className="text-lg font-medium mb-2 text-primary">
                                                         {classRoom.name}
@@ -945,22 +966,40 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                                         Facilities:
                                                                     </span>
                                                                     <div className="flex flex-wrap gap-1">
-                                                                        {classRoom.facilities.map(
-                                                                            (
-                                                                                facility,
-                                                                                idx
-                                                                            ) => (
-                                                                                <span
-                                                                                    key={
-                                                                                        idx
-                                                                                    }
-                                                                                    className="text-xs px-2 py-1 rounded-full mr-1 mb-1 bg-primary-light text-primary"
-                                                                                >
-                                                                                    {
-                                                                                        facility
-                                                                                    }
-                                                                                </span>
+                                                                        {classRoom.facilities
+                                                                            .slice(
+                                                                                0,
+                                                                                3
                                                                             )
+                                                                            .map(
+                                                                                (
+                                                                                    facility,
+                                                                                    idx
+                                                                                ) => (
+                                                                                    <span
+                                                                                        key={
+                                                                                            idx
+                                                                                        }
+                                                                                        className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary"
+                                                                                    >
+                                                                                        {
+                                                                                            facility
+                                                                                        }
+                                                                                    </span>
+                                                                                )
+                                                                            )}
+                                                                        {classRoom
+                                                                            .facilities
+                                                                            .length >
+                                                                            3 && (
+                                                                            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                                                                                +
+                                                                                {classRoom
+                                                                                    .facilities
+                                                                                    .length -
+                                                                                    3}{" "}
+                                                                                more
+                                                                            </span>
                                                                         )}
                                                                     </div>
                                                                 </div>
@@ -968,24 +1007,22 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="px-5 py-4 border-t border-gray-200">
-                                                    <Link
-                                                        href={route(
-                                                            "ruangan.detail"
-                                                        )}
-                                                        className={`w-full block text-center py-2.5 px-4 rounded-lg text-white text-md font-medium transition duration-150 ease-in-out ${
+
+                                                {/* <div className="px-5 py-4 border-t border-gray-200">
+                                                    <div
+                                                        className={`w-full text-center py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
                                                             classRoom.status ===
                                                             "available"
-                                                                ? "bg-primary hover:bg-primary-dark"
-                                                                : "bg-disable cursor-not-allowed"
+                                                                ? "bg-primary text-white"
+                                                                : "bg-gray-100 text-gray-500"
                                                         }`}
                                                     >
                                                         {classRoom.status ===
                                                         "available"
-                                                            ? "Book Now"
+                                                            ? "Click to view details"
                                                             : "Not Available"}
-                                                    </Link>
-                                                </div>
+                                                    </div>
+                                                </div> */}
                                             </div>
                                         ))}
                                     </div>
@@ -1020,6 +1057,16 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                     onClose={() => setPopupOpen(false)}
                     faculties={faculties}
                     buildings={buildings}
+                />
+            )}
+
+            {showRoomDetail && (
+                <RoomDetailModal
+                    room={selectedRoom}
+                    isOpen={showRoomDetail}
+                    onClose={() => setShowRoomDetail(false)}
+                    onBook={handleBookRoom}
+                    bookingData={bookingData}
                 />
             )}
 

@@ -31,7 +31,7 @@ import {
     XCircle,
     Zap,
 } from "lucide-react";
-import RoomBookingModal from "./Ruangan/RoomBookingModal";
+import RoomBookingModal from "./Ruangan/modal/RoomBookingModal";
 
 // Consolidated data imports
 import {
