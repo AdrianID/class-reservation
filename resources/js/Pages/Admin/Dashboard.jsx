@@ -493,7 +493,7 @@ export default function AdminDashboard() {
 
                     {/* Section Aktivitas Sistem */}
                     <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 mb-8">
-                        <div className="p-5 border-b border-gray-200 bg-primary text-primaryLight">
+                        <div className="p-5 border-b border-gray-200 bg-primary text-white">
                             <h3 className="text-lg font-medium">
                                 Aktivitas Sistem Terbaru
                             </h3>

@@ -1,6 +1,7 @@
 import ApplicationLogo from "@/components/shared/ApplicationLogo";
 import { Link, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+import RoleBadge from "@/components/auth/RoleBadge";
 import {
     LayoutDashboard,
     Calendar,
@@ -86,6 +87,24 @@ export default function AdminLayout({ header, children }) {
             ],
         },
         {
+            name: "Manajemen Booking",
+            icon: <Calendar size={20} />,
+            route: "booking",
+            href: "#",
+            submenu: [
+                {
+                    name: "Daftar Booking",
+                    route: "booking.index",
+                    href: "/admin/booking",
+                },
+                {
+                    name: "Kalender",
+                    route: "calendar.index",
+                    href: "/admin/calendar",
+                },
+            ],
+        },
+        {
             name: "Jadwal",
             icon: <Calendar size={20} />,
             route: "jadwal",
@@ -100,6 +119,11 @@ export default function AdminLayout({ header, children }) {
                     name: "Atur Jadwal",
                     route: "jadwal.manage",
                     href: "/admin/jadwal/manage",
+                },
+                {
+                    name: "Kalender",
+                    route: "calendar.index",
+                    href: "/admin/calendar",
                 },
             ],
         },
@@ -300,8 +324,9 @@ export default function AdminLayout({ header, children }) {
                                         <User size={18} />
                                     </div>
                                     <span className="hidden md:inline-block font-medium text-gray-700">
-                                        {user.name}
+                                        {user.full_name}
                                     </span>
+                                    <RoleBadge user={user} size="sm" variant="outline" />
                                     <ChevronDown
                                         size={16}
                                         className="text-gray-500"

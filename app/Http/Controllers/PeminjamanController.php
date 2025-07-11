@@ -8,7 +8,15 @@ class PeminjamanController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Peminjaman/Index');
+        return Inertia::render('Mahasiswa/Peminjaman/Index');
+    }
+
+    public function create()
+    {
+        return Inertia::render('Mahasiswa/Peminjaman/Create');
     }
 }
+
+
+
 

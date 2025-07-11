@@ -1,9 +1,13 @@
 <?php
 
 // admin
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\CalendarController;
+use App\Http\Controllers\Admin\BookingController;
+
+
 // user
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -24,16 +28,31 @@ Route::get('/', function () {
 });
 
 // Admin
-Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified', 'role:Super Admin,Admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // Room management
     Route::get('/ruangan', [RoomController::class, 'index'])->name('admin.ruangan.index');
     Route::get('/ruangan/create', [RoomController::class, 'create'])->name('admin.ruangan.create');
     Route::post('/ruangan', [RoomController::class, 'store'])->name('admin.ruangan.store');
+    Route::get('/ruangan/{id}', [RoomController::class, 'show'])->name('admin.ruangan.show');
     Route::get('/ruangan/{id}/edit', [RoomController::class, 'edit'])->name('admin.ruangan.edit');
     Route::put('/ruangan/{id}', [RoomController::class, 'update'])->name('admin.ruangan.update');
     Route::delete('/ruangan/{id}', [RoomController::class, 'destroy'])->name('admin.ruangan.destroy');
+
+    // API endpoint untuk mendapatkan ruangan berdasarkan fasilitas
+    Route::get('/api/ruangan/by-facility', [RoomController::class, 'getRoomsByFacility'])->name('admin.ruangan.by-facility');
+
+    // Calendar management
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('admin.calendar.index');
+    Route::get('/calendar/events', [CalendarController::class, 'getEvents'])->name('admin.calendar.events');
+
+    // Booking management
+    Route::get('/booking', [BookingController::class, 'index'])->name('admin.booking.index');
+    Route::get('/booking/{id}', [BookingController::class, 'show'])->name('admin.booking.show');
+    Route::post('/booking/{id}/approve', [BookingController::class, 'approve'])->name('admin.booking.approve');
+    Route::post('/booking/{id}/reject', [BookingController::class, 'reject'])->name('admin.booking.reject');
+    Route::get('/booking/export', [BookingController::class, 'export'])->name('admin.booking.export');
 
     // Schedule management
     Route::get('/jadwal', [ScheduleController::class, 'index'])->name('admin.jadwal.index');
@@ -53,28 +72,27 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
 // User
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'role:Mahasiswa,Dosen,Dekan'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:Mahasiswa,Dosen,Dekan'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Classroom Features - menggunakan controller yang sudah ada
 
-    // Reservasi/Peminjaman - sudah ada
     Route::get('/reservasi', [PeminjamanController::class, 'index'])->name('reservasi.index');
     Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
     Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
 
-    // Ruangan - sudah ada
+    // Ruangan 
     Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
     Route::get('/ruangan/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
 
-    // Jadwal - sudah ada
+    // Jadwal
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
     Route::get('/jadwal/detail', [JadwalController::class, 'detail'])->name('jadwal.detail');
 

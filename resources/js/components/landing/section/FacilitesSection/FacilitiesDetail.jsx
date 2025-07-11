@@ -1,14 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-    Users,
-    Camera,
-    ArrowRight,
-    Calendar,
-    X,
-    ChevronLeft,
-    ChevronRight,
-    Star,
-} from "lucide-react";
+import { Users, Camera, ArrowRight, Calendar, X, Star } from "lucide-react";
 import { motion } from "framer-motion";
 
 const FacilitiesDetail = ({
@@ -27,10 +18,6 @@ const FacilitiesDetail = ({
         const handleKeyDown = (e) => {
             if (e.key === "Escape") {
                 onClose();
-            } else if (e.key === "ArrowLeft") {
-                prevImage();
-            } else if (e.key === "ArrowRight") {
-                nextImage();
             }
         };
 
@@ -48,18 +35,6 @@ const FacilitiesDetail = ({
         if (modalRef.current && !modalRef.current.contains(e.target)) {
             onClose();
         }
-    };
-
-    const nextImage = () => {
-        setCurrentImageIndex((prev) =>
-            prev === facility.gallery.length - 1 ? 0 : prev + 1
-        );
-    };
-
-    const prevImage = () => {
-        setCurrentImageIndex((prev) =>
-            prev === 0 ? facility.gallery.length - 1 : prev - 1
-        );
     };
 
     return (
@@ -108,53 +83,11 @@ const FacilitiesDetail = ({
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-                            {facility.gallery.length > 1 && (
-                                <>
-                                    <button
-                                        onClick={prevImage}
-                                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                                        aria-label="Previous image"
-                                    >
-                                        <ChevronLeft className="w-6 h-6 text-white" />
-                                    </button>
-                                    <button
-                                        onClick={nextImage}
-                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                                        aria-label="Next image"
-                                    >
-                                        <ChevronRight className="w-6 h-6 text-white" />
-                                    </button>
-                                </>
-                            )}
-
                             {/* Image Counter */}
                             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                                 {currentImageIndex + 1} /{" "}
                                 {facility.gallery.length}
                             </div>
-
-                            {/* Thumbnail dots for navigation */}
-                            {facility.gallery.length > 1 &&
-                                facility.gallery.length <= 10 && (
-                                    <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                                        {facility.gallery.map((_, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() =>
-                                                    setCurrentImageIndex(index)
-                                                }
-                                                className={`w-2 h-2 rounded-full transition-all ${
-                                                    index === currentImageIndex
-                                                        ? "bg-white scale-125"
-                                                        : "bg-white/50 hover:bg-white/75"
-                                                }`}
-                                                aria-label={`Go to image ${
-                                                    index + 1
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
                         </div>
 
                         {/* Content */}
