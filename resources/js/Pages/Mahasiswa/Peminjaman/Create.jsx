@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Head, usePage, Link } from "@inertiajs/react";
+import { Head, usePage, Link, router } from "@inertiajs/react";
 import UserLayout from "@/components/Layouts/UserLayout";
 import {
     Calendar,
@@ -109,17 +109,56 @@ export default function Create() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm() || !parsedData) return;
 
         setIsSubmitting(true);
+
+        // Buat FormData object untuk mengirim file
+        const formDataToSend = new FormData();
+        
+        // Tambahkan data ruangan dan waktu
+        formDataToSend.append('room_id', parsedData.selectedRoom.id);
+        formDataToSend.append('booking_date', parsedData.selectedDate);
+        formDataToSend.append('start_time', parsedData.startTime);
+        formDataToSend.append('end_time', parsedData.endTime);
+        formDataToSend.append('purpose', parsedData.selectedActivity);
+        formDataToSend.append('number_of_participants', parsedData.capacity);
+
+        // Tambahkan data form
+        formDataToSend.append('responsible_person', formData.responsiblePerson);
+        formDataToSend.append('contact', formData.contact);
+        formDataToSend.append('additional_notes', formData.additionalNotes || '');
+
+        // Tambahkan file-file
+        if (formData.permitLetter) {
+            formDataToSend.append('permit_letter', formData.permitLetter);
+        }
+        if (formData.proposal) {
+            formDataToSend.append('proposal', formData.proposal);
+        }
+        if (formData.attendanceList) {
+            formDataToSend.append('attendance_list', formData.attendanceList);
+        }
+
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            console.log("Form submitted:", formData);
-            // Handle success (redirect, show success message, etc.)
+            await router.post('/peminjaman', formDataToSend, {
+                forceFormData: true,
+                onSuccess: () => {
+                    router.visit(route('peminjaman.index'), {
+                        replace: true
+                    });
+                },
+                onError: (errors) => {
+                    setFormErrors(errors);
+                    setIsSubmitting(false);
+                },
+                onFinish: () => {
+                    setIsSubmitting(false);
+                },
+                preserveScroll: true,
+            });
         } catch (error) {
-            console.error("Submission error:", error);
-        } finally {
+            console.error('Submission error:', error);
             setIsSubmitting(false);
         }
     };
