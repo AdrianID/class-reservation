@@ -36,10 +36,12 @@ export default function RoomIndex({ rooms = [], filters = {}, buildings = [], ca
     };
 
     const applyFilters = (additionalFilters = {}) => {
+        // Gabungkan filter yang sudah dipilih dengan filter tambahan
+        const params = { ...selectedFilters, ...additionalFilters, search: searchTerm };
         router.get(
             route('admin.ruangan.index'),
-            { ...selectedFilters, ...additionalFilters },
-            { preserveState: true }
+            params,
+            { preserveState: true, replace: true }
         );
     };
 
@@ -51,7 +53,7 @@ export default function RoomIndex({ rooms = [], filters = {}, buildings = [], ca
             facility_id: '',
         });
         setSearchTerm('');
-        router.get(route('admin.ruangan.index'));
+        router.get(route('admin.ruangan.index'), {}, { preserveState: false, replace: true });
     };
 
     const confirmDelete = (id, name) => {

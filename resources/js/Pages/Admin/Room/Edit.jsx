@@ -40,7 +40,7 @@ export default function RoomEdit({
     const [roomFacilities, setRoomFacilities] = useState(
         room?.facilities_list && room.facilities_list.length > 0
             ? room.facilities_list
-            : [{ facility_id: "", quantity: 1, notes: "" }]
+            : []
     );
 
     // Refs untuk immediate values (prevent fast input issues)
@@ -460,15 +460,13 @@ export default function RoomEdit({
                                         <div key={index} className="border border-gray-200 rounded-md p-4 mb-4">
                                             <div className="flex justify-between items-center mb-2">
                                                 <h4 className="text-sm font-medium text-gray-700">Fasilitas #{index + 1}</h4>
-                                                {roomFacilities && roomFacilities.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeFacility(index)}
-                                                        className="text-red-600 hover:text-red-800"
-                                                    >
-                                                        <XMarkIcon className="h-5 w-5" />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFacility(index)}
+                                                    className="text-red-600 hover:text-red-800"
+                                                >
+                                                    <XMarkIcon className="h-5 w-5" />
+                                                </button>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
