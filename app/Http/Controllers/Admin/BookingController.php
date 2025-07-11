@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
+use App\Helpers\FacultyHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,13 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
         $query = Booking::with(['user', 'room.building.faculty'])
+            ->when($selectedFaculty, function ($query, $faculty) {
+                $query->whereHas('room.building', function ($q) use ($faculty) {
+                    $q->where('faculty_id', $faculty->id);
+                });
+            })
             ->when($request->status, function ($query, $status) {
                 return $query->where('status', $status);
             })
