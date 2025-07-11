@@ -16,78 +16,9 @@ import {
 import UserLayout from "@/components/Layouts/UserLayout";
 import RoomBookingModal from "./modal/RoomBookingModal";
 
-export default function Rooms({ faculties, buildings }) {
+export default function Rooms({ bookings, faculties, buildings }) {
     const [popupOpen, setPopupOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
-
-    const [bookingData] = useState([
-        {
-            id: 1,
-            room: "Lecture Room A101",
-            building: "Computer Science Building",
-            date: "2025-07-10",
-            time: "08:00 - 10:00",
-            purpose: "Web Programming Lecture",
-            borrower: "Dr. Ahmad Susanto",
-            status: "Approved",
-            submissionDate: "2025-07-05",
-        },
-        {
-            id: 2,
-            room: "Computer Lab 2",
-            building: "Computer Science Building",
-            date: "2025-07-12",
-            time: "13:00 - 15:00",
-            purpose: "Database Practicum",
-            borrower: "Siti Nurhaliza, M.Kom",
-            status: "Pending",
-            submissionDate: "2025-07-06",
-        },
-        {
-            id: 3,
-            room: "Multipurpose Hall",
-            building: "Rectorate Building",
-            date: "2025-07-15",
-            time: "09:00 - 12:00",
-            purpose: "National IT Seminar",
-            borrower: "Budi Santoso",
-            status: "Approved",
-            submissionDate: "2025-07-01",
-        },
-        {
-            id: 4,
-            room: "Meeting Room B203",
-            building: "Economics Building",
-            date: "2025-07-08",
-            time: "14:00 - 16:00",
-            purpose: "Coordination Meeting",
-            borrower: "Andi Pratama",
-            status: "Rejected",
-            submissionDate: "2025-07-03",
-        },
-        {
-            id: 5,
-            room: "Multimedia Lab",
-            building: "Computer Science Building",
-            date: "2025-07-20",
-            time: "10:00 - 12:00",
-            purpose: "Video Editing Workshop",
-            borrower: "Maya Sari, S.Kom",
-            status: "Pending",
-            submissionDate: "2025-07-07",
-        },
-        {
-            id: 6,
-            room: "Discussion Room C301",
-            building: "Law Faculty Building",
-            date: "2025-07-18",
-            time: "15:00 - 17:00",
-            purpose: "Student Group Discussion",
-            borrower: "Rahmat Hidayat",
-            status: "Approved",
-            submissionDate: "2025-07-04",
-        },
-    ]);
 
     const handleBookingClick = () => {
         setSelectedCategory("Book Room");
@@ -95,12 +26,12 @@ export default function Rooms({ faculties, buildings }) {
     };
 
     const getStatusColor = (status) => {
-        switch (status) {
-            case "Approved":
+        switch (status.toLowerCase()) {
+            case "approved":
                 return "bg-green-100 text-green-800";
-            case "Pending":
+            case "pending":
                 return "bg-yellow-100 text-yellow-800";
-            case "Rejected":
+            case "rejected":
                 return "bg-red-100 text-red-800";
             default:
                 return "bg-gray-100 text-gray-800";
@@ -108,12 +39,12 @@ export default function Rooms({ faculties, buildings }) {
     };
 
     const getStatusIcon = (status) => {
-        switch (status) {
-            case "Approved":
+        switch (status.toLowerCase()) {
+            case "approved":
                 return <CheckCircle className="text-green-500 w-5 h-5" />;
-            case "Pending":
+            case "pending":
                 return <Clock className="text-yellow-500 w-5 h-5" />;
-            case "Rejected":
+            case "rejected":
                 return <XCircle className="text-red-500 w-5 h-5" />;
             default:
                 return <HelpCircle className="text-gray-400 w-5 h-5" />;
@@ -177,7 +108,7 @@ export default function Rooms({ faculties, buildings }) {
                         </div>
 
                         <div>
-                            {bookingData.length > 0 ? (
+                            {bookings && bookings.length > 0 ? (
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50 sticky z-10">
@@ -195,7 +126,7 @@ export default function Rooms({ faculties, buildings }) {
                                                     Purpose
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                    Borrower
+                                                    Number of Participants
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                                                     Status
@@ -206,96 +137,77 @@ export default function Rooms({ faculties, buildings }) {
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
-                                            {bookingData.map(
-                                                (booking, index) => (
-                                                    <tr
-                                                        key={booking.id}
-                                                        className="hover:bg-gray-50"
-                                                    >
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {index + 1}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="flex items-center">
-                                                                <Building className="h-4 w-4 text-gray-400 mr-2" />
-                                                                <div>
-                                                                    <div className="text-sm font-medium text-gray-900">
-                                                                        {
-                                                                            booking.room
-                                                                        }
-                                                                    </div>
-                                                                    <div className="text-sm text-gray-500">
-                                                                        {
-                                                                            booking.building
-                                                                        }
-                                                                    </div>
+                                            {bookings.map((booking, index) => (
+                                                <tr
+                                                    key={booking.id}
+                                                    className="hover:bg-gray-50"
+                                                >
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center">
+                                                            <Building className="h-4 w-4 text-gray-400 mr-2" />
+                                                            <div>
+                                                                <div className="text-sm font-medium text-gray-900">
+                                                                    {booking.room.room_name}
+                                                                </div>
+                                                                <div className="text-sm text-gray-500">
+                                                                    {booking.room.building.building_name}
                                                                 </div>
                                                             </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="flex items-center">
-                                                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                                                                <div>
-                                                                    <div className="text-sm font-medium text-gray-900">
-                                                                        {formatDate(
-                                                                            booking.date
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="text-sm text-gray-500">
-                                                                        {
-                                                                            booking.time
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="text-sm text-gray-900 max-w-xs">
-                                                                {
-                                                                    booking.purpose
-                                                                }
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="flex items-center">
-                                                                <User className="h-4 w-4 text-gray-400 mr-2" />
-                                                                <div className="text-sm text-gray-900">
-                                                                    {
-                                                                        booking.borrower
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <span
-                                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                                                                    booking.status
-                                                                )}`}
-                                                            >
-                                                                <span className="mr-1">
-                                                                    {getStatusIcon(
-                                                                        booking.status
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center">
+                                                            <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                                            <div>
+                                                                <div className="text-sm font-medium text-gray-900">
+                                                                    {formatDate(
+                                                                        booking.booking_date
                                                                     )}
-                                                                </span>
-                                                                {booking.status}
+                                                                </div>
+                                                                <div className="text-sm text-gray-500">
+                                                                    {new Date(booking.start_time).toLocaleTimeString()} - {new Date(booking.end_time).toLocaleTimeString()}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-sm text-gray-900 max-w-xs">
+                                                            {booking.purpose}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-900">
+                                                            {booking.number_of_participants} participants
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span
+                                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                                                                booking.status
+                                                            )}`}
+                                                        >
+                                                            <span className="mr-1">
+                                                                {getStatusIcon(
+                                                                    booking.status
+                                                                )}
                                                             </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                            <button
-                                                                className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                                                                onClick={() =>
-                                                                    console.log(
-                                                                        `View details for booking ${booking.id}`
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Eye className="h-4 w-4 mr-1" />
-                                                                Details
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            )}
+                                                            {booking.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <Link
+                                                            href={route("ruangan.booking.show", booking.id)}
+                                                            className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                                                        >
+                                                            <Eye className="h-4 w-4 mr-1" />
+                                                            Details
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
