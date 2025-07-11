@@ -97,9 +97,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/{booking}', [PeminjamanController::class, 'show'])->name('show');
     });
 
-    // Ruangan 
+    // Ruangan
     Route::prefix('ruangan')->name('ruangan.')->group(function () {
         Route::get('/', [RuanganController::class, 'index'])->name('index');
+        Route::get('/list', [RuanganController::class, 'list'])->name('list');
+        Route::get('/get-rooms', [RuanganController::class, 'getRooms'])->name('get-rooms');
         Route::get('/booking/{booking}', [RuanganController::class, 'showBooking'])->name('booking.show');
     });
 
