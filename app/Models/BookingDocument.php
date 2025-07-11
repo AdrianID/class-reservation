@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class BookingDocument extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'booking_id',
-        'type_id',
+        'document_type_id',
         'document_path',
         'document_name',
     ];
@@ -24,6 +25,6 @@ class BookingDocument extends Model
 
     public function type(): BelongsTo
     {
-        return $this->belongsTo(DocumentType::class, 'type_id');
+        return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
 } 

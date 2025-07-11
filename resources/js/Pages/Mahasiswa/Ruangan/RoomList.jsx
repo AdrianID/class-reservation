@@ -2,11 +2,12 @@ import UserLayout from "@/components/Layouts/UserLayout";
 import ExpandedCalendar from "./components/ExpandedCalendar";
 import RoomBookingModal from "./modal/RoomBookingModal";
 import RoomDetailModal from "./modal/RoomDetailModal";
-import { Head, router } from "@inertiajs/react";
+import ImageSkeleton from "@/components/ui/ImageSkeleton";
+import { Head, router, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { enUS } from "date-fns/locale";
-import { usePage } from "@inertiajs/react";
+import axios from "axios";
 import {
     ArrowUp,
     ChevronLeft,
@@ -39,80 +40,12 @@ export default function RoomList() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [buildingFilter, setBuildingFilter] = useState("all");
     const [facilityFilter, setFacilityFilter] = useState("all");
-
     const [isStickyActive, setIsStickyActive] = useState(false);
-
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [showRoomDetail, setShowRoomDetail] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const offset = window.scrollY;
-            setIsStickyActive(offset > 320);
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Sample class data
-    const classRooms = [
-        {
-            id: 1,
-            name: "Room A",
-            status: "available",
-            image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Central Jakarta",
-            capacity: "50 people",
-            facilities: ["AC", "Projector", "Sound System"],
-        },
-        {
-            id: 2,
-            name: "Room B",
-            status: "occupied",
-            image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "South Jakarta",
-            capacity: "40 people",
-            facilities: ["AC", "Sound System"],
-        },
-        {
-            id: 3,
-            name: "Room C",
-            status: "maintenance",
-            image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "West Jakarta",
-            capacity: "30 people",
-            facilities: ["AC", "Projector", "Wi-Fi"],
-        },
-        {
-            id: 4,
-            name: "Room D",
-            status: "available",
-            image: "https://media.istockphoto.com/id/1087223748/photo/modern-classroom-with-large-panoramic-windows-and-white-desks-bright-interior.webp?a=1&s=612x612&w=0&k=20&c=Ht3bVO3-WL7eGtlLHGYmQIz63AUmiAugflbo-acl7qI=",
-            location: "North Jakarta",
-            capacity: "45 people",
-            facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
-        },
-        {
-            id: 5,
-            name: "Room E",
-            status: "available",
-            image: "https://images.unsplash.com/photo-1635424239131-32dc44986b56?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "East Jakarta",
-            capacity: "35 people",
-            facilities: ["AC", "Wi-Fi"],
-        },
-        {
-            id: 6,
-            name: "Room F",
-            status: "occupied",
-            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Depok",
-            capacity: "40 people",
-            facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
-        },
-    ];
+    const [isLoading, setIsLoading] = useState(true);
+    const [rooms, setRooms] = useState([]);
 
     const { props, url } = usePage();
     const { buildings, faculties } = props;
@@ -120,23 +53,40 @@ export default function RoomList() {
     const bookingRaw = urlParams.get("booking");
     const [bookingData, setBookingData] = useState(null);
 
-    useEffect(() => {
-        if (!popupOpen && bookingData) {
-            if (bookingData.selectedDate) {
-                const newDate = new Date(bookingData.selectedDate);
-                setSelectedDate(newDate);
-
-                if (bookingData.isRangeMode && bookingData.endDate) {
-                    setDateRange({
-                        start: newDate,
-                        end: new Date(bookingData.endDate),
-                    });
-                } else {
-                    setDateRange(null);
-                }
+    // Fetch rooms based on filters
+    const fetchRooms = async () => {
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams();
+            if (bookingData?.selectedFaculty?.value) {
+                params.append('faculty_id', bookingData.selectedFaculty.value);
             }
+            if (bookingData?.selectedBuilding?.value) {
+                params.append('building_id', bookingData.selectedBuilding.value);
+            }
+            if (searchTerm) {
+                params.append('search', searchTerm);
+            }
+            if (statusFilter !== 'all') {
+                params.append('status', statusFilter);
+            }
+            if (facilityFilter !== 'all') {
+                params.append('facility_id', facilityFilter);
+            }
+
+            const response = await axios.get(route('ruangan.get-rooms', params));
+            setRooms(response.data);
+            setFilteredClasses(response.data);
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+        } finally {
+            setIsLoading(false);
         }
-    }, [popupOpen]);
+    };
+
+    useEffect(() => {
+        fetchRooms();
+    }, [bookingData, searchTerm, statusFilter, facilityFilter]);
 
     useEffect(() => {
         if (bookingRaw) {
@@ -154,31 +104,11 @@ export default function RoomList() {
                         end: new Date(data.endDate),
                     });
                 }
-
-                const filtered = classRooms.filter((room) => {
-                    const roomCapacity = parseInt(room.capacity);
-                    const requiredCapacity = parseInt(data.capacity || 1);
-                    const matchCapacity = roomCapacity >= requiredCapacity;
-
-                    const matchLocation =
-                        !data.selectedBuilding ||
-                        room.location
-                            .toLowerCase()
-                            .includes(
-                                data.selectedBuilding.label.toLowerCase()
-                            );
-
-                    return matchCapacity && matchLocation;
-                });
-
-                setFilteredClasses(filtered);
             } catch (e) {
-                setFilteredClasses(classRooms);
+                console.error('Error parsing booking data:', e);
             }
-        } else {
-            setFilteredClasses(classRooms);
         }
-    }, []);
+    }, [bookingRaw]);
 
     // Save URL Params
     useEffect(() => {
@@ -189,7 +119,7 @@ export default function RoomList() {
 
     // Filter classes based on search term
     useEffect(() => {
-        const filtered = classRooms.filter((room) => {
+        const filtered = rooms.filter((room) => {
             const matchSearch =
                 room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 room.location.toLowerCase().includes(searchTerm.toLowerCase());
@@ -208,7 +138,7 @@ export default function RoomList() {
         });
 
         setFilteredClasses(filtered);
-    }, [searchTerm, statusFilter, buildingFilter, facilityFilter]);
+    }, [searchTerm, statusFilter, buildingFilter, facilityFilter, rooms]);
 
     // Get status style
     const getStatusStyle = (status) => {
@@ -303,7 +233,12 @@ export default function RoomList() {
 
     const handleRoomClick = (room) => {
         if (room.status !== "available") return;
-        setSelectedRoom(room);
+        setSelectedRoom({
+            ...room,
+            facilities: room.facilities || [],
+            category: room.category || 'Standard Room',
+            description: room.description || 'No description available',
+        });
         setShowRoomDetail(true);
     };
 
@@ -638,7 +573,7 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                         }`}
                                     >
                                         Showing {filteredClasses.length} of{" "}
-                                        {classRooms.length} rooms
+                                        {rooms.length} rooms
                                     </p>
 
                                     <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
@@ -794,7 +729,7 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                                     </option>
                                                                     {[
                                                                         ...new Set(
-                                                                            classRooms.map(
+                                                                            rooms.map(
                                                                                 (
                                                                                     room
                                                                                 ) =>
@@ -848,7 +783,7 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                                     </option>
                                                                     {[
                                                                         ...new Set(
-                                                                            classRooms.flatMap(
+                                                                            rooms.flatMap(
                                                                                 (
                                                                                     r
                                                                                 ) =>
@@ -881,7 +816,15 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                     </div>
                                 </div>
 
-                                {filteredClasses.length === 0 ? (
+                                {isLoading ? (
+                                    <div className="bg-white shadow rounded-lg p-8 text-center">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                                        <h4 className="text-lg font-medium text-gray-800 mb-2">
+                                            Loading rooms...
+                                        </h4>
+                                        <p className="text-gray-600">Please wait while we fetch the rooms.</p>
+                                    </div>
+                                ) : filteredClasses.length === 0 ? (
                                     <div className="bg-white shadow rounded-lg p-8 text-center">
                                         <Frown className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                                         <h4 className="text-lg font-medium text-gray-800 mb-2">
@@ -894,51 +837,51 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {filteredClasses.map((classRoom) => (
+                                        {filteredClasses.map((room) => (
                                             <div
-                                                key={classRoom.id}
-                                                onClick={() =>
-                                                    handleRoomClick(classRoom)
-                                                }
+                                                key={room.id}
+                                                onClick={() => handleRoomClick(room)}
                                                 className={`bg-white shadow rounded-lg overflow-hidden flex flex-col transition-all duration-200 ${
-                                                    classRoom.status ===
-                                                    "available"
+                                                    room.status === "available"
                                                         ? "cursor-pointer hover:shadow-lg hover:-translate-y-1"
                                                         : "opacity-70 cursor-not-allowed"
                                                 }`}
                                             >
                                                 <div className="h-52 bg-gray-200 relative">
-                                                    <img
-                                                        src={classRoom.image}
-                                                        alt={classRoom.name}
-                                                        className="h-full w-full object-cover"
+                                                    {room.image ? (
+                                                        <img
+                                                            src={room.image}
+                                                            alt={room.name}
+                                                            className="h-full w-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextElementSibling.style.display = 'flex';
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <ImageSkeleton 
+                                                        className={`h-full w-full absolute inset-0 ${room.image ? 'hidden' : 'flex'}`}
                                                     />
-                                                    <div className="absolute top-3 right-3">
+                                                    <div className="absolute top-3 right-3 z-10">
                                                         <span
                                                             className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                                                                classRoom.status ===
-                                                                "available"
+                                                                room.status === "available"
                                                                     ? "bg-green-100 text-green-800 border-green-200"
-                                                                    : classRoom.status ===
-                                                                      "occupied"
+                                                                    : room.status === "booked"
                                                                     ? "bg-orange-100 text-orange-800 border-orange-200"
                                                                     : "bg-red-100 text-red-800 border-red-200"
                                                             }`}
                                                         >
-                                                            {getStatusLabel(
-                                                                classRoom.status
-                                                            )}
+                                                            {getStatusLabel(room.status)}
                                                         </span>
                                                     </div>
 
                                                     {/* Overlay for non-available rooms */}
-                                                    {classRoom.status !==
-                                                        "available" && (
-                                                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                                    {room.status !== "available" && (
+                                                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10">
                                                             <span className="text-white font-medium text-sm bg-black/60 px-3 py-1 rounded">
-                                                                {classRoom.status ===
-                                                                "occupied"
-                                                                    ? "Currently Occupied"
+                                                                {room.status === "booked"
+                                                                    ? "Currently Booked"
                                                                     : "Under Maintenance"}
                                                             </span>
                                                         </div>
@@ -947,16 +890,16 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
 
                                                 <div className="p-5 flex-1">
                                                     <h4 className="text-lg font-medium mb-2 text-primary">
-                                                        {classRoom.name}
+                                                        {room.name}
                                                     </h4>
                                                     <div className="space-y-2 text-sm text-gray-600">
                                                         <div className="flex items-center">
                                                             <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                            {classRoom.location}
+                                                            {room.location}
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Users className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                            {classRoom.capacity}
+                                                            {room.capacity} people
                                                         </div>
                                                         <div>
                                                             <div className="flex items-start">
@@ -966,38 +909,19 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                                         Facilities:
                                                                     </span>
                                                                     <div className="flex flex-wrap gap-1">
-                                                                        {classRoom.facilities
-                                                                            .slice(
-                                                                                0,
-                                                                                3
-                                                                            )
-                                                                            .map(
-                                                                                (
-                                                                                    facility,
-                                                                                    idx
-                                                                                ) => (
-                                                                                    <span
-                                                                                        key={
-                                                                                            idx
-                                                                                        }
-                                                                                        className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary"
-                                                                                    >
-                                                                                        {
-                                                                                            facility
-                                                                                        }
-                                                                                    </span>
-                                                                                )
-                                                                            )}
-                                                                        {classRoom
-                                                                            .facilities
-                                                                            .length >
-                                                                            3 && (
+                                                                        {room.facilities
+                                                                            .slice(0, 3)
+                                                                            .map((facility, idx) => (
+                                                                                <span
+                                                                                    key={idx}
+                                                                                    className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary"
+                                                                                >
+                                                                                    {facility}
+                                                                                </span>
+                                                                            ))}
+                                                                        {room.facilities.length > 3 && (
                                                                             <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                                                                                +
-                                                                                {classRoom
-                                                                                    .facilities
-                                                                                    .length -
-                                                                                    3}{" "}
+                                                                                +{room.facilities.length - 3}{" "}
                                                                                 more
                                                                             </span>
                                                                         )}
@@ -1007,33 +931,10 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                {/* <div className="px-5 py-4 border-t border-gray-200">
-                                                    <div
-                                                        className={`w-full text-center py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
-                                                            classRoom.status ===
-                                                            "available"
-                                                                ? "bg-primary text-white"
-                                                                : "bg-gray-100 text-gray-500"
-                                                        }`}
-                                                    >
-                                                        {classRoom.status ===
-                                                        "available"
-                                                            ? "Click to view details"
-                                                            : "Not Available"}
-                                                    </div>
-                                                </div> */}
                                             </div>
                                         ))}
                                     </div>
                                 )}
-
-                                {/* {filteredClasses.length > 0 && (
-                                    <div className="mt-6 text-center text-sm text-gray-600">
-                                        Showing {filteredClasses.length} of{" "}
-                                        {classRooms.length} rooms
-                                    </div>
-                                )} */}
                             </div>
                         </div>
                     </div>

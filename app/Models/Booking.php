@@ -13,15 +13,21 @@ class Booking extends Model
     protected $fillable = [
         'user_id',
         'room_id',
-        'booking_code',
+        'approver_id',
         'booking_date',
         'start_time',
-        'duration_minutes',
+        'end_time',
         'purpose',
+        'number_of_participants',
         'status',
-        'requires_approval',
-        'approver_id',
         'rejection_reason',
+    ];
+
+    protected $casts = [
+        'booking_date' => 'date',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'number_of_participants' => 'integer',
     ];
 
     public function user()

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Helpers\FacultyHelper;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -30,13 +31,21 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        // Redirect berdasarkan role user
         $user = Auth::user();
         $userWithRole = \App\Models\User::with('role')->find($user->id);
-        
+
+        // Hanya redirect faculty selection jika BUKAN Mahasiswa
+        if (
+            $userWithRole && $userWithRole->role &&
+            $userWithRole->role->role_name !== 'Mahasiswa' &&
+            !\App\Helpers\FacultyHelper::getSelectedFaculty()
+        ) {
+            return redirect()->route('faculty.selection');
+        }
+
+        // Redirect berdasarkan role user
         if ($userWithRole && $userWithRole->role) {
             switch ($userWithRole->role->role_name) {
                 case 'Super Admin':
