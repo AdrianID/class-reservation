@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Faculty;
 use App\Models\Building;
+use App\Models\Room;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class RuanganController extends Controller

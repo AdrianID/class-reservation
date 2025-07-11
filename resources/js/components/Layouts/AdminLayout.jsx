@@ -19,7 +19,9 @@ import {
 } from "lucide-react";
 
 export default function AdminLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { props } = usePage();
+    const user = props.auth.user;
+    const selectedFaculty = props.selectedFaculty;
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -285,9 +287,16 @@ export default function AdminLayout({ header, children }) {
                             >
                                 <Menu size={24} />
                             </button>
-                            <h2 className="ml-4 text-lg font-medium text-[#365b6d]">
-                                Admin Dashboard
-                            </h2>
+                            <div className="ml-4">
+                                <h2 className="text-lg font-medium text-[#365b6d]">
+                                    Admin Dashboard
+                                </h2>
+                                {selectedFaculty && (
+                                    <p className="text-sm text-gray-500">
+                                        Mengelola: {selectedFaculty.faculty_name}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Right side: Search and User */}
@@ -344,6 +353,15 @@ export default function AdminLayout({ header, children }) {
                                             }
                                         >
                                             Profile
+                                        </Link>
+                                        <Link
+                                            href={route("faculty.selection")}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() =>
+                                                setUserDropdownOpen(false)
+                                            }
+                                        >
+                                            Ganti Fakultas
                                         </Link>
                                         <Link
                                             href={route("logout")}

@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\BookingController;
-
+use App\Http\Controllers\FacultySelectionController;
 
 // user
 use App\Http\Controllers\DashboardController;
@@ -27,8 +27,15 @@ Route::get('/', function () {
     ]);
 });
 
+// Faculty Selection Routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/faculty-selection', [FacultySelectionController::class, 'index'])->name('faculty.selection');
+    Route::post('/faculty-selection', [FacultySelectionController::class, 'store'])->name('faculty.selection.store');
+    Route::delete('/faculty-selection', [FacultySelectionController::class, 'clear'])->name('faculty.selection.clear');
+});
+
 // Admin
-Route::prefix('admin')->middleware(['auth', 'verified', 'role:Super Admin,Admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified', 'role:Super Admin,Admin', 'check.faculty'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // Room management
@@ -90,7 +97,7 @@ Route::middleware(['auth', 'role:Mahasiswa,Dosen,Dekan'])->group(function () {
     // Ruangan 
     Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
-    Route::get('/ruangan/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
+    Route::get('/ruangan/{id}/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
 
     // Jadwal
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');

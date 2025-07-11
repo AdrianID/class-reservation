@@ -4,31 +4,59 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { XMarkIcon, PlusCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 
-export default function RoomEdit({ room, faculties, buildings, categories, facilities }) {
+export default function RoomEdit({ 
+    room = {}, 
+    faculties = [], 
+    buildings = [], 
+    categories = [], 
+    facilities = [] 
+}) {
+    // Validasi props
+    if (!room || Object.keys(room).length === 0) {
+        return (
+            <AdminLayout
+                header={
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                        Loading...
+                    </h2>
+                }
+            >
+                <div className="py-6">
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div className="p-6 text-gray-900">
+                                <p>Loading data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </AdminLayout>
+        );
+    }
     const [buildingsByFaculty, setBuildingsByFaculty] = useState({});
-    const [selectedFaculty, setSelectedFaculty] = useState(room.building.faculty_id);
+    const [selectedFaculty, setSelectedFaculty] = useState(room.building?.faculty_id || "");
     const fileInputRef = useRef(null);
-    const [imagePreview, setImagePreview] = useState(room.image_path ? `/storage/${room.image_path}` : null);
+    const [imagePreview, setImagePreview] = useState(room?.image_path ? `/storage/${room.image_path}` : null);
     const [roomFacilities, setRoomFacilities] = useState(
-        room.facilities_list && room.facilities_list.length > 0
+        room?.facilities_list && room.facilities_list.length > 0
             ? room.facilities_list
-            : [{ facility_id: "", quantity: 1, notes: "" }]
+            : []
     );
 
     // Refs untuk immediate values (prevent fast input issues)
-    const capacityRef = useRef(room.capacity);
-    const roomCodeRef = useRef(room.room_code);
-    const roomNameRef = useRef(room.room_name);
+    const capacityRef = useRef(room.capacity || "");
+    const roomCodeRef = useRef(room.room_code || "");
+    const roomNameRef = useRef(room.room_name || "");
 
     const { data, setData, put, processing, errors, reset } = useForm({
-        building_id: room.building_id,
-        category_id: room.category_id,
-        room_code: room.room_code,
-        room_name: room.room_name,
+        building_id: room.building_id || "",
+        category_id: room.category_id || "",
+        room_code: room.room_code || "",
+        room_name: room.room_name || "",
         location_detail: room.location_detail || "",
-        capacity: room.capacity,
+        capacity: room.capacity || "",
         description: room.description || "",
-        status: room.status,
+        status: room.status || "available",
         image: null,
         facilities: roomFacilities
     });
@@ -55,7 +83,8 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
 
     // Handle quantity input untuk facilities
     const handleQuantityChange = useCallback((index, value) => {
-        const newFacilities = [...roomFacilities];
+        const currentFacilities = roomFacilities || [];
+        const newFacilities = [...currentFacilities];
         newFacilities[index].quantity = value;
         setRoomFacilities(newFacilities);
         debouncedSetData("facilities", newFacilities);
@@ -69,14 +98,16 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
 
     // Add more facility fields
     const addFacility = () => {
-        const newFacilities = [...roomFacilities, { facility_id: "", quantity: 1, notes: "" }];
+        const currentFacilities = roomFacilities || [];
+        const newFacilities = [...currentFacilities, { facility_id: "", quantity: 1, notes: "" }];
         setRoomFacilities(newFacilities);
         setData("facilities", newFacilities);
     };
 
     // Remove facility field
     const removeFacility = (index) => {
-        const newFacilities = [...roomFacilities];
+        const currentFacilities = roomFacilities || [];
+        const newFacilities = [...currentFacilities];
         newFacilities.splice(index, 1);
         setRoomFacilities(newFacilities);
         setData("facilities", newFacilities);
@@ -84,7 +115,8 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
 
     // Update facility fields
     const updateFacility = (index, field, value) => {
-        const newFacilities = [...roomFacilities];
+        const currentFacilities = roomFacilities || [];
+        const newFacilities = [...currentFacilities];
         newFacilities[index][field] = value;
         setRoomFacilities(newFacilities);
         setData("facilities", newFacilities);
@@ -141,6 +173,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
 
     // Filter the available buildings based on selected faculty
     const filteredBuildings = useMemo(() => {
+        if (!buildings || !Array.isArray(buildings)) return [];
         return selectedFaculty
             ? buildings.filter(building => building.faculty_id == selectedFaculty)
             : buildings;
@@ -148,6 +181,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
 
     // Get facility name by ID
     const getFacilityName = (facilityId) => {
+        if (!facilities || !Array.isArray(facilities)) return '';
         const facility = facilities.find(f => f.id == facilityId);
         return facility ? facility.facility_name : '';
     };
@@ -156,7 +190,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
         <AdminLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Edit Ruangan: {room.room_name}
+                    Edit Ruangan: {room?.room_name || "Loading..."}
                 </h2>
             }
         >
@@ -166,7 +200,12 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            {!room || !room.id ? (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Loading data ruangan...</p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-6">
                                 {/* Basic Information Section */}
                                 <div className="bg-gray-50 p-4 rounded-md">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Dasar</h3>
@@ -182,7 +221,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                     errors.room_code ? "border-red-500" : ""
                                                 }`}
-                                                defaultValue={data.room_code}
+                                                defaultValue={data.room_code || ""}
                                                 onChange={(e) => handleInputChange("room_code", e.target.value)}
                                                 onBlur={(e) => setData("room_code", e.target.value)}
                                                 placeholder="Contoh: R101"
@@ -206,7 +245,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                     errors.room_name ? "border-red-500" : ""
                                                 }`}
-                                                defaultValue={data.room_name}
+                                                defaultValue={data.room_name || ""}
                                                 onChange={(e) => handleInputChange("room_name", e.target.value)}
                                                 onBlur={(e) => setData("room_name", e.target.value)}
                                                 placeholder="Contoh: Ruang Kuliah 101"
@@ -214,26 +253,6 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                             {errors.room_name && (
                                                 <p className="mt-1 text-sm text-red-500">{errors.room_name}</p>
                                             )}
-                                        </div>
-
-                                        {/* Faculty */}
-                                        <div>
-                                            <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">
-                                                Fakultas <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                id="faculty"
-                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm`}
-                                                value={selectedFaculty}
-                                                onChange={(e) => handleFacultyChange(e.target.value)}
-                                            >
-                                                <option value="">Pilih Fakultas</option>
-                                                {faculties.map((faculty) => (
-                                                    <option key={faculty.id} value={faculty.id}>
-                                                        {faculty.faculty_name}
-                                                    </option>
-                                                ))}
-                                            </select>
                                         </div>
 
                                         {/* Building */}
@@ -251,11 +270,14 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                 disabled={!selectedFaculty}
                                             >
                                                 <option value="">Pilih Gedung</option>
-                                                {filteredBuildings.map((building) => (
+                                                {filteredBuildings && filteredBuildings.length > 0 && filteredBuildings.map((building) => (
                                                     <option key={building.id} value={building.id}>
                                                         {building.building_name}
                                                     </option>
                                                 ))}
+                                                {(!filteredBuildings || filteredBuildings.length === 0) && (
+                                                    <option value="" disabled>Tidak ada gedung tersedia</option>
+                                                )}
                                             </select>
                                             {errors.building_id && (
                                                 <p className="mt-1 text-sm text-red-500">{errors.building_id}</p>
@@ -276,11 +298,14 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                 onChange={(e) => setData("category_id", e.target.value)}
                                             >
                                                 <option value="">Pilih Kategori</option>
-                                                {categories.map((category) => (
+                                                {categories && categories.length > 0 && categories.map((category) => (
                                                     <option key={category.id} value={category.id}>
                                                         {category.category_name}
                                                     </option>
                                                 ))}
+                                                {(!categories || categories.length === 0) && (
+                                                    <option value="" disabled>Tidak ada kategori tersedia</option>
+                                                )}
                                             </select>
                                             {errors.category_id && (
                                                 <p className="mt-1 text-sm text-red-500">{errors.category_id}</p>
@@ -299,7 +324,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                     errors.capacity ? "border-red-500" : ""
                                                 }`}
-                                                defaultValue={data.capacity}
+                                                defaultValue={data.capacity || ""}
                                                 onChange={(e) => handleInputChange("capacity", e.target.value)}
                                                 onBlur={(e) => setData("capacity", e.target.value)}
                                                 placeholder="Jumlah orang"
@@ -431,19 +456,17 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                         </button>
                                     </div>
 
-                                    {roomFacilities.map((facility, index) => (
+                                                                        {roomFacilities && roomFacilities.length > 0 ? roomFacilities.map((facility, index) => (
                                         <div key={index} className="border border-gray-200 rounded-md p-4 mb-4">
                                             <div className="flex justify-between items-center mb-2">
                                                 <h4 className="text-sm font-medium text-gray-700">Fasilitas #{index + 1}</h4>
-                                                {roomFacilities.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeFacility(index)}
-                                                        className="text-red-600 hover:text-red-800"
-                                                    >
-                                                        <XMarkIcon className="h-5 w-5" />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFacility(index)}
+                                                    className="text-red-600 hover:text-red-800"
+                                                >
+                                                    <XMarkIcon className="h-5 w-5" />
+                                                </button>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
@@ -455,15 +478,18 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                         className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                             errors[`facilities.${index}.facility_id`] ? "border-red-500" : ""
                                                         }`}
-                                                        value={facility.facility_id}
+                                                        value={facility?.facility_id || ""}
                                                         onChange={(e) => updateFacility(index, "facility_id", e.target.value)}
                                                     >
                                                         <option value="">Pilih Fasilitas</option>
-                                                        {facilities.map((fac) => (
+                                                        {facilities && facilities.length > 0 && facilities.map((fac) => (
                                                             <option key={fac.id} value={fac.id}>
                                                                 {fac.facility_name} ({fac.facility_code})
                                                             </option>
                                                         ))}
+                                                        {(!facilities || facilities.length === 0) && (
+                                                            <option value="" disabled>Tidak ada fasilitas tersedia</option>
+                                                        )}
                                                     </select>
                                                     {errors[`facilities.${index}.facility_id`] && (
                                                         <p className="mt-1 text-sm text-red-500">{errors[`facilities.${index}.facility_id`]}</p>
@@ -480,7 +506,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                         className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                             errors[`facilities.${index}.quantity`] ? "border-red-500" : ""
                                                         }`}
-                                                        defaultValue={facility.quantity}
+                                                        defaultValue={facility.quantity || 1}
                                                         onChange={(e) => handleQuantityChange(index, e.target.value)}
                                                         onBlur={(e) => updateFacility(index, "quantity", e.target.value)}
                                                     />
@@ -499,7 +525,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                     className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
                                                         errors[`facilities.${index}.notes`] ? "border-red-500" : ""
                                                     }`}
-                                                    value={facility.notes || ""}
+                                                    value={facility?.notes || ""}
                                                     onChange={(e) => updateFacility(index, "notes", e.target.value)}
                                                     placeholder="Catatan tambahan tentang fasilitas"
                                                 />
@@ -508,7 +534,11 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                                 )}
                                             </div>
                                         </div>
-                                    ))}
+                                    )) : (
+                                        <div className="text-center py-4">
+                                            <p className="text-gray-500">Tidak ada fasilitas tersedia</p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Submit Button */}
@@ -524,6 +554,7 @@ export default function RoomEdit({ room, faculties, buildings, categories, facil
                                     </button>
                                 </div>
                             </form>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { Transition } from '@headlessui/react';
 import { PlusIcon, MagnifyingGlassIcon, XMarkIcon, PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-export default function RoomIndex({ rooms, filters, buildings, categories, facilities, statuses, flash }) {
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+export default function RoomIndex({ rooms = [], filters = {}, buildings = [], categories = [], facilities = [], statuses = [], flash = null, selectedFaculty = null }) {
+    const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [selectedFilters, setSelectedFilters] = useState({
-        building_id: filters.building_id || '',
-        category_id: filters.category_id || '',
-        status: filters.status || '',
-        facility_id: filters.facility_id || '',
+        building_id: filters?.building_id || '',
+        category_id: filters?.category_id || '',
+        status: filters?.status || '',
+        facility_id: filters?.facility_id || '',
     });
     const [showFlash, setShowFlash] = useState(!!flash);
     
@@ -36,10 +36,12 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
     };
 
     const applyFilters = (additionalFilters = {}) => {
+        // Gabungkan filter yang sudah dipilih dengan filter tambahan
+        const params = { ...selectedFilters, ...additionalFilters, search: searchTerm };
         router.get(
             route('admin.ruangan.index'),
-            { ...selectedFilters, ...additionalFilters },
-            { preserveState: true }
+            params,
+            { preserveState: true, replace: true }
         );
     };
 
@@ -51,7 +53,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
             facility_id: '',
         });
         setSearchTerm('');
-        router.get(route('admin.ruangan.index'));
+        router.get(route('admin.ruangan.index'), {}, { preserveState: false, replace: true });
     };
 
     const confirmDelete = (id, name) => {
@@ -91,7 +93,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
             header={
                 <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        Daftar Ruangan
+                        Daftar Ruangan {selectedFaculty && `- ${selectedFaculty.faculty_name}`}
                     </h2>
                     <Link
                         href={route('admin.ruangan.create')}
@@ -175,9 +177,9 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                 onChange={handleFilterChange}
                                             >
                                                 <option value="">Semua Gedung</option>
-                                                {buildings.map(building => (
+                                                {buildings?.map(building => (
                                                     <option key={building.id} value={building.id}>
-                                                        {building.building_name} - {building.faculty.faculty_name}
+                                                        {building.building_name} - {building.faculty?.faculty_name}
                                                     </option>
                                                 ))}
                                             </select>
@@ -194,7 +196,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                 onChange={handleFilterChange}
                                             >
                                                 <option value="">Semua Kategori</option>
-                                                {categories.map(category => (
+                                                {categories?.map(category => (
                                                     <option key={category.id} value={category.id}>
                                                         {category.category_name}
                                                     </option>
@@ -213,7 +215,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                 onChange={handleFilterChange}
                                             >
                                                 <option value="">Semua Fasilitas</option>
-                                                {facilities.map(facility => (
+                                                {facilities?.map(facility => (
                                                     <option key={facility.id} value={facility.id}>
                                                         {facility.facility_name}
                                                     </option>
@@ -232,7 +234,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                 onChange={handleFilterChange}
                                             >
                                                 <option value="">Semua Status</option>
-                                                {statuses.map(status => (
+                                                {statuses?.map(status => (
                                                     <option key={status} value={status}>
                                                         {getStatusText(status)}
                                                     </option>
@@ -261,7 +263,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
 
                             {/* Rooms Table */}
                             <div className="overflow-x-auto">
-                                {rooms.data.length > 0 ? (
+                                {rooms && rooms.length > 0 ? (
                                     <>
                                         {/* Desktop Table */}
                                         <div className="hidden md:block">
@@ -275,9 +277,6 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                             Nama & Lokasi
                                                         </th>
                                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Fakultas
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                             Kategori
                                                         </th>
                                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -289,7 +288,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
-                                                    {rooms.data.map((room) => (
+                                                    {rooms.map((room) => (
                                                         <tr key={room.id} className="hover:bg-gray-50">
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                                 <div className="flex gap-2">
@@ -320,9 +319,6 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                                {room.building.faculty.faculty_name}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                                 {room.category.category_name}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -341,7 +337,7 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
 
                                         {/* Mobile Card Layout */}
                                         <div className="md:hidden space-y-4">
-                                            {rooms.data.map((room) => (
+                                            {rooms.map((room) => (
                                                 <div key={room.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                                                     <div className="flex items-start justify-between mb-3">
                                                         <div className="flex-1">
@@ -373,10 +369,6 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                                     
                                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                                         <div>
-                                                            <span className="text-gray-500">Fakultas:</span>
-                                                            <p className="font-medium text-gray-900">{room.building.faculty.faculty_name}</p>
-                                                        </div>
-                                                        <div>
                                                             <span className="text-gray-500">Kategori:</span>
                                                             <p className="font-medium text-gray-900">{room.category.category_name}</p>
                                                         </div>
@@ -396,75 +388,14 @@ export default function RoomIndex({ rooms, filters, buildings, categories, facil
                                 )}
                             </div>
 
-                            {/* Pagination */}
-                            {rooms.data.length > 0 && (
+                            {/* Pagination - Disabled for now */}
+                            {/* {rooms && rooms.length > 0 && (
                                 <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                                    <div className="flex-1 flex justify-between sm:hidden">
-                                        {rooms.prev_page_url && (
-                                            <a
-                                                href="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    router.get(rooms.prev_page_url);
-                                                }}
-                                                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                            >
-                                                Sebelumnya
-                                            </a>
-                                        )}
-                                        {rooms.next_page_url && (
-                                            <a
-                                                href="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    router.get(rooms.next_page_url);
-                                                }}
-                                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                            >
-                                                Selanjutnya
-                                            </a>
-                                        )}
-                                    </div>
-                                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                        <div>
-                                            <p className="text-sm text-gray-700">
-                                                Menampilkan <span className="font-medium">{rooms.from}</span> sampai <span className="font-medium">{rooms.to}</span> dari <span className="font-medium">{rooms.total}</span> hasil
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                                {rooms.links.map((link, i) => {
-                                                    if (link.url === null) {
-                                                        return (
-                                                            <span
-                                                                key={i}
-                                                                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500"
-                                                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                                            />
-                                                        );
-                                                    }
-                                                    return (
-                                                        <a
-                                                            key={i}
-                                                            href="#"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                router.get(link.url);
-                                                            }}
-                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                                                link.active
-                                                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                                            }`}
-                                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                                        />
-                                                    );
-                                                })}
-                                            </nav>
-                                        </div>
-                                    </div>
+                                    <p className="text-sm text-gray-700">
+                                        Menampilkan {rooms.length} ruangan
+                                    </p>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </div>
                 </div>

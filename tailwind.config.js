@@ -10,6 +10,11 @@ export default {
         "./resources/views/**/*.blade.php",
         "./resources/js/**/*.jsx",
     ],
+    safelist: [
+        'delay-150',
+        'delay-300',
+        'delay-500',
+    ],
 
     theme: {
         extend: {
@@ -51,8 +56,33 @@ export default {
 
                 /* accent new = DEFAULT: "#82f9be", */
             },
+            animation: {
+                'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            animationDelay: {
+                '150': '150ms',
+                '300': '300ms',
+                '500': '500ms',
+            },
         },
     },
 
-    plugins: [forms],
+    plugins: [
+        forms,
+        function ({ addUtilities }) {
+            const newUtilities = {
+                '.delay-150': {
+                    'animation-delay': '150ms',
+                },
+                '.delay-300': {
+                    'animation-delay': '300ms',
+                },
+                '.delay-500': {
+                    'animation-delay': '500ms',
+                },
+            }
+            addUtilities(newUtilities)
+        }
+    ],
 };
