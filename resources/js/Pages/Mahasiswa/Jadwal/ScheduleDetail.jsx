@@ -16,7 +16,7 @@ import {
 } from "date-fns";
 import { id } from "date-fns/locale";
 
-export default function JadwalKelasDetail() {
+export default function ScheduleDetail() {
     // Brand colors
     const primaryColor = "#365b6d";
     const primaryLightColor = "#e9eff2";

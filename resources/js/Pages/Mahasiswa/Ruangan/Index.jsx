@@ -11,98 +11,96 @@ import {
     CheckCircle,
     XCircle,
     HelpCircle,
+    ChevronRight,
 } from "lucide-react";
 import UserLayout from "@/components/Layouts/UserLayout";
-import RoomBookingPopup from "./RoomBookingPopup";
+import RoomBookingModal from "./modal/RoomBookingModal";
 
-export default function Ruangan({ faculties, buildings }) {
-    const primaryColor = "#365b6d";
-
+export default function Rooms({ faculties, buildings }) {
     const [popupOpen, setPopupOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
 
-    // Dummy data untuk tabel peminjaman ruangan
     const [bookingData] = useState([
         {
             id: 1,
-            ruangan: "Ruang Kuliah A101",
-            gedung: "Gedung Teknik Informatika",
-            tanggal: "2025-07-10",
-            waktu: "08:00 - 10:00",
-            keperluan: "Kuliah Pemrograman Web",
-            peminjam: "Dr. Ahmad Susanto",
-            status: "Disetujui",
-            tanggal_pengajuan: "2025-07-05",
+            room: "Lecture Room A101",
+            building: "Computer Science Building",
+            date: "2025-07-10",
+            time: "08:00 - 10:00",
+            purpose: "Web Programming Lecture",
+            borrower: "Dr. Ahmad Susanto",
+            status: "Approved",
+            submissionDate: "2025-07-05",
         },
         {
             id: 2,
-            ruangan: "Lab Komputer 2",
-            gedung: "Gedung Teknik Informatika",
-            tanggal: "2025-07-12",
-            waktu: "13:00 - 15:00",
-            keperluan: "Praktikum Database",
-            peminjam: "Siti Nurhaliza, M.Kom",
-            status: "Menunggu",
-            tanggal_pengajuan: "2025-07-06",
+            room: "Computer Lab 2",
+            building: "Computer Science Building",
+            date: "2025-07-12",
+            time: "13:00 - 15:00",
+            purpose: "Database Practicum",
+            borrower: "Siti Nurhaliza, M.Kom",
+            status: "Pending",
+            submissionDate: "2025-07-06",
         },
         {
             id: 3,
-            ruangan: "Aula Serbaguna",
-            gedung: "Gedung Rektorat",
-            tanggal: "2025-07-15",
-            waktu: "09:00 - 12:00",
-            keperluan: "Seminar Nasional IT",
-            peminjam: "Budi Santoso",
-            status: "Disetujui",
-            tanggal_pengajuan: "2025-07-01",
+            room: "Multipurpose Hall",
+            building: "Rectorate Building",
+            date: "2025-07-15",
+            time: "09:00 - 12:00",
+            purpose: "National IT Seminar",
+            borrower: "Budi Santoso",
+            status: "Approved",
+            submissionDate: "2025-07-01",
         },
         {
             id: 4,
-            ruangan: "Ruang Meeting B203",
-            gedung: "Gedung Ekonomi",
-            tanggal: "2025-07-08",
-            waktu: "14:00 - 16:00",
-            keperluan: "Rapat Koordinasi",
-            peminjam: "Andi Pratama",
-            status: "Ditolak",
-            tanggal_pengajuan: "2025-07-03",
+            room: "Meeting Room B203",
+            building: "Economics Building",
+            date: "2025-07-08",
+            time: "14:00 - 16:00",
+            purpose: "Coordination Meeting",
+            borrower: "Andi Pratama",
+            status: "Rejected",
+            submissionDate: "2025-07-03",
         },
         {
             id: 5,
-            ruangan: "Lab Multimedia",
-            gedung: "Gedung Teknik Informatika",
-            tanggal: "2025-07-20",
-            waktu: "10:00 - 12:00",
-            keperluan: "Workshop Video Editing",
-            peminjam: "Maya Sari, S.Kom",
-            status: "Menunggu",
-            tanggal_pengajuan: "2025-07-07",
+            room: "Multimedia Lab",
+            building: "Computer Science Building",
+            date: "2025-07-20",
+            time: "10:00 - 12:00",
+            purpose: "Video Editing Workshop",
+            borrower: "Maya Sari, S.Kom",
+            status: "Pending",
+            submissionDate: "2025-07-07",
         },
         {
             id: 6,
-            ruangan: "Ruang Diskusi C301",
-            gedung: "Gedung Fakultas Hukum",
-            tanggal: "2025-07-18",
-            waktu: "15:00 - 17:00",
-            keperluan: "Diskusi Kelompok Mahasiswa",
-            peminjam: "Rahmat Hidayat",
-            status: "Disetujui",
-            tanggal_pengajuan: "2025-07-04",
+            room: "Discussion Room C301",
+            building: "Law Faculty Building",
+            date: "2025-07-18",
+            time: "15:00 - 17:00",
+            purpose: "Student Group Discussion",
+            borrower: "Rahmat Hidayat",
+            status: "Approved",
+            submissionDate: "2025-07-04",
         },
     ]);
 
     const handleBookingClick = () => {
-        setSelectedCategory("Pinjam Ruangan");
+        setSelectedCategory("Book Room");
         setPopupOpen(true);
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case "Disetujui":
+            case "Approved":
                 return "bg-green-100 text-green-800";
-            case "Menunggu":
+            case "Pending":
                 return "bg-yellow-100 text-yellow-800";
-            case "Ditolak":
+            case "Rejected":
                 return "bg-red-100 text-red-800";
             default:
                 return "bg-gray-100 text-gray-800";
@@ -111,78 +109,73 @@ export default function Ruangan({ faculties, buildings }) {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case "Disetujui":
+            case "Approved":
                 return <CheckCircle className="text-green-500 w-5 h-5" />;
-            case "Menunggu":
+            case "Pending":
                 return <Clock className="text-yellow-500 w-5 h-5" />;
-            case "Ditolak":
+            case "Rejected":
                 return <XCircle className="text-red-500 w-5 h-5" />;
             default:
                 return <HelpCircle className="text-gray-400 w-5 h-5" />;
         }
     };
 
+    const formatDate = (dateString) => {
+        const options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        };
+        return new Date(dateString).toLocaleDateString("en-US", options);
+    };
+
     return (
         <UserLayout
             header={
-                <h2
-                    className="text-xl font-semibold leading-tight"
-                    style={{ color: primaryColor }}
-                >
-                    Ruangan
+                <h2 className="text-xl font-semibold leading-tight text-primary">
+                    Rooms
                 </h2>
             }
         >
-            <Head title="Ruangan" />
+            <Head title="Rooms" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Hero Section */}
-                    <div
-                        className="mb-8 p-6 rounded-xl shadow-md"
-                        style={{ backgroundColor: primaryColor }}
-                    >
+                    <div className="mb-8 p-6 rounded-xl shadow-md bg-primary">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                             <div className="mb-4 md:mb-0">
                                 <h1 className="text-3xl font-bold text-white mb-2">
-                                    Peminjaman Ruangan
+                                    Room Booking
                                 </h1>
                                 <p className="text-gray-100">
-                                    Kelola dan pantau semua peminjaman ruangan
-                                    Anda
+                                    Manage and monitor all your room bookings
                                 </p>
                             </div>
                             <div className="flex items-center bg-white bg-opacity-20 p-3 rounded-lg text-white">
                                 <Clock className="h-5 w-5 mr-2" />
                                 <p className="text-sm">
-                                    Proses persetujuan: 1x24 jam kerja
+                                    Approval process: 1 business day
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Main Content - Table with sticky header */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        {/* Sticky Section Header */}
                         <div className="sticky top-0 z-20 bg-white border-b border-gray-200 p-6 shadow-sm">
                             <div className="flex items-center justify-between">
-                                <h2
-                                    className="text-xl font-semibold"
-                                    style={{ color: primaryColor }}
-                                >
-                                    Daftar Peminjaman Ruangan
+                                <h2 className="text-xl font-semibold text-primary">
+                                    Room Booking List
                                 </h2>
                                 <button
                                     onClick={handleBookingClick}
-                                    className="flex items-center px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity duration-200"
-                                    style={{ backgroundColor: primaryColor }}
+                                    className="flex items-center px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity duration-200 bg-primary"
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
-                                    Pinjam Ruang
+                                    Book Room
                                 </button>
                             </div>
                         </div>
 
-                        {/* Table Content */}
                         <div>
                             {bookingData.length > 0 ? (
                                 <div className="overflow-x-auto">
@@ -193,22 +186,22 @@ export default function Ruangan({ faculties, buildings }) {
                                                     No
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                    Ruangan & Gedung
+                                                    Room & Building
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                    Tanggal & Waktu
+                                                    Date & Time
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                    Keperluan
+                                                    Purpose
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                    Peminjam
+                                                    Borrower
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                                                     Status
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                                                    Aksi
+                                                    Action
                                                 </th>
                                             </tr>
                                         </thead>
@@ -228,12 +221,12 @@ export default function Ruangan({ faculties, buildings }) {
                                                                 <div>
                                                                     <div className="text-sm font-medium text-gray-900">
                                                                         {
-                                                                            booking.ruangan
+                                                                            booking.room
                                                                         }
                                                                     </div>
                                                                     <div className="text-sm text-gray-500">
                                                                         {
-                                                                            booking.gedung
+                                                                            booking.building
                                                                         }
                                                                     </div>
                                                                 </div>
@@ -244,22 +237,13 @@ export default function Ruangan({ faculties, buildings }) {
                                                                 <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                                                                 <div>
                                                                     <div className="text-sm font-medium text-gray-900">
-                                                                        {new Date(
-                                                                            booking.tanggal
-                                                                        ).toLocaleDateString(
-                                                                            "id-ID",
-                                                                            {
-                                                                                weekday:
-                                                                                    "long",
-                                                                                year: "numeric",
-                                                                                month: "long",
-                                                                                day: "numeric",
-                                                                            }
+                                                                        {formatDate(
+                                                                            booking.date
                                                                         )}
                                                                     </div>
                                                                     <div className="text-sm text-gray-500">
                                                                         {
-                                                                            booking.waktu
+                                                                            booking.time
                                                                         }
                                                                     </div>
                                                                 </div>
@@ -268,7 +252,7 @@ export default function Ruangan({ faculties, buildings }) {
                                                         <td className="px-6 py-4">
                                                             <div className="text-sm text-gray-900 max-w-xs">
                                                                 {
-                                                                    booking.keperluan
+                                                                    booking.purpose
                                                                 }
                                                             </div>
                                                         </td>
@@ -277,7 +261,7 @@ export default function Ruangan({ faculties, buildings }) {
                                                                 <User className="h-4 w-4 text-gray-400 mr-2" />
                                                                 <div className="text-sm text-gray-900">
                                                                     {
-                                                                        booking.peminjam
+                                                                        booking.borrower
                                                                     }
                                                                 </div>
                                                             </div>
@@ -306,7 +290,7 @@ export default function Ruangan({ faculties, buildings }) {
                                                                 }
                                                             >
                                                                 <Eye className="h-4 w-4 mr-1" />
-                                                                Detail
+                                                                Details
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -319,33 +303,26 @@ export default function Ruangan({ faculties, buildings }) {
                                 <div className="text-center py-12 text-gray-500">
                                     <Building className="h-16 w-16 mx-auto mb-4 opacity-50" />
                                     <p className="text-lg font-medium mb-2">
-                                        Belum ada data peminjaman ruangan
+                                        No room booking data available
                                     </p>
                                     <p className="text-sm mb-6">
-                                        Mulai buat peminjaman ruangan untuk
-                                        kebutuhan Anda
+                                        Start creating room bookings for your
+                                        needs
                                     </p>
                                     <div className="flex gap-3 justify-center">
                                         <button
                                             onClick={handleBookingClick}
-                                            className="flex items-center px-6 py-3 rounded-lg border-2 font-medium hover:bg-gray-50 transition-colors duration-200"
-                                            style={{
-                                                borderColor: primaryColor,
-                                                color: primaryColor,
-                                            }}
+                                            className="flex items-center px-6 py-3 rounded-lg border-2 font-medium hover:bg-gray-50 transition-colors duration-200 border-primary text-primary"
                                         >
                                             <Building className="h-4 w-4 mr-2" />
-                                            Eksplor Ruang
+                                            Explore Rooms
                                         </button>
                                         <button
                                             onClick={handleBookingClick}
-                                            className="flex items-center px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity duration-200"
-                                            style={{
-                                                backgroundColor: primaryColor,
-                                            }}
+                                            className="flex items-center px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity duration-200 bg-primary"
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Pinjam Ruang
+                                            Book Room
                                         </button>
                                     </div>
                                 </div>
@@ -353,7 +330,6 @@ export default function Ruangan({ faculties, buildings }) {
                         </div>
                     </div>
 
-                    {/* Info Section */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6">
                             <div className="p-5 border border-blue-200 rounded-lg bg-blue-50">
@@ -361,15 +337,13 @@ export default function Ruangan({ faculties, buildings }) {
                                     <Info className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
                                     <div>
                                         <h4 className="font-medium text-blue-800 mb-1">
-                                            Informasi Penting
+                                            Important Information
                                         </h4>
                                         <p className="text-sm text-blue-700">
-                                            Waktu pemrosesan persetujuan
-                                            peminjaman ruangan bisa memakan
-                                            waktu hingga 1x24 jam kerja.
-                                            Pastikan untuk mengajukan peminjaman
-                                            minimal 2 hari sebelum tanggal
-                                            penggunaan.
+                                            Room booking approval processing may
+                                            take up to 1 business day. Please
+                                            submit your booking at least 2 days
+                                            before the intended use date.
                                         </p>
                                     </div>
                                 </div>
@@ -379,7 +353,9 @@ export default function Ruangan({ faculties, buildings }) {
                 </div>
             </div>
             {popupOpen && (
-                <RoomBookingPopup
+                <RoomBookingModal
+                    mode="create"
+                    persistKey="roomBooking.room"
                     initialCategory={selectedCategory}
                     onClose={() => setPopupOpen(false)}
                     faculties={faculties}

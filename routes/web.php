@@ -46,7 +46,7 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:Super Admin,Admin'
     Route::get('/ruangan/{id}/edit', [RoomController::class, 'edit'])->name('admin.ruangan.edit');
     Route::put('/ruangan/{id}', [RoomController::class, 'update'])->name('admin.ruangan.update');
     Route::delete('/ruangan/{id}', [RoomController::class, 'destroy'])->name('admin.ruangan.destroy');
-    
+
     // API endpoint untuk mendapatkan ruangan berdasarkan fasilitas
     Route::get('/api/ruangan/by-facility', [RoomController::class, 'getRoomsByFacility'])->name('admin.ruangan.by-facility');
 
@@ -89,18 +89,17 @@ Route::middleware(['auth', 'role:Mahasiswa,Dosen,Dekan'])->group(function () {
 
     // Classroom Features - menggunakan controller yang sudah ada
 
-    // Reservasi/Peminjaman - sudah ada
     Route::get('/reservasi', [PeminjamanController::class, 'index'])->name('reservasi.index');
     Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
     Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
 
-    // Ruangan - sudah ada
+    // Ruangan 
     Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
     Route::get('/ruangan/{id}/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
 
-    // Jadwal - sudah ada
+    // Jadwal
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
     Route::get('/jadwal/detail', [JadwalController::class, 'detail'])->name('jadwal.detail');
 
