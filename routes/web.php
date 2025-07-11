@@ -98,6 +98,7 @@ Route::middleware(['auth', 'role:Mahasiswa,Dosen,Dekan'])->group(function () {
     Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
     Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
     Route::get('/ruangan/{id}/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
+    Route::get('/ruangan/get-rooms', [RuanganController::class, 'getRooms'])->name('ruangan.get-rooms');
 
     // Jadwal
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
