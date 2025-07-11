@@ -2,106 +2,134 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Inertia\Inertia;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use App\Models\Building;
 use App\Models\Faculty;
+use App\Models\Building;
+use App\Models\RoomCategory;
 use App\Models\Facility;
 use App\Models\Room;
-use App\Models\RoomCategory;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
-use Inertia\Inertia;
+use App\Helpers\FacultyHelper;
 
 class RoomController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
-        $query = Room::query()
-            ->with(['building.faculty', 'category', 'facilities'])
-            ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('room_name', 'like', "%{$search}%")
-                      ->orWhere('room_code', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->building_id, function ($query, $buildingId) {
-                $query->where('building_id', $buildingId);
-            })
-            ->when($request->category_id, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
-            })
-            ->when($request->status, function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->when($request->facility_id, function ($query, $facilityId) {
-                $query->withFacility($facilityId);
-            })
-            ->when($request->facilities, function ($query, $facilities) {
-                if (is_array($facilities) && !empty($facilities)) {
-                    $query->withFacilities($facilities);
-                }
-            });
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
 
-        $rooms = $query->latest()->paginate(10)->withQueryString();
+        // Get filters from request
+        $filters = $request->only(['search', 'building_id', 'category_id', 'status', 'facility_id']);
 
-        // Transform facilities data untuk frontend
-        $rooms->getCollection()->transform(function ($room) {
-            $room->facilities_list = $room->facilities->map(function ($facility) {
-                return [
-                    'id' => $facility->id,
-                    'facility_name' => $facility->facility_name,
-                    'quantity' => $facility->pivot->quantity,
-                    'notes' => $facility->pivot->notes,
-                ];
+        // Get data for filters based on selected faculty
+        $buildingsQuery = Building::with('faculty');
+        $categories = RoomCategory::all();
+        $facilities = Facility::all();
+        $statuses = ['available', 'maintenance', 'booked'];
+
+        // Filter buildings by selected faculty
+        if ($selectedFaculty) {
+            $buildingsQuery->where('faculty_id', $selectedFaculty->id);
+        }
+        $buildings = $buildingsQuery->get();
+
+        // Get rooms with relationships
+        $query = Room::with(['building.faculty', 'category', 'facilities']);
+
+        // Apply faculty filter if selected
+        if ($selectedFaculty) {
+            $query->whereHas('building', function ($q) use ($selectedFaculty) {
+                $q->where('faculty_id', $selectedFaculty->id);
             });
-            return $room;
-        });
+        }
+
+        // Apply building filter
+        if (!empty($filters['building_id'])) {
+            $query->where('building_id', $filters['building_id']);
+        }
+
+        // Apply category filter
+        if (!empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+
+        // Apply status filter
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Apply facility filter
+        if (!empty($filters['facility_id'])) {
+            $query->whereHas('facilities', function ($q) use ($filters) {
+                $q->where('facilities.id', $filters['facility_id']);
+            });
+        }
+
+        // Apply search filter
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('room_name', 'like', '%' . $filters['search'] . '%')
+                  ->orWhere('room_code', 'like', '%' . $filters['search'] . '%');
+            });
+        }
+
+        $rooms = $query->orderBy('created_at', 'desc')->get();
 
         return Inertia::render('Admin/Room/Index', [
+            'user' => $user,
+            'selectedFaculty' => $selectedFaculty,
             'rooms' => $rooms,
-            'filters' => $request->only(['search', 'building_id', 'category_id', 'status', 'facility_id', 'facilities']),
-            'buildings' => Building::with('faculty')->get(),
-            'categories' => RoomCategory::all(),
-            'facilities' => Facility::active()->get(),
-            'statuses' => ['available', 'maintenance', 'booked'],
+            'filters' => $filters,
+            'buildings' => $buildings,
+            'categories' => $categories,
+            'facilities' => $facilities,
+            'statuses' => $statuses,
+            'flash' => session('flash'),
         ]);
     }
 
-    public function show($id)
-    {
-        $room = Room::with(['building.faculty', 'category', 'facilities'])->findOrFail($id);
-
-        // Transform facilities data untuk detail view
-        $room->facilities_list = $room->facilities->map(function ($facility) {
-            return [
-                'id' => $facility->id,
-                'facility_name' => $facility->facility_name,
-                'facility_code' => $facility->facility_code,
-                'quantity' => $facility->pivot->quantity,
-                'notes' => $facility->pivot->notes,
-                'unit' => $facility->unit,
-            ];
-        });
-
-        return Inertia::render('Admin/Room/Show', [
-            'room' => $room,
-        ]);
-    }
-
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
+
+        // Get data for form
+        $buildingsQuery = Building::with('faculty');
+        $categories = RoomCategory::all();
+        $facilities = Facility::all();
+
+        // Filter buildings by selected faculty
+        if ($selectedFaculty) {
+            $buildingsQuery->where('faculty_id', $selectedFaculty->id);
+        }
+        $buildings = $buildingsQuery->get();
+
         return Inertia::render('Admin/Room/Create', [
-            'faculties' => Faculty::all(),
-            'buildings' => Building::with('faculty')->get(),
-            'categories' => RoomCategory::all(),
-            'facilities' => Facility::active()->get(),
+            'user' => $user,
+            'selectedFaculty' => $selectedFaculty,
+            'buildings' => $buildings,
+            'categories' => $categories,
+            'facilities' => $facilities,
         ]);
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
+
+        // Validate request
         $validatedData = $request->validate([
             'building_id' => 'required|exists:buildings,id',
             'category_id' => 'required|exists:room_categories,id',
@@ -111,196 +139,261 @@ class RoomController extends Controller
             'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'status' => 'required|in:available,maintenance,booked',
-            'image' => 'nullable|image|max:2048', // max 2MB
+            'image' => 'nullable|image|max:2048',
             'facilities' => 'nullable|array',
             'facilities.*.facility_id' => 'required|exists:facilities,id',
             'facilities.*.quantity' => 'required|integer|min:1',
             'facilities.*.notes' => 'nullable|string',
         ]);
 
-        DB::beginTransaction();
-        try {
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('rooms', 'public');
-                $validatedData['image_path'] = $imagePath;
+        // Check if building belongs to selected faculty
+        if ($selectedFaculty) {
+            $building = Building::find($validatedData['building_id']);
+            if (!$building || $building->faculty_id !== $selectedFaculty->id) {
+                abort(403, 'Anda tidak memiliki akses ke gedung ini.');
             }
-
-            $room = Room::create($validatedData);
-
-            // Save facilities using many-to-many relationship
-            if (!empty($validatedData['facilities'])) {
-                foreach ($validatedData['facilities'] as $facility) {
-                    $room->facilities()->attach($facility['facility_id'], [
-                        'quantity' => $facility['quantity'],
-                        'notes' => $facility['notes'] ?? null,
-                    ]);
-                }
-            }
-
-            DB::commit();
-            return redirect()->route('admin.ruangan.index')
-                ->with('flash', ['type' => 'success', 'message' => 'Ruangan berhasil ditambahkan.']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withInput()
-                ->with('flash', ['type' => 'error', 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            $validatedData['faculty_id'] = $selectedFaculty->id;
         }
-    }
 
-    public function edit($id)
-    {
-        $room = Room::with(['building.faculty', 'facilities', 'category'])->findOrFail($id);
+        // Handle image upload if provided
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('rooms', 'public');
+            $validatedData['image_path'] = $imagePath;
+        }
 
-        // Transform facilities data untuk form edit
-        $room->facilities_list = $room->facilities->map(function ($facility) {
-            return [
-                'facility_id' => $facility->id,
-                'facility_name' => $facility->facility_name,
-                'quantity' => $facility->pivot->quantity,
-                'notes' => $facility->pivot->notes,
-            ];
-        });
+        // Create room
+        $room = Room::create($validatedData);
 
-        return Inertia::render('Admin/Room/Edit', [
-            'room' => $room,
-            'faculties' => Faculty::all(),
-            'buildings' => Building::with('faculty')->get(),
-            'categories' => RoomCategory::all(),
-            'facilities' => Facility::active()->get(),
+        // Save facilities if provided
+        if ($request->has('facilities')) {
+            $facilitiesData = collect($request->facilities)->mapWithKeys(function ($facility) {
+                return [$facility['facility_id'] => [
+                    'quantity' => $facility['quantity'],
+                    'notes' => $facility['notes'] ?? null,
+                ]];
+            })->toArray();
+
+            $room->facilities()->attach($facilitiesData);
+        }
+
+        return redirect()->route('admin.ruangan.index')->with('flash', [
+            'type' => 'success',
+            'message' => 'Ruangan berhasil ditambahkan.'
         ]);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $room = Room::findOrFail($id);
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
 
+        // Get room with relationships
+        $room = Room::with(['building.faculty', 'category', 'facilities'])->findOrFail($id);
+
+        // Check if user has access to this room's faculty
+        if ($selectedFaculty && $room->building->faculty_id !== $selectedFaculty->id) {
+            abort(403, 'Anda tidak memiliki akses ke ruangan ini.');
+        }
+
+        return Inertia::render('Admin/Room/Show', [
+            'user' => $user,
+            'selectedFaculty' => $selectedFaculty,
+            'room' => $room,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
+
+        // Ambil data ruangan beserta relasi yang dibutuhkan
+        $room = Room::with(['building.faculty', 'category', 'facilities'])->findOrFail($id);
+
+        // Check if user has access to this room's faculty
+        if ($selectedFaculty && $room->building->faculty_id !== $selectedFaculty->id) {
+            abort(403, 'Anda tidak memiliki akses ke ruangan ini.');
+        }
+
+        // Ambil data lain untuk form
+        $buildingsQuery = Building::with('faculty');
+        $categories = RoomCategory::all();
+        $facilities = Facility::all();
+
+        // Filter buildings by selected faculty
+        if ($selectedFaculty) {
+            $buildingsQuery->where('faculty_id', $selectedFaculty->id);
+        }
+        $buildings = $buildingsQuery->get();
+
+        // Format fasilitas ruangan (jika perlu)
+        $roomFacilities = $room->facilities->map(function($facility) {
+            return [
+                'facility_id' => $facility->id,
+                'quantity' => $facility->pivot->quantity ?? 1,
+                'notes' => $facility->pivot->notes ?? '',
+            ];
+        });
+
+        // Siapkan data room untuk frontend
+        $roomData = $room->toArray();
+        $roomData['facilities_list'] = $roomFacilities;
+
+        return Inertia::render('Admin/Room/Edit', [
+            'user' => $user,
+            'selectedFaculty' => $selectedFaculty,
+            'room' => $roomData,
+            'buildings' => $buildings,
+            'categories' => $categories,
+            'facilities' => $facilities,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
+
+        // Find the room
+        $room = Room::with('building')->findOrFail($id);
+
+        // Check if user has access to this room's faculty
+        if ($selectedFaculty && $room->building->faculty_id !== $selectedFaculty->id) {
+            abort(403, 'Anda tidak memiliki akses ke ruangan ini.');
+        }
+
+        // Validate request
         $validatedData = $request->validate([
             'building_id' => 'required|exists:buildings,id',
             'category_id' => 'required|exists:room_categories,id',
-            'room_code' => ['required', 'string', 'max:20', Rule::unique('rooms')->ignore($id)],
+            'room_code' => 'required|string|max:20|unique:rooms,room_code,' . $id,
             'room_name' => 'required|string|max:255',
             'location_detail' => 'nullable|string|max:255',
             'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'status' => 'required|in:available,maintenance,booked',
-            'image' => 'nullable|image|max:2048', // max 2MB
+            'image' => 'nullable|image|max:2048',
             'facilities' => 'nullable|array',
             'facilities.*.facility_id' => 'required|exists:facilities,id',
             'facilities.*.quantity' => 'required|integer|min:1',
             'facilities.*.notes' => 'nullable|string',
         ]);
 
-        DB::beginTransaction();
-        try {
-            if ($request->hasFile('image')) {
-                // Delete old image if exists
-                if ($room->image_path) {
-                    Storage::disk('public')->delete($room->image_path);
-                }
-                
-                $imagePath = $request->file('image')->store('rooms', 'public');
-                $validatedData['image_path'] = $imagePath;
+        // Check if building belongs to selected faculty
+        if ($selectedFaculty) {
+            $building = Building::find($validatedData['building_id']);
+            if (!$building || $building->faculty_id !== $selectedFaculty->id) {
+                abort(403, 'Anda tidak memiliki akses ke gedung ini.');
             }
-
-            $room->update($validatedData);
-
-            // Update facilities using many-to-many relationship
-            if (!empty($validatedData['facilities'])) {
-                // Prepare sync data
-                $syncData = [];
-                foreach ($validatedData['facilities'] as $facility) {
-                    $syncData[$facility['facility_id']] = [
-                        'quantity' => $facility['quantity'],
-                        'notes' => $facility['notes'] ?? null,
-                    ];
-                }
-                
-                // Sync facilities (this will add new ones and remove ones not in the list)
-                $room->facilities()->sync($syncData);
-            } else {
-                // Detach all facilities if none provided
-                $room->facilities()->detach();
-            }
-
-            DB::commit();
-            return redirect()->route('admin.ruangan.index')
-                ->with('flash', ['type' => 'success', 'message' => 'Ruangan berhasil diperbarui.']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withInput()
-                ->with('flash', ['type' => 'error', 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            $validatedData['faculty_id'] = $selectedFaculty->id;
         }
-    }
 
-    public function destroy($id)
-    {
-        try {
-            $room = Room::findOrFail($id);
-            
-            // Check if the room has any bookings
-            if ($room->bookings()->exists()) {
-                return redirect()->back()
-                    ->with('flash', ['type' => 'error', 'message' => 'Ruangan tidak dapat dihapus karena memiliki peminjaman.']);
+        // Handle image upload if provided
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($room->image_path && file_exists(storage_path('app/public/' . $room->image_path))) {
+                unlink(storage_path('app/public/' . $room->image_path));
             }
-            
-            // Delete image if exists
-            if ($room->image_path) {
-                Storage::disk('public')->delete($room->image_path);
-            }
-            
-            // Detach facilities (many-to-many relationship)
-            $room->facilities()->detach();
-            
-            // Delete the room
-            $room->delete();
-            
-            return redirect()->route('admin.ruangan.index')
-                ->with('flash', ['type' => 'success', 'message' => 'Ruangan berhasil dihapus.']);
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('flash', ['type' => 'error', 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+
+            // Store new image
+            $imagePath = $request->file('image')->store('rooms', 'public');
+            $validatedData['image_path'] = $imagePath;
         }
+
+        // Update room data
+        $room->update($validatedData);
+
+        // Update facilities if provided
+        if ($request->has('facilities')) {
+            $facilitiesData = collect($request->facilities)->mapWithKeys(function ($facility) {
+                return [$facility['facility_id'] => [
+                    'quantity' => $facility['quantity'],
+                    'notes' => $facility['notes'] ?? null,
+                ]];
+            })->toArray();
+
+            $room->facilities()->sync($facilitiesData);
+        }
+
+        return redirect()->route('admin.ruangan.index')->with('flash', [
+            'type' => 'success',
+            'message' => 'Ruangan berhasil diperbarui.'
+        ]);
     }
 
     /**
-     * Get rooms by facility (API endpoint)
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
+
+        // Find the room
+        $room = Room::with('building')->findOrFail($id);
+
+        // Check if user has access to this room's faculty
+        if ($selectedFaculty && $room->building->faculty_id !== $selectedFaculty->id) {
+            abort(403, 'Anda tidak memiliki akses ke ruangan ini.');
+        }
+
+        // Delete image if exists
+        if ($room->image_path && file_exists(storage_path('app/public/' . $room->image_path))) {
+            unlink(storage_path('app/public/' . $room->image_path));
+        }
+
+        // Delete room facilities
+        $room->facilities()->detach();
+
+        // Delete the room
+        $room->delete();
+
+        return redirect()->route('admin.ruangan.index')->with('flash', [
+            'type' => 'success',
+            'message' => 'Ruangan berhasil dihapus.'
+        ]);
+    }
+
+    /**
+     * Get rooms by facility
      */
     public function getRoomsByFacility(Request $request)
     {
+        $user = Auth::user();
+        $selectedFaculty = FacultyHelper::getSelectedFaculty();
+
         $facilityId = $request->get('facility_id');
-        $facilityIds = $request->get('facility_ids', []);
-
-        $query = Room::with(['building.faculty', 'category', 'facilities'])
-            ->where('status', 'available');
-
-        if ($facilityId) {
-            $query->withFacility($facilityId);
+        
+        if (!$facilityId) {
+            return response()->json(['error' => 'Facility ID is required'], 400);
         }
 
-        if (!empty($facilityIds) && is_array($facilityIds)) {
-            $query->withFacilities($facilityIds);
+        $query = Room::with(['building.faculty', 'category'])
+            ->whereHas('facilities', function ($q) use ($facilityId) {
+                $q->where('facilities.id', $facilityId);
+            });
+
+        // Apply faculty filter if selected
+        if ($selectedFaculty) {
+            $query->whereHas('building', function ($q) use ($selectedFaculty) {
+                $q->where('faculty_id', $selectedFaculty->id);
+            });
         }
 
         $rooms = $query->get();
 
-        // Transform facilities data
-        $rooms->transform(function ($room) {
-            $room->facilities_list = $room->facilities->map(function ($facility) {
-                return [
-                    'id' => $facility->id,
-                    'facility_name' => $facility->facility_name,
-                    'facility_code' => $facility->facility_code,
-                    'quantity' => $facility->pivot->quantity,
-                    'notes' => $facility->pivot->notes,
-                    'unit' => $facility->unit,
-                ];
-            });
-            return $room;
-        });
-
         return response()->json([
-            'success' => true,
-            'data' => $rooms,
+            'rooms' => $rooms,
+            'facility_id' => $facilityId,
         ]);
     }
 }

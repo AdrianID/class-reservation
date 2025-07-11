@@ -7,6 +7,7 @@ import { id } from "date-fns/locale";
 export default function AdminDashboard() {
     const { props } = usePage();
     const user = props.user;
+    const selectedFaculty = props.selectedFaculty;
 
     // Get flash message from Inertia
     const { flash } = usePage().props;
@@ -232,17 +233,29 @@ export default function AdminDashboard() {
                         <div className="p-5 border-b border-gray-200 bg-primary text-primaryLight">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-medium">
-                                    Selamat datang, Admin {user?.name ?? "User"}
+                                    Selamat datang, Admin {user?.full_name ?? "User"}
                                 </h3>
-                                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                    Admin
-                                </span>
+                                <div className="flex items-center space-x-2">
+                                    {selectedFaculty && (
+                                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                            {selectedFaculty.faculty_name}
+                                        </span>
+                                    )}
+                                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        {user?.role?.role_name || "Admin"}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div className="p-5">
                             <p className="text-gray-600">
                                 Berikut adalah ringkasan aktivitas sistem dan
                                 permintaan peminjaman yang perlu persetujuan.
+                                {selectedFaculty && (
+                                    <span className="block mt-2 text-sm font-medium text-blue-600">
+                                        Mengelola fakultas: {selectedFaculty.faculty_name}
+                                    </span>
+                                )}
                             </p>
                         </div>
                     </div>

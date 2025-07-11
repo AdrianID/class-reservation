@@ -3,9 +3,8 @@ import { Head, useForm } from "@inertiajs/react";
 import { useState, useRef, useCallback, useMemo } from "react";
 import { XMarkIcon, PlusCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
-export default function RoomCreate({ faculties, buildings, categories, facilities }) {
+export default function RoomCreate({ faculties = [], buildings = [], categories = [], facilities = [], selectedFaculty = null }) {
     const [buildingsByFaculty, setBuildingsByFaculty] = useState({});
-    const [selectedFaculty, setSelectedFaculty] = useState("");
     const fileInputRef = useRef(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [roomFacilities, setRoomFacilities] = useState([
@@ -58,10 +57,9 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
         debouncedSetData("facilities", newFacilities);
     }, [roomFacilities, debouncedSetData]);
 
-    // Filter buildings by faculty
-    const handleFacultyChange = (facultyId) => {
-        setSelectedFaculty(facultyId);
-        setData("building_id", "");
+    // Get faculty ID from selected faculty
+    const getFacultyId = () => {
+        return selectedFaculty ? selectedFaculty.id : null;
     };
 
     // Add more facility fields
@@ -144,14 +142,16 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
 
     // Filter the available buildings based on selected faculty
     const filteredBuildings = useMemo(() => {
-        return selectedFaculty
-            ? buildings.filter(building => building.faculty_id == selectedFaculty)
+        if (!buildings || buildings.length === 0) return [];
+        const facultyId = getFacultyId();
+        return facultyId
+            ? buildings.filter(building => building.faculty_id == facultyId)
             : buildings;
     }, [selectedFaculty, buildings]);
 
     // Get facility name by ID
     const getFacilityName = (facilityId) => {
-        const facility = facilities.find(f => f.id == facilityId);
+        const facility = facilities?.find(f => f.id == facilityId);
         return facility ? facility.facility_name : '';
     };
 
@@ -159,7 +159,7 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
         <AdminLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Tambah Ruangan Baru
+                    Tambah Ruangan Baru {selectedFaculty && `- ${selectedFaculty.faculty_name}`}
                 </h2>
             }
         >
@@ -219,26 +219,6 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
                                             )}
                                         </div>
 
-                                        {/* Faculty */}
-                                        <div>
-                                            <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">
-                                                Fakultas <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                id="faculty"
-                                                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm`}
-                                                value={selectedFaculty}
-                                                onChange={(e) => handleFacultyChange(e.target.value)}
-                                            >
-                                                <option value="">Pilih Fakultas</option>
-                                                {faculties.map((faculty) => (
-                                                    <option key={faculty.id} value={faculty.id}>
-                                                        {faculty.faculty_name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
                                         {/* Building */}
                                         <div>
                                             <label htmlFor="building_id" className="block text-sm font-medium text-gray-700">
@@ -251,10 +231,9 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
                                                 }`}
                                                 value={data.building_id}
                                                 onChange={(e) => setData("building_id", e.target.value)}
-                                                disabled={!selectedFaculty}
                                             >
                                                 <option value="">Pilih Gedung</option>
-                                                {filteredBuildings.map((building) => (
+                                                {filteredBuildings?.map((building) => (
                                                     <option key={building.id} value={building.id}>
                                                         {building.building_name}
                                                     </option>
@@ -279,7 +258,7 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
                                                 onChange={(e) => setData("category_id", e.target.value)}
                                             >
                                                 <option value="">Pilih Kategori</option>
-                                                {categories.map((category) => (
+                                                {categories?.map((category) => (
                                                     <option key={category.id} value={category.id}>
                                                         {category.category_name}
                                                     </option>
@@ -462,7 +441,7 @@ export default function RoomCreate({ faculties, buildings, categories, facilitie
                                                         onChange={(e) => updateFacility(index, "facility_id", e.target.value)}
                                                     >
                                                         <option value="">Pilih Fasilitas</option>
-                                                        {facilities.map((fac) => (
+                                                        {facilities?.map((fac) => (
                                                             <option key={fac.id} value={fac.id}>
                                                                 {fac.facility_name} ({fac.facility_code})
                                                             </option>

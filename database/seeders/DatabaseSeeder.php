@@ -29,5 +29,10 @@ class DatabaseSeeder extends Seeder
             RoomAvailabilitySeeder::class,
             DocumentTypeSeeder::class,
         ]);
+
+        // Finally, seed user-faculty relationships
+        $this->call(UserFacultySeeder::class);
+
+        $this->call(FacilitySeeder::class);
     }
 }

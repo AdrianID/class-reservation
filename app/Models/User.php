@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
@@ -59,6 +60,11 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    public function faculties(): BelongsToMany
+    {
+        return $this->belongsToMany(Faculty::class, 'user_faculty');
+    }
+
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
@@ -77,5 +83,39 @@ class User extends Authenticatable
     public function maintenanceLogs(): HasMany
     {
         return $this->hasMany(MaintenanceLog::class);
+    }
+
+    /**
+     * Check if user has access to a specific faculty
+     */
+    public function hasFacultyAccess($facultyId): bool
+    {
+        // Super admin has access to all faculties
+        if ($this->role->role_name === 'Super Admin') {
+            return true;
+        }
+
+        return $this->faculties()->where('faculty_id', $facultyId)->exists();
+    }
+
+    /**
+     * Get accessible faculties for user
+     */
+    public function getAccessibleFaculties()
+    {
+        // Super admin can access all faculties
+        if ($this->role->role_name === 'Super Admin') {
+            return Faculty::all();
+        }
+
+        return $this->faculties;
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role->role_name === 'Super Admin';
     }
 }
