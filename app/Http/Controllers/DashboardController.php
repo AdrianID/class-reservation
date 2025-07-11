@@ -6,11 +6,39 @@ use App\Models\Faculty;
 use App\Models\Building;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Booking;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        
+        // Get booking statistics
+        $stats = [
+            'total' => Booking::where('user_id', $user->id)->count(),
+            'pending' => Booking::where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->count(),
+            'approved' => Booking::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->count(),
+            'rejected' => Booking::where('user_id', $user->id)
+                ->where('status', 'rejected')
+                ->count(),
+        ];
+
+        // Get upcoming bookings
+        $upcomingBookings = Booking::with(['room.building'])
+            ->where('user_id', $user->id)
+            ->where('booking_date', '>=', now())
+            ->where('status', '!=', 'rejected')
+            ->orderBy('booking_date')
+            ->orderBy('start_time')
+            ->limit(5)
+            ->get();
+
+        // Get faculties and buildings for booking modal
         $faculties = Faculty::select('id', 'faculty_name as label', 'id as value')
             ->get()
             ->map(function ($faculty) {
@@ -34,7 +62,11 @@ class DashboardController extends Controller
             });
 
         return Inertia::render('Mahasiswa/Dashboard', [
-            'user' => Auth::user(),
+            'auth' => [
+                'user' => $user
+            ],
+            'stats' => $stats,
+            'upcomingBookings' => $upcomingBookings,
             'faculties' => $faculties,
             'buildings' => $buildings,
         ]);
@@ -56,7 +88,7 @@ class DashboardController extends Controller
                 return redirect()->route('ruangan.index');
 
             default:
-                return redirect()->route('dashboard')->with('message', 'Fitur belum tersedia');
+                return redirect()->route('dashboard')->with('message', 'Feature not available');
         }
     }
 }

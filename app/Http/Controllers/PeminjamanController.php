@@ -139,6 +139,20 @@ class PeminjamanController extends Controller
             ]);
         }
     }
+
+    public function show(Booking $booking)
+    {
+        // Authorize that the user can view this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat peminjaman ini.');
+        }
+
+        $booking->load(['room.building', 'documents.type']);
+
+        return Inertia::render('Mahasiswa/Peminjaman/Show', [
+            'booking' => $booking
+        ]);
+    }
 }
 
 

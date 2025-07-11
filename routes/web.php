@@ -94,13 +94,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [PeminjamanController::class, 'index'])->name('index');
         Route::get('/create', [PeminjamanController::class, 'create'])->name('create');
         Route::post('/', [PeminjamanController::class, 'store'])->name('store');
+        Route::get('/{booking}', [PeminjamanController::class, 'show'])->name('show');
     });
 
     // Ruangan 
-    Route::get('/ruangan', [RuanganController::class, 'index'])->name('ruangan.index');
-    Route::get('/ruangan/list', [RuanganController::class, 'list'])->name('ruangan.list');
-    Route::get('/ruangan/{id}/detail', [RuanganController::class, 'detail'])->name('ruangan.detail');
-    Route::get('/ruangan/get-rooms', [RuanganController::class, 'getRooms'])->name('ruangan.get-rooms');
+    Route::prefix('ruangan')->name('ruangan.')->group(function () {
+        Route::get('/', [RuanganController::class, 'index'])->name('index');
+        Route::get('/booking/{booking}', [RuanganController::class, 'showBooking'])->name('booking.show');
+    });
 
     // Jadwal
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
