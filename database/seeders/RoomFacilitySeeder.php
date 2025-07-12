@@ -9,56 +9,73 @@ class RoomFacilitySeeder extends Seeder
 {
     public function run(): void
     {
-        // Get room IDs
-        $kelasTeknikId = DB::table('rooms')->where('room_code', 'TK-101')->value('id');
-        $labKomputerId = DB::table('rooms')->where('room_code', 'TK-LAB-101')->value('id');
-        $kelasEkonomiId = DB::table('rooms')->where('room_code', 'EK-101')->value('id');
-        $seminarHukumId = DB::table('rooms')->where('room_code', 'HK-SEM-101')->value('id');
-        $rapatFisipId = DB::table('rooms')->where('room_code', 'FS-RPT-101')->value('id');
+        // Dapatkan semua ruangan
+        $rooms = DB::table('rooms')->get();
 
-        $facilities = [
-            [
-                'room_id' => $kelasTeknikId,
-                'facility_name' => 'Proyektor',
-                'quantity' => 1,
-                'description' => 'Proyektor untuk presentasi',
-                'created_at' => now(),
-                'updated_at' => now(),
+        $facilities = [];
+        $facilityTemplates = [
+            'Kelas' => [
+                ['name' => 'Proyektor', 'quantity' => 1, 'desc' => 'Proyektor untuk presentasi'],
+                ['name' => 'Papan Tulis', 'quantity' => 1, 'desc' => 'Papan tulis putih'],
+                ['name' => 'Kursi', 'quantity' => 'capacity', 'desc' => 'Kursi kuliah'],
+                ['name' => 'Meja', 'quantity' => 'capacity', 'desc' => 'Meja kuliah'],
+                ['name' => 'AC', 'quantity' => 2, 'desc' => 'Air Conditioner'],
             ],
-            [
-                'room_id' => $kelasTeknikId,
-                'facility_name' => 'Papan Tulis',
-                'quantity' => 1,
-                'description' => 'Papan tulis putih',
-                'created_at' => now(),
-                'updated_at' => now(),
+            'Laboratorium' => [
+                ['name' => 'Komputer', 'quantity' => 'capacity', 'desc' => 'Komputer untuk praktikum'],
+                ['name' => 'Alat Praktikum', 'quantity' => 10, 'desc' => 'Perangkat praktikum'],
+                ['name' => 'Proyektor', 'quantity' => 1, 'desc' => 'Proyektor presentasi'],
+                ['name' => 'Meja Lab', 'quantity' => 'capacity/2', 'desc' => 'Meja laboratorium'],
             ],
-            [
-                'room_id' => $labKomputerId,
-                'facility_name' => 'Komputer',
-                'quantity' => 30,
-                'description' => 'Komputer untuk praktikum',
-                'created_at' => now(),
-                'updated_at' => now(),
+            'Ruang Seminar' => [
+                ['name' => 'Sound System', 'quantity' => 1, 'desc' => 'Sistem audio profesional'],
+                ['name' => 'Proyektor', 'quantity' => 1, 'desc' => 'Proyektor resolusi tinggi'],
+                ['name' => 'Mikrofon', 'quantity' => 3, 'desc' => 'Mikrofon nirkabel'],
+                ['name' => 'Podium', 'quantity' => 1, 'desc' => 'Podium pembicara'],
             ],
-            [
-                'room_id' => $seminarHukumId,
-                'facility_name' => 'Sound System',
-                'quantity' => 1,
-                'description' => 'Sistem audio untuk seminar',
-                'created_at' => now(),
-                'updated_at' => now(),
+            'Ruang Rapat' => [
+                ['name' => 'Meja Rapat', 'quantity' => 1, 'desc' => 'Meja rapat besar'],
+                ['name' => 'Kursi Rapat', 'quantity' => 'capacity', 'desc' => 'Kursi ergonomis'],
+                ['name' => 'TV', 'quantity' => 1, 'desc' => 'Televisi layar besar'],
+                ['name' => 'Whiteboard', 'quantity' => 1, 'desc' => 'Papan tulis interaktif'],
             ],
-            [
-                'room_id' => $rapatFisipId,
-                'facility_name' => 'Meja Rapat',
-                'quantity' => 1,
-                'description' => 'Meja rapat besar',
-                'created_at' => now(),
-                'updated_at' => now(),
+            'Ruang Baca' => [
+                ['name' => 'Meja Baca', 'quantity' => 'capacity/2', 'desc' => 'Meja baca individual'],
+                ['name' => 'Kursi Nyaman', 'quantity' => 'capacity', 'desc' => 'Kursi baca ergonomis'],
+                ['name' => 'Lampu Meja', 'quantity' => 'capacity', 'desc' => 'Lampu baca'],
+                ['name' => 'Rak Buku', 'quantity' => 5, 'desc' => 'Rak buku referensi'],
             ],
         ];
 
+        foreach ($rooms as $room) {
+            $category = DB::table('room_categories')->where('id', $room->category_id)->value('category_name');
+
+            if (!isset($facilityTemplates[$category])) continue;
+
+            foreach ($facilityTemplates[$category] as $template) {
+                $quantity = $this->calculateQuantity($template['quantity'], $room->capacity);
+
+                $facilities[] = [
+                    'room_id' => $room->id,
+                    'facility_name' => $template['name'],
+                    'quantity' => $quantity,
+                    'description' => $template['desc'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+
         DB::table('room_facilities')->insert($facilities);
     }
-} 
+
+    private function calculateQuantity($spec, $capacity)
+    {
+        if ($spec === 'capacity') return $capacity;
+        if (str_contains($spec, '/')) {
+            $divisor = explode('/', $spec)[1];
+            return floor($capacity / (int)$divisor);
+        }
+        return (int)$spec;
+    }
+}

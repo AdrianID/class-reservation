@@ -15,10 +15,10 @@ class DatabaseSeeder extends Seeder
     {
         // First, seed the roles
         $this->call(RoleSeeder::class);
-        
+
         // Then seed users that depend on roles
         $this->call(UserSeeder::class);
-        
+
         // Then seed the rest of the data
         $this->call([
             FacultySeeder::class,

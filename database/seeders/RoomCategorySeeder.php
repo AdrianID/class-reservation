@@ -44,4 +44,4 @@ class RoomCategorySeeder extends Seeder
 
         DB::table('room_categories')->insert($categories);
     }
-} 
+}
