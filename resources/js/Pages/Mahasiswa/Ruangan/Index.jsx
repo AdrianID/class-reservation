@@ -150,10 +150,19 @@ export default function Rooms({ bookings, faculties, buildings }) {
                                                             <Building className="h-4 w-4 text-gray-400 mr-2" />
                                                             <div>
                                                                 <div className="text-sm font-medium text-gray-900">
-                                                                    {booking.room.room_name}
+                                                                    {
+                                                                        booking
+                                                                            .room
+                                                                            .room_name
+                                                                    }
                                                                 </div>
                                                                 <div className="text-sm text-gray-500">
-                                                                    {booking.room.building.building_name}
+                                                                    {
+                                                                        booking
+                                                                            .room
+                                                                            .building
+                                                                            .building_name
+                                                                    }
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -168,7 +177,13 @@ export default function Rooms({ bookings, faculties, buildings }) {
                                                                     )}
                                                                 </div>
                                                                 <div className="text-sm text-gray-500">
-                                                                    {new Date(booking.start_time).toLocaleTimeString()} - {new Date(booking.end_time).toLocaleTimeString()}
+                                                                    {new Date(
+                                                                        booking.start_time
+                                                                    ).toLocaleTimeString()}{" "}
+                                                                    -{" "}
+                                                                    {new Date(
+                                                                        booking.end_time
+                                                                    ).toLocaleTimeString()}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -180,7 +195,10 @@ export default function Rooms({ bookings, faculties, buildings }) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">
-                                                            {booking.number_of_participants} participants
+                                                            {
+                                                                booking.number_of_participants
+                                                            }{" "}
+                                                            participants
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -199,7 +217,10 @@ export default function Rooms({ bookings, faculties, buildings }) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <Link
-                                                            href={route("ruangan.booking.show", booking.id)}
+                                                            href={route(
+                                                                "ruangan.booking.show",
+                                                                booking.id
+                                                            )}
                                                             className="text-indigo-600 hover:text-indigo-900 flex items-center"
                                                         >
                                                             <Eye className="h-4 w-4 mr-1" />
@@ -267,6 +288,7 @@ export default function Rooms({ bookings, faculties, buildings }) {
             {popupOpen && (
                 <RoomBookingModal
                     mode="create"
+                    from="room"
                     persistKey="roomBooking.room"
                     initialCategory={selectedCategory}
                     onClose={() => setPopupOpen(false)}

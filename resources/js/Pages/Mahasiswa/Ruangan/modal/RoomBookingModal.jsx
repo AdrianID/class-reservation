@@ -40,6 +40,7 @@ const RoomBookingModal = ({
     faculties,
     buildings,
     persistKey = PERSIST_KEY,
+    from = "room",
 }) => {
     const [step, setStep] = useState(1);
     const [bookingType, setBookingType] = useState("");
@@ -205,7 +206,7 @@ const RoomBookingModal = ({
                     );
                     router.get(`/ruangan/list?booking=${encoded}`);
                 } else {
-                    router.get(`/ruangan/list?booking=${encoded}`);
+                    router.get(`/ruangan/list?booking=${encoded}&from=${from}`);
                 }
 
                 handleClose();
@@ -455,7 +456,7 @@ const RoomBookingModal = ({
                 <div className="p-5 text-white bg-primary relative">
                     <button
                         onClick={handleClose}
-                        className="absolute right-4 top-4 text-white hover:bg-white hover:bg-opacityنین20 rounded-full p-1 transition-colors"
+                        className="absolute right-4 top-4 text-white hover:bg-white hover:bg-opacity-20 rounded-full p-1 transition-colors"
                     >
                         <X size={24} />
                     </button>
@@ -749,10 +750,6 @@ const RoomBookingModal = ({
                                                     </select>
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                Rooms are operational from 07:00
-                                                to 21:00
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -878,6 +875,10 @@ const RoomBookingModal = ({
                                                     isClearable
                                                 />
                                             </div>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                You can book facilities from any
+                                                faculty.
+                                            </p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -906,6 +907,11 @@ const RoomBookingModal = ({
                                                     isClearable
                                                 />
                                             </div>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {!selectedFaculty
+                                                    ? "Select a faculty first to see available buildings"
+                                                    : "Optional: Narrow down to specific building"}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

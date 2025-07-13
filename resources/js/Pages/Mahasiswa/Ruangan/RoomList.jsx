@@ -59,26 +59,31 @@ export default function RoomList() {
         try {
             const params = new URLSearchParams();
             if (bookingData?.selectedFaculty?.value) {
-                params.append('faculty_id', bookingData.selectedFaculty.value);
+                params.append("faculty_id", bookingData.selectedFaculty.value);
             }
             if (bookingData?.selectedBuilding?.value) {
-                params.append('building_id', bookingData.selectedBuilding.value);
+                params.append(
+                    "building_id",
+                    bookingData.selectedBuilding.value
+                );
             }
             if (searchTerm) {
-                params.append('search', searchTerm);
+                params.append("search", searchTerm);
             }
-            if (statusFilter !== 'all') {
-                params.append('status', statusFilter);
+            if (statusFilter !== "all") {
+                params.append("status", statusFilter);
             }
-            if (facilityFilter !== 'all') {
-                params.append('facility_id', facilityFilter);
+            if (facilityFilter !== "all") {
+                params.append("facility_id", facilityFilter);
             }
 
-            const response = await axios.get(route('ruangan.get-rooms', params));
+            const response = await axios.get(
+                route("ruangan.get-rooms", params)
+            );
             setRooms(response.data);
             setFilteredClasses(response.data);
         } catch (error) {
-            console.error('Error fetching rooms:', error);
+            console.error("Error fetching rooms:", error);
         } finally {
             setIsLoading(false);
         }
@@ -104,8 +109,20 @@ export default function RoomList() {
                         end: new Date(data.endDate),
                     });
                 }
+
+                if (data.selectedBuilding?.label) {
+                    setBuildingFilter(data.selectedBuilding.label);
+                }
+
+                if (data.selectedFaculty?.label) {
+                    // optional: bisa juga set fakultas jika ada filter fakultas lokal
+                }
+
+                // kalau param `status` atau `facility` juga mau diatur dari param:
+                // setStatusFilter(data.status || 'all');
+                // setFacilityFilter(data.facility || 'all');
             } catch (e) {
-                console.error('Error parsing booking data:', e);
+                console.error("Error parsing booking data:", e);
             }
         }
     }, [bookingRaw]);
@@ -236,8 +253,8 @@ export default function RoomList() {
         setSelectedRoom({
             ...room,
             facilities: room.facilities || [],
-            category: room.category || 'Standard Room',
-            description: room.description || 'No description available',
+            category: room.category || "Standard Room",
+            description: room.description || "No description available",
         });
         setShowRoomDetail(true);
     };
@@ -822,7 +839,10 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                         <h4 className="text-lg font-medium text-gray-800 mb-2">
                                             Loading rooms...
                                         </h4>
-                                        <p className="text-gray-600">Please wait while we fetch the rooms.</p>
+                                        <p className="text-gray-600">
+                                            Please wait while we fetch the
+                                            rooms.
+                                        </p>
                                     </div>
                                 ) : filteredClasses.length === 0 ? (
                                     <div className="bg-white shadow rounded-lg p-8 text-center">
@@ -840,7 +860,9 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                         {filteredClasses.map((room) => (
                                             <div
                                                 key={room.id}
-                                                onClick={() => handleRoomClick(room)}
+                                                onClick={() =>
+                                                    handleRoomClick(room)
+                                                }
                                                 className={`bg-white shadow rounded-lg overflow-hidden flex flex-col transition-all duration-200 ${
                                                     room.status === "available"
                                                         ? "cursor-pointer hover:shadow-lg hover:-translate-y-1"
@@ -854,33 +876,45 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                             alt={room.name}
                                                             className="h-full w-full object-cover"
                                                             onError={(e) => {
-                                                                e.target.style.display = 'none';
-                                                                e.target.nextElementSibling.style.display = 'flex';
+                                                                e.target.style.display =
+                                                                    "none";
+                                                                e.target.nextElementSibling.style.display =
+                                                                    "flex";
                                                             }}
                                                         />
                                                     ) : null}
-                                                    <ImageSkeleton 
-                                                        className={`h-full w-full absolute inset-0 ${room.image ? 'hidden' : 'flex'}`}
+                                                    <ImageSkeleton
+                                                        className={`h-full w-full absolute inset-0 ${
+                                                            room.image
+                                                                ? "hidden"
+                                                                : "flex"
+                                                        }`}
                                                     />
                                                     <div className="absolute top-3 right-3 z-10">
                                                         <span
                                                             className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                                                                room.status === "available"
+                                                                room.status ===
+                                                                "available"
                                                                     ? "bg-green-100 text-green-800 border-green-200"
-                                                                    : room.status === "booked"
+                                                                    : room.status ===
+                                                                      "booked"
                                                                     ? "bg-orange-100 text-orange-800 border-orange-200"
                                                                     : "bg-red-100 text-red-800 border-red-200"
                                                             }`}
                                                         >
-                                                            {getStatusLabel(room.status)}
+                                                            {getStatusLabel(
+                                                                room.status
+                                                            )}
                                                         </span>
                                                     </div>
 
                                                     {/* Overlay for non-available rooms */}
-                                                    {room.status !== "available" && (
+                                                    {room.status !==
+                                                        "available" && (
                                                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10">
                                                             <span className="text-white font-medium text-sm bg-black/60 px-3 py-1 rounded">
-                                                                {room.status === "booked"
+                                                                {room.status ===
+                                                                "booked"
                                                                     ? "Currently Booked"
                                                                     : "Under Maintenance"}
                                                             </span>
@@ -899,7 +933,8 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Users className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                            {room.capacity} people
+                                                            {room.capacity}{" "}
+                                                            people
                                                         </div>
                                                         <div>
                                                             <div className="flex items-start">
@@ -910,18 +945,37 @@ ${bookingData ? "cursor-default" : "cursor-pointer"}`}
                                                                     </span>
                                                                     <div className="flex flex-wrap gap-1">
                                                                         {room.facilities
-                                                                            .slice(0, 3)
-                                                                            .map((facility, idx) => (
-                                                                                <span
-                                                                                    key={idx}
-                                                                                    className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary"
-                                                                                >
-                                                                                    {facility}
-                                                                                </span>
-                                                                            ))}
-                                                                        {room.facilities.length > 3 && (
+                                                                            .slice(
+                                                                                0,
+                                                                                3
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    facility,
+                                                                                    idx
+                                                                                ) => (
+                                                                                    <span
+                                                                                        key={
+                                                                                            idx
+                                                                                        }
+                                                                                        className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary"
+                                                                                    >
+                                                                                        {
+                                                                                            facility
+                                                                                        }
+                                                                                    </span>
+                                                                                )
+                                                                            )}
+                                                                        {room
+                                                                            .facilities
+                                                                            .length >
+                                                                            3 && (
                                                                             <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                                                                                +{room.facilities.length - 3}{" "}
+                                                                                +
+                                                                                {room
+                                                                                    .facilities
+                                                                                    .length -
+                                                                                    3}{" "}
                                                                                 more
                                                                             </span>
                                                                         )}
