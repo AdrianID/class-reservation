@@ -80,7 +80,7 @@ class PeminjamanController extends Controller
 
             // Ambil tipe dokumen
             $documentTypes = DocumentType::all();
-            
+
             // Permit Letter (Required)
             if ($request->hasFile('permit_letter')) {
                 $file = $request->file('permit_letter');
@@ -119,12 +119,18 @@ class PeminjamanController extends Controller
 
             DB::commit();
 
-            return redirect()->route('peminjaman.index')
-                ->with('success', 'Permintaan peminjaman ruangan berhasil diajukan!');
+            /* return redirect()->route('ruangan.index') */
+            return redirect()->route('dashboard');
+            /*     ->with('success', 'Permintaan peminjaman ruangan berhasil diajukan!'); */
+            /* $successMessage = 'Permintaan peminjaman ruangan berhasil diajukan! Tim admin akan meninjau permintaan Anda dalam 2-3 hari kerja.';
+
+            return redirect()->route('dashboard')
+                ->with('success', $successMessage)
+                ->with('booking_created', true); */
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Hapus file yang sudah diupload jika ada error
             if (isset($permitLetterPath)) Storage::disk('public')->delete($permitLetterPath);
             if (isset($proposalPath)) Storage::disk('public')->delete($proposalPath);
