@@ -1,5 +1,3 @@
-
-
 export default function ApplicationLogo({ variant = "default", ...props }) {
     let logoSrc;
 
@@ -12,6 +10,9 @@ export default function ApplicationLogo({ variant = "default", ...props }) {
             break;
         case "white-logo-text":
             logoSrc = "/images/logo3.svg";
+            break;
+        case "colored-logo":
+            logoSrc = "images/logo5.svg";
             break;
         case "default":
         default:
