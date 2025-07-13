@@ -49,7 +49,7 @@ export default function Show({ booking }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="mb-6">
                         <Link
-                            href={route("peminjaman.index")}
+                            href={route("ruangan.index")}
                             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
                         >
                             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -72,7 +72,10 @@ export default function Show({ booking }) {
                                                 {booking.room.room_name}
                                             </p>
                                             <p className="text-sm text-gray-500">
-                                                {booking.room.building.building_name}
+                                                {
+                                                    booking.room.building
+                                                        .building_name
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -103,7 +106,9 @@ export default function Show({ booking }) {
                                         <div className="flex items-center space-x-3">
                                             <Calendar className="w-5 h-5 text-gray-400" />
                                             <span className="text-gray-900">
-                                                {formatDate(booking.booking_date)}
+                                                {formatDate(
+                                                    booking.booking_date
+                                                )}
                                             </span>
                                         </div>
                                         <div className="flex items-center space-x-3">
@@ -181,4 +186,4 @@ export default function Show({ booking }) {
             </div>
         </UserLayout>
     );
-} 
+}
