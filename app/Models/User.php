@@ -101,14 +101,13 @@ class User extends Authenticatable
     /**
      * Get accessible faculties for user
      */
-    public function getAccessibleFaculties()
+   public function getAccessibleFaculties()
     {
-        // Super admin can access all faculties
         if ($this->role->role_name === 'Super Admin') {
-            return Faculty::all();
+            return Faculty::withCount('buildings')->get();
         }
 
-        return $this->faculties;
+        return $this->faculties()->withCount('buildings')->get();
     }
 
     /**
