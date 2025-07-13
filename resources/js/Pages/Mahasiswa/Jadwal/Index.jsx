@@ -71,79 +71,86 @@ export default function Schedule() {
     const classRooms = [
         {
             id: 1,
-            name: "Class A",
+            room_code: "A001",
+            room_name: "Class A",
             status: "available",
-            image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Central Jakarta",
-            capacity: "50 people",
+            image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80",
+            location_detail: "Floor 1, near main entrance",
+            capacity: 50,
+            description: "Facilities: AC, Projector, Sound System",
             facilities: ["AC", "Projector", "Sound System"],
-            badgeColor: "bg-green-100 text-green-800",
             scheduleStatus: "has schedule",
         },
         {
             id: 2,
-            name: "Class B",
-            status: "in use",
-            image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "South Jakarta",
-            capacity: "40 people",
+            room_code: "B001",
+            room_name: "Class B",
+            status: "booked",
+            image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80",
+            location_detail: "Floor 2, next to elevator",
+            capacity: 40,
+            description: "Facilities: AC, Sound System",
             facilities: ["AC", "Sound System"],
-            badgeColor: "bg-yellow-100 text-yellow-800",
             scheduleStatus: "has schedule",
         },
         {
             id: 3,
-            name: "Class C",
+            room_code: "C001",
+            room_name: "Class C",
             status: "maintenance",
-            image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "West Jakarta",
-            capacity: "30 people",
+            image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80",
+            location_detail: "Floor 3, corner room",
+            capacity: 30,
+            description: "Facilities: AC, Projector, Wi-Fi",
             facilities: ["AC", "Projector", "Wi-Fi"],
-            badgeColor: "bg-red-100 text-red-800",
             scheduleStatus: "no schedule",
         },
         {
             id: 4,
-            name: "Class D",
+            room_code: "D001",
+            room_name: "Class D",
             status: "available",
-            image: "https://media.istockphoto.com/id/1087223748/photo/modern-classroom-with-large-panoramic-windows-and-white-desks-bright-interior.webp?a=1&s=612x612&w=0&k=20&c=Ht3bVO3-WL7eGtlLHGYmQIz63AUmiAugflbo-acl7qI=",
-            location: "North Jakarta",
-            capacity: "45 people",
+            image: "https://images.unsplash.com/photo-1510531704581-5b2870972060?q=80&w=873&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            location_detail: "Floor 1, near restroom",
+            capacity: 45,
+            description: "Facilities: AC, Projector, Sound System, Wi-Fi",
             facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
-            badgeColor: "bg-green-100 text-green-800",
             scheduleStatus: "has schedule",
         },
         {
             id: 5,
-            name: "Class E",
+            room_code: "E001",
+            room_name: "Class E",
             status: "available",
-            image: "https://images.unsplash.com/photo-1635424239131-32dc44986b56?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "East Jakarta",
-            capacity: "35 people",
+            image: "https://images.unsplash.com/photo-1635424239131-32dc44986b56?q=80",
+            location_detail: "Floor 2, beside stairwell",
+            capacity: 35,
+            description: "Facilities: AC, Wi-Fi",
             facilities: ["AC", "Wi-Fi"],
-            badgeColor: "bg-green-100 text-green-800",
             scheduleStatus: "no schedule",
         },
         {
             id: 6,
-            name: "Class F",
-            status: "in use",
-            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Depok",
-            capacity: "40 people",
+            room_code: "F001",
+            room_name: "Class F",
+            status: "booked",
+            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80",
+            location_detail: "Floor 3, near fire exit",
+            capacity: 40,
+            description: "Facilities: AC, Projector, Sound System, Wi-Fi",
             facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
-            badgeColor: "bg-yellow-100 text-yellow-800",
             scheduleStatus: "has schedule",
         },
         {
-            id: 6,
-            name: "Class G",
-            status: "in use",
-            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            location: "Surabaya",
-            capacity: "40 people",
+            id: 7,
+            room_code: "G001",
+            room_name: "Class G",
+            status: "booked",
+            image: "https://images.unsplash.com/photo-1617721926586-4eecce739745?q=80",
+            location_detail: "Floor 1, opposite reception",
+            capacity: 40,
+            description: "Facilities: AC, Projector, Sound System, Wi-Fi",
             facilities: ["AC", "Projector", "Sound System", "Wi-Fi"],
-            badgeColor: "bg-yellow-100 text-yellow-800",
             scheduleStatus: "has schedule",
         },
     ];
@@ -157,10 +164,10 @@ export default function Schedule() {
     useEffect(() => {
         let filtered = classRooms.filter((classRoom) => {
             const matchSearch =
-                classRoom.name
+                classRoom.room_name
                     .toLowerCase()
                     .includes(searchTerm.toLowerCase()) ||
-                classRoom.location
+                classRoom.location_detail
                     .toLowerCase()
                     .includes(searchTerm.toLowerCase());
 
@@ -169,7 +176,7 @@ export default function Schedule() {
 
             const matchLocation =
                 locationFilter === "all" ||
-                classRoom.location === locationFilter;
+                classRoom.location_detail === locationFilter;
 
             const matchFacility =
                 facilityFilter === "all" ||
@@ -497,7 +504,7 @@ export default function Schedule() {
                                         {[
                                             ...new Set(
                                                 classRooms.map(
-                                                    (c) => c.location
+                                                    (c) => c.location_detail
                                                 )
                                             ),
                                         ].map((loc) => (
@@ -550,14 +557,21 @@ export default function Schedule() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {filteredClasses.map((classRoom) => (
-                                        <div
+                                        <Link
+                                            href={`/jadwal/detail?roomId=${
+                                                classRoom.id
+                                            }&date=${
+                                                selectedDate
+                                                    .toISOString()
+                                                    .split("T")[0]
+                                            }`}
                                             key={classRoom.id}
                                             className="bg-white shadow rounded-lg overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-md"
                                         >
                                             <div className="h-52 relative">
                                                 <img
                                                     src={classRoom.image}
-                                                    alt={classRoom.name}
+                                                    alt={classRoom.room_name}
                                                     className="h-full w-full object-cover"
                                                 />
                                                 <div className="absolute top-3 right-3 flex flex-col gap-2">
@@ -584,12 +598,14 @@ export default function Schedule() {
                                             </div>
                                             <div className="p-5 flex-1">
                                                 <h4 className="text-lg font-semibold mb-3 text-primary">
-                                                    {classRoom.name}
+                                                    {classRoom.room_name}
                                                 </h4>
                                                 <div className="space-y-3 text-sm text-gray-600">
                                                     <div className="flex items-center">
                                                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                        {classRoom.location}
+                                                        {
+                                                            classRoom.location_detail
+                                                        }
                                                     </div>
                                                     <div className="flex items-center">
                                                         <Users className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -624,23 +640,7 @@ export default function Schedule() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-5 py-4 border-t border-gray-200">
-                                                <Link
-                                                    href={`/jadwal/detail`}
-                                                    className={`block w-full py-2.5 px-4 rounded-lg text-sm font-semibold text-center transition duration-150 ${
-                                                        classRoom.scheduleStatus ===
-                                                        "has schedule"
-                                                            ? "bg-primary text-white"
-                                                            : "bg-gray-300 text-gray-500"
-                                                    }`}
-                                                >
-                                                    {classRoom.scheduleStatus ===
-                                                    "has schedule"
-                                                        ? "View Schedule"
-                                                        : "No Schedule"}
-                                                </Link>
-                                            </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             )}

@@ -1,5 +1,5 @@
 import UserLayout from "@/components/Layouts/UserLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import {
     format,
@@ -14,13 +14,19 @@ import {
     endOfWeek,
     eachDayOfInterval,
 } from "date-fns";
-import { id } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ScheduleDetail() {
-    // Brand colors
-    const primaryColor = "#365b6d";
-    const primaryLightColor = "#e9eff2";
-    const secondaryColor = "#f59e0b";
+    const { props } = usePage();
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get("date");
+    const roomIdParam = urlParams.get("roomId");
+
+    useEffect(() => {
+        if (dateParam) setSelectedDate(new Date(dateParam));
+        // Bisa gunakan roomIdParam jika ingin dynamic classroom nanti
+    }, []);
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [viewMode, setViewMode] = useState("day");
@@ -28,7 +34,6 @@ export default function ScheduleDetail() {
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Time slots from 7:00 to 22:00 (7 AM to 10 PM)
     const timeSlots = Array.from({ length: 16 }, (_, i) => {
         const hour = i + 7;
         return {
@@ -38,74 +43,66 @@ export default function ScheduleDetail() {
         };
     });
 
-    // Selected classroom data (single classroom)
     const classroom = {
         id: 1,
-        name: "Kelas A",
-        status: "tersedia",
+        name: "Class A",
+        status: "available",
         image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        location: "Jakarta Pusat",
-        capacity: "50 orang",
-        facilities: ["AC", "Proyektor", "Sound System"],
-        badgeColor: "bg-green-100 text-green-800",
+        location: "Central Jakarta",
+        capacity: "50 people",
+        facilities: ["AC", "Projector", "Sound System"],
+        badgeColor: "bg-success/20 text-success",
         description:
-            "Kelas utama dengan fasilitas lengkap untuk berbagai jenis kegiatan pembelajaran, seminar, dan workshop.",
+            "Main classroom with complete facilities for various learning activities, seminars, and workshops.",
     };
 
-    // Sample schedule data for the selected classroom
     const sampleSchedules = [
         {
             id: 1,
             classroomId: 1,
-            title: "Kelas Matematika",
-            instructor: "Bpk. Ahmad",
+            title: "Mathematics Class",
+            instructor: "Mr. Ahmad",
             date: new Date().toISOString().split("T")[0],
             startTime: "08:00",
             endTime: "10:00",
             status: "confirmed",
-            color: "#3b82f6",
         },
         {
             id: 2,
             classroomId: 1,
-            title: "Seminar Teknologi",
-            instructor: "Tim IT",
+            title: "Technology Seminar",
+            instructor: "IT Team",
             date: new Date().toISOString().split("T")[0],
             startTime: "13:00",
             endTime: "15:00",
             status: "confirmed",
-            color: "#10b981",
         },
         {
             id: 3,
             classroomId: 1,
-            title: "Rapat Manajemen",
-            instructor: "Ibu Sari",
+            title: "Management Meeting",
+            instructor: "Ms. Sari",
             date: new Date().toISOString().split("T")[0],
             startTime: "16:00",
             endTime: "17:00",
             status: "pending",
-            color: "#f59e0b",
         },
         {
             id: 4,
             classroomId: 1,
-            title: "Workshop Design",
-            instructor: "Tim Kreatif",
+            title: "Design Workshop",
+            instructor: "Creative Team",
             date: format(addDays(new Date(), 1), "yyyy-MM-dd"),
             startTime: "09:00",
             endTime: "12:00",
             status: "confirmed",
-            color: "#8b5cf6",
         },
     ];
 
-    // Load schedules
     useEffect(() => {
         setSchedules(sampleSchedules);
     }, []);
 
-    // Get schedules for a specific date
     const getSchedulesForDate = (date) => {
         const dateString = format(date, "yyyy-MM-dd");
         return schedules.filter(
@@ -115,42 +112,34 @@ export default function ScheduleDetail() {
         );
     };
 
-    // Format day name
     const formatDayName = (date) => {
-        return format(date, "EEEE", { locale: id });
+        return format(date, "EEEE", { locale: enUS });
     };
 
-    // Format full date
     const formatFullDate = (date) => {
-        return format(date, "dd MMMM yyyy", { locale: id });
+        return format(date, "MMMM d, yyyy", { locale: enUS });
     };
 
-    // Navigate to previous day
     const previousDay = () => {
         setSelectedDate(subDays(selectedDate, 1));
     };
 
-    // Navigate to next day
     const nextDay = () => {
         setSelectedDate(addDays(selectedDate, 1));
     };
 
-    // Navigate to previous month
     const previousMonth = () => {
         setCurrentMonth(subMonths(currentMonth, 1));
     };
 
-    // Navigate to next month
     const nextMonth = () => {
         setCurrentMonth(addMonths(currentMonth, 1));
     };
 
-    // Check if date is today
     const isToday = (date) => {
         return isSameDay(date, new Date());
     };
 
-    // Check if a time slot has a booking
     const getBookingForTimeSlot = (date, hour) => {
         const dateString = format(date, "yyyy-MM-dd");
         return schedules.find(
@@ -162,29 +151,24 @@ export default function ScheduleDetail() {
         );
     };
 
-    // Generate days for month view
     const getDaysInMonth = () => {
         const start = startOfWeek(startOfMonth(currentMonth));
         const end = endOfWeek(endOfMonth(currentMonth));
-
         return eachDayOfInterval({ start, end });
     };
 
-    // Generate days for week view
     const getDaysInWeek = () => {
         const start = startOfWeek(selectedDate);
         const end = endOfWeek(selectedDate);
-
         return eachDayOfInterval({ start, end });
     };
 
-    // Status label
     const getStatusLabel = (status) => {
         switch (status) {
-            case "tersedia":
-                return "Tersedia";
-            case "digunakan":
-                return "Digunakan";
+            case "available":
+                return "Available";
+            case "in-use":
+                return "In Use";
             case "maintenance":
                 return "Maintenance";
             default:
@@ -192,10 +176,9 @@ export default function ScheduleDetail() {
         }
     };
 
-    // Render month view
     const renderMonthView = () => {
         const days = getDaysInMonth();
-        const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         return (
             <div>
@@ -226,14 +209,12 @@ export default function ScheduleDetail() {
                                     isCurrentMonth
                                         ? "bg-white"
                                         : "bg-gray-100 opacity-50"
-                                }
-                                ${
+                                } ${
                                     isSameDay(day, selectedDate)
-                                        ? "border-2 border-blue-500"
+                                        ? "border-2 border-primary"
                                         : "border-gray-200"
-                                }
-                                ${
-                                    isToday(day) ? "bg-blue-50" : ""
+                                } ${
+                                    isToday(day) ? "bg-primary-light" : ""
                                 } cursor-pointer`}
                                 onClick={() => {
                                     setSelectedDate(day);
@@ -251,7 +232,7 @@ export default function ScheduleDetail() {
                                         {format(day, "d")}
                                     </span>
                                     {hasSchedule && (
-                                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                                        <span className="h-2 w-2 rounded-full bg-primary"></span>
                                     )}
                                 </div>
                                 <div className="mt-1 overflow-hidden max-h-16">
@@ -266,11 +247,12 @@ export default function ScheduleDetail() {
                                         .map((schedule, idx) => (
                                             <div
                                                 key={idx}
-                                                className="text-xs truncate mb-0.5 px-1 py-0.5 rounded"
-                                                style={{
-                                                    backgroundColor: `${schedule.color}20`,
-                                                    color: schedule.color,
-                                                }}
+                                                className={`text-xs truncate mb-0.5 px-1 py-0.5 rounded ${
+                                                    schedule.status ===
+                                                    "confirmed"
+                                                        ? "bg-success/20 text-success"
+                                                        : "bg-warning/20 text-warning"
+                                                }`}
                                             >
                                                 {schedule.title}
                                             </div>
@@ -293,7 +275,7 @@ export default function ScheduleDetail() {
                                                     s.classroomId ===
                                                         classroom.id
                                             ).length - 2}{" "}
-                                            lagi
+                                            more
                                         </div>
                                     )}
                                 </div>
@@ -305,7 +287,6 @@ export default function ScheduleDetail() {
         );
     };
 
-    // Render week view
     const renderWeekView = () => {
         const days = getDaysInWeek();
 
@@ -319,18 +300,18 @@ export default function ScheduleDetail() {
                                 key={index}
                                 className={`text-center py-2 ${
                                     isSameDay(day, selectedDate)
-                                        ? "bg-blue-50 rounded-lg"
+                                        ? "bg-primary-light rounded-lg"
                                         : ""
                                 }`}
                                 onClick={() => setSelectedDate(day)}
                             >
                                 <div className="text-sm font-medium text-gray-500">
-                                    {format(day, "EEE", { locale: id })}
+                                    {format(day, "EEE", { locale: enUS })}
                                 </div>
                                 <div
                                     className={`text-lg font-medium ${
                                         isToday(day)
-                                            ? "text-blue-500"
+                                            ? "text-primary"
                                             : "text-gray-800"
                                     }`}
                                 >
@@ -353,7 +334,6 @@ export default function ScheduleDetail() {
                                         day,
                                         slot.hour
                                     );
-
                                     return (
                                         <div
                                             key={dayIndex}
@@ -365,19 +345,20 @@ export default function ScheduleDetail() {
                                         >
                                             {booking && (
                                                 <div
-                                                    className="absolute left-0 right-0 mx-1 rounded-sm p-1 overflow-hidden"
-                                                    style={{
-                                                        backgroundColor: `${booking.color}20`,
-                                                        borderLeft: `3px solid ${booking.color}`,
-                                                        top: "2px",
-                                                        bottom: "2px",
-                                                    }}
+                                                    className={`absolute left-0 right-0 mx-1 rounded-sm p-1 overflow-hidden ${
+                                                        booking.status ===
+                                                        "confirmed"
+                                                            ? "bg-success/20 border-l-3 border-success"
+                                                            : "bg-warning/20 border-l-3 border-warning"
+                                                    }`}
                                                 >
                                                     <div
-                                                        className="text-xs font-medium"
-                                                        style={{
-                                                            color: booking.color,
-                                                        }}
+                                                        className={`text-xs font-medium ${
+                                                            booking.status ===
+                                                            "confirmed"
+                                                                ? "text-success"
+                                                                : "text-warning"
+                                                        }`}
                                                     >
                                                         {booking.title}
                                                     </div>
@@ -394,7 +375,6 @@ export default function ScheduleDetail() {
         );
     };
 
-    // Render day view
     const renderDayView = () => {
         return (
             <div>
@@ -413,7 +393,6 @@ export default function ScheduleDetail() {
                             selectedDate,
                             slot.hour
                         );
-
                         return (
                             <div
                                 key={index}
@@ -425,17 +404,19 @@ export default function ScheduleDetail() {
                                 <div className="flex-1 min-h-16 py-1 relative">
                                     {booking ? (
                                         <div
-                                            className="mx-2 my-1 p-3 rounded-lg shadow-sm"
-                                            style={{
-                                                backgroundColor: `${booking.color}20`,
-                                                borderLeft: `4px solid ${booking.color}`,
-                                            }}
+                                            className={`mx-2 my-1 p-3 rounded-lg shadow-sm ${
+                                                booking.status === "confirmed"
+                                                    ? "bg-success/20 border-l-4 border-success"
+                                                    : "bg-warning/20 border-l-4 border-warning"
+                                            }`}
                                         >
                                             <div
-                                                className="font-medium"
-                                                style={{
-                                                    color: booking.color,
-                                                }}
+                                                className={`font-medium ${
+                                                    booking.status ===
+                                                    "confirmed"
+                                                        ? "text-success"
+                                                        : "text-warning"
+                                                }`}
                                             >
                                                 {booking.title}
                                             </div>
@@ -445,23 +426,70 @@ export default function ScheduleDetail() {
                                                 {booking.endTime}
                                             </div>
                                             <div
-                                                className={`text-xs mt-1 px-2 py-0.5 rounded-full inline-block
-                                                ${
+                                                className={`text-xs mt-1 px-2 py-0.5 rounded-full inline-block ${
                                                     booking.status ===
                                                     "confirmed"
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-yellow-100 text-yellow-800"
+                                                        ? "bg-success/20 text-success"
+                                                        : "bg-warning/20 text-warning"
                                                 }`}
                                             >
                                                 {booking.status === "confirmed"
-                                                    ? "Terkonfirmasi"
-                                                    : "Menunggu"}
+                                                    ? "Confirmed"
+                                                    : "Pending"}
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="h-16 flex items-center justify-center text-gray-400 text-sm border-l-4 border-transparent mx-2">
-                                            Tersedia
+                                        <div className="h-16 flex items-center justify-center mx-2">
+                                            <button
+                                                onClick={() => {
+                                                    const data = {
+                                                        from: "schedule",
+                                                        selectedRoom: classroom,
+                                                        selectedDate: format(
+                                                            selectedDate,
+                                                            "yyyy-MM-dd"
+                                                        ),
+                                                        startTime: slot.time,
+                                                        endTime: `${
+                                                            slot.hour + 1
+                                                        }:00`,
+                                                        selectedActivity: "",
+                                                        selectedBuilding: null,
+                                                        selectedFaculty: null,
+                                                        capacity:
+                                                            classroom.capacity,
+                                                        isRangeMode: false,
+                                                    };
+                                                    const encoded =
+                                                        encodeURIComponent(
+                                                            JSON.stringify(data)
+                                                        );
+                                                    window.location.href = `/peminjaman/create?data=${encoded}`;
+                                                }}
+                                                className="text-sm text-primary hover:underline"
+                                            >
+                                                Book this slot
+                                            </button>
                                         </div>
+
+                                        // <div className="h-16 flex items-center justify-center mx-2">
+                                        //     <button
+                                        //         onClick={() => {
+                                        //             const url = `/peminjaman/create?roomId=${
+                                        //                 classroom.id
+                                        //             }&date=${format(
+                                        //                 selectedDate,
+                                        //                 "yyyy-MM-dd"
+                                        //             )}&start=${slot.time}&end=${
+                                        //                 slot.hour + 1
+                                        //             }:00`;
+                                        //             window.location.href = url;
+                                        //         }}
+                                        //         className="text-sm text-primary hover:underline"
+                                        //     >
+                                        //         Book this slot
+                                        //     </button>
+                                        // </div>
                                     )}
                                 </div>
                             </div>
@@ -476,11 +504,11 @@ export default function ScheduleDetail() {
         <UserLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Detail Kelas {classroom.name}
+                    Class {classroom.name} Detail
                 </h2>
             }
         >
-            <Head title={`Detail Kelas ${classroom.name}`} />
+            <Head title={`Class ${classroom.name} Detail`} />
 
             <div className="py-6 min-h-screen">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -496,7 +524,7 @@ export default function ScheduleDetail() {
                             </div>
                             <div className="p-6 md:w-2/3">
                                 <div className="flex items-start justify-between">
-                                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                                    <h3 className="text-2xl font-bold text-primary mb-2">
                                         {classroom.name}
                                     </h3>
                                     <span
@@ -513,7 +541,7 @@ export default function ScheduleDetail() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <h4 className="font-medium text-gray-900">
-                                            Lokasi
+                                            Location
                                         </h4>
                                         <p className="text-gray-600">
                                             {classroom.location}
@@ -521,7 +549,7 @@ export default function ScheduleDetail() {
                                     </div>
                                     <div>
                                         <h4 className="font-medium text-gray-900">
-                                            Kapasitas
+                                            Capacity
                                         </h4>
                                         <p className="text-gray-600">
                                             {classroom.capacity}
@@ -529,7 +557,7 @@ export default function ScheduleDetail() {
                                     </div>
                                     <div>
                                         <h4 className="font-medium text-gray-900">
-                                            Fasilitas
+                                            Facilities
                                         </h4>
                                         <div className="flex flex-wrap gap-2 mt-1">
                                             {classroom.facilities.map(
@@ -552,64 +580,28 @@ export default function ScheduleDetail() {
                     {/* Calendar and Schedule */}
                     <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
                         {/* Calendar Controls */}
-                        <div
-                            className="p-5 border-b border-gray-200"
-                            style={{ backgroundColor: primaryColor }}
-                        >
+                        <div className="p-5 border-b border-gray-200 bg-primary">
                             <div className="flex flex-wrap items-center justify-between">
-                                <h3
-                                    className="text-lg font-medium mb-2 sm:mb-0"
-                                    style={{ color: primaryLightColor }}
-                                >
-                                    Jadwal Kelas {classroom.name}
+                                <h3 className="text-lg font-medium mb-2 sm:mb-0 text-primary-light">
+                                    Schedule for {classroom.name}
                                 </h3>
                                 <div className="flex items-center space-x-4">
                                     {viewMode === "day" && (
                                         <>
                                             <button
                                                 onClick={previousDay}
-                                                className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-                                                style={{
-                                                    color: primaryLightColor,
-                                                }}
+                                                className="p-1.5 rounded-full hover:bg-primary-light/20 transition-colors text-primary-light"
                                             >
-                                                <svg
-                                                    className="h-5 w-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M15 19l-7-7 7-7"
-                                                    />
-                                                </svg>
+                                                <ChevronLeft className="h-5 w-5" />
                                             </button>
-                                            <span className="font-medium text-[#e9eff2]">
+                                            <span className="font-medium text-primary-light">
                                                 {formatFullDate(selectedDate)}
                                             </span>
                                             <button
                                                 onClick={nextDay}
-                                                className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-                                                style={{
-                                                    color: primaryLightColor,
-                                                }}
+                                                className="p-1.5 rounded-full hover:bg-primary-light/20 transition-colors text-primary-light"
                                             >
-                                                <svg
-                                                    className="h-5 w-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M9 5l7 7-7 7"
-                                                    />
-                                                </svg>
+                                                <ChevronRight className="h-5 w-5" />
                                             </button>
                                         </>
                                     )}
@@ -621,37 +613,22 @@ export default function ScheduleDetail() {
                                                         subDays(selectedDate, 7)
                                                     )
                                                 }
-                                                className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-                                                style={{
-                                                    color: primaryLightColor,
-                                                }}
+                                                className="p-1.5 rounded-full hover:bg-primary-light/20 transition-colors text-primary-light"
                                             >
-                                                <svg
-                                                    className="h-5 w-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M15 19l-7-7 7-7"
-                                                    />
-                                                </svg>
+                                                <ChevronLeft className="h-5 w-5" />
                                             </button>
-                                            <span className="font-medium text-[#e9eff2]">
-                                                Minggu{" "}
+                                            <span className="font-medium text-primary-light">
+                                                Week{" "}
                                                 {format(
                                                     startOfWeek(selectedDate),
                                                     "d MMM",
-                                                    { locale: id }
+                                                    { locale: enUS }
                                                 )}{" "}
                                                 -{" "}
                                                 {format(
                                                     endOfWeek(selectedDate),
                                                     "d MMM yyyy",
-                                                    { locale: id }
+                                                    { locale: enUS }
                                                 )}
                                             </span>
                                             <button
@@ -660,24 +637,9 @@ export default function ScheduleDetail() {
                                                         addDays(selectedDate, 7)
                                                     )
                                                 }
-                                                className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-                                                style={{
-                                                    color: primaryLightColor,
-                                                }}
+                                                className="p-1.5 rounded-full hover:bg-primary-light/20 transition-colors text-primary-light"
                                             >
-                                                <svg
-                                                    className="h-5 w-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M9 5l7 7-7 7"
-                                                    />
-                                                </svg>
+                                                <ChevronRight className="h-5 w-5" />
                                             </button>
                                         </>
                                     )}
@@ -685,52 +647,22 @@ export default function ScheduleDetail() {
                                         <>
                                             <button
                                                 onClick={previousMonth}
-                                                className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-                                                style={{
-                                                    color: primaryLightColor,
-                                                }}
+                                                className="p-1.5 rounded-full hover:bg-primary-light/20 transition-colors text-primary-light"
                                             >
-                                                <svg
-                                                    className="h-5 w-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M15 19l-7-7 7-7"
-                                                    />
-                                                </svg>
+                                                <ChevronLeft className="h-5 w-5" />
                                             </button>
-                                            <span className="font-medium text-[#e9eff2]">
+                                            <span className="font-medium text-primary-light">
                                                 {format(
                                                     currentMonth,
                                                     "MMMM yyyy",
-                                                    { locale: id }
+                                                    { locale: enUS }
                                                 )}
                                             </span>
                                             <button
                                                 onClick={nextMonth}
-                                                className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-                                                style={{
-                                                    color: primaryLightColor,
-                                                }}
+                                                className="p-1.5 rounded-full hover:bg-primary-light/20 transition-colors text-primary-light"
                                             >
-                                                <svg
-                                                    className="h-5 w-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M9 5l7 7-7 7"
-                                                    />
-                                                </svg>
+                                                <ChevronRight className="h-5 w-5" />
                                             </button>
                                         </>
                                     )}
@@ -739,31 +671,31 @@ export default function ScheduleDetail() {
                                             onClick={() => setViewMode("day")}
                                             className={`px-3 py-1 text-sm rounded-md ${
                                                 viewMode === "day"
-                                                    ? "bg-white text-blue-600"
-                                                    : "text-white hover:bg-white/20"
+                                                    ? "bg-accent text-white"
+                                                    : "text-primary-light hover:bg-primary-light/20"
                                             }`}
                                         >
-                                            Hari
+                                            Day
                                         </button>
                                         <button
                                             onClick={() => setViewMode("week")}
                                             className={`px-3 py-1 text-sm rounded-md ${
                                                 viewMode === "week"
-                                                    ? "bg-white text-blue-600"
-                                                    : "text-white hover:bg-white/20"
+                                                    ? "bg-accent text-white"
+                                                    : "text-primary-light hover:bg-primary-light/20"
                                             }`}
                                         >
-                                            Minggu
+                                            Week
                                         </button>
                                         <button
                                             onClick={() => setViewMode("month")}
                                             className={`px-3 py-1 text-sm rounded-md ${
                                                 viewMode === "month"
-                                                    ? "bg-white text-blue-600"
-                                                    : "text-white hover:bg-white/20"
+                                                    ? "bg-accent text-white"
+                                                    : "text-primary-light hover:bg-primary-light/20"
                                             }`}
                                         >
-                                            Bulan
+                                            Month
                                         </button>
                                     </div>
                                 </div>
@@ -776,38 +708,29 @@ export default function ScheduleDetail() {
                             {viewMode === "week" && renderWeekView()}
                             {viewMode === "month" && renderMonthView()}
 
+                            <div className="text-center text-sm text-gray-500 mb-4">
+                                Viewing schedule for:{" "}
+                                <strong>{formatFullDate(selectedDate)}</strong>
+                            </div>
+
                             {/* Schedule List */}
                             <div className="mt-8">
-                                <h4
-                                    className="text-lg font-medium mb-4"
-                                    style={{ color: primaryColor }}
-                                >
-                                    Daftar Jadwal {formatFullDate(selectedDate)}
+                                <h4 className="text-lg font-medium mb-4 text-primary">
+                                    Schedule List for{" "}
+                                    {formatFullDate(selectedDate)}
                                 </h4>
 
                                 {getSchedulesForDate(selectedDate).length ===
                                 0 ? (
                                     <div className="bg-gray-50 rounded-lg p-8 text-center">
-                                        <svg
-                                            className="h-12 w-12 mx-auto mb-4 text-gray-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                                        <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                                         <h5 className="text-lg font-medium text-gray-800 mb-2">
-                                            Tidak ada jadwal hari ini
+                                            No schedules for today
                                         </h5>
                                         <p className="text-gray-600">
-                                            Tidak ada jadwal yang terdaftar pada{" "}
-                                            {formatFullDate(selectedDate)} untuk
-                                            kelas ini.
+                                            There are no schedules on{" "}
+                                            {formatFullDate(selectedDate)} for
+                                            this class.
                                         </p>
                                     </div>
                                 ) : (
@@ -816,19 +739,23 @@ export default function ScheduleDetail() {
                                             (schedule) => (
                                                 <div
                                                     key={schedule.id}
-                                                    className="border rounded-lg overflow-hidden"
-                                                    style={{
-                                                        borderLeft: `4px solid ${schedule.color}`,
-                                                    }}
+                                                    className={`border rounded-lg overflow-hidden ${
+                                                        schedule.status ===
+                                                        "confirmed"
+                                                            ? "border-l-4 border-success"
+                                                            : "border-l-4 border-warning"
+                                                    }`}
                                                 >
                                                     <div className="p-4">
                                                         <div className="flex justify-between items-start">
                                                             <div>
                                                                 <h5
-                                                                    className="font-medium text-lg"
-                                                                    style={{
-                                                                        color: schedule.color,
-                                                                    }}
+                                                                    className={`font-medium text-lg ${
+                                                                        schedule.status ===
+                                                                        "confirmed"
+                                                                            ? "text-success"
+                                                                            : "text-warning"
+                                                                    }`}
                                                                 >
                                                                     {
                                                                         schedule.title
@@ -852,38 +779,24 @@ export default function ScheduleDetail() {
                                                                 className={`px-2 py-1 rounded-full text-xs font-medium ${
                                                                     schedule.status ===
                                                                     "confirmed"
-                                                                        ? "bg-green-100 text-green-800"
-                                                                        : "bg-yellow-100 text-yellow-800"
+                                                                        ? "bg-success/20 text-success"
+                                                                        : "bg-warning/20 text-warning"
                                                                 }`}
                                                             >
                                                                 {schedule.status ===
                                                                 "confirmed"
-                                                                    ? "Terkonfirmasi"
-                                                                    : "Menunggu"}
+                                                                    ? "Confirmed"
+                                                                    : "Pending"}
                                                             </span>
                                                         </div>
                                                         <div className="mt-3 flex items-center text-sm text-gray-500">
-                                                            <svg
-                                                                className="h-4 w-4 mr-1 flex-shrink-0"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth="2"
-                                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                                />
-                                                            </svg>
+                                                            <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
                                                             {format(
                                                                 new Date(
                                                                     schedule.date
                                                                 ),
-                                                                "EEEE, d MMMM yyyy",
-                                                                {
-                                                                    locale: id,
-                                                                }
+                                                                "EEEE, MMMM d, yyyy",
+                                                                { locale: enUS }
                                                             )}
                                                         </div>
                                                     </div>
@@ -892,13 +805,14 @@ export default function ScheduleDetail() {
                                                             Edit
                                                         </button>
                                                         <button
-                                                            className="text-sm px-3 py-1.5 rounded-md text-white hover:bg-blue-600 transition-colors"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    schedule.color,
-                                                            }}
+                                                            className={`text-sm px-3 py-1.5 rounded-md text-white hover:bg-opacity-90 transition-colors ${
+                                                                schedule.status ===
+                                                                "confirmed"
+                                                                    ? "bg-success"
+                                                                    : "bg-warning"
+                                                            }`}
                                                         >
-                                                            Lihat Detail
+                                                            View Detail
                                                         </button>
                                                     </div>
                                                 </div>
