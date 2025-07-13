@@ -12,7 +12,7 @@ class JadwalController extends Controller
     }
     public function detail()
     {
-        return Inertia::render('Mahasiswa/Jadwal/JadwalKelas');
+        return Inertia::render('Mahasiswa/Jadwal/ScheduleDetail');
     }
 }
 
