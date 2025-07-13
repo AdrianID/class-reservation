@@ -1,6 +1,7 @@
 import { Head, useForm } from "@inertiajs/react";
 import { useState } from "react";
 import { Building2, CheckCircle, Shield, Users, Settings } from "lucide-react";
+import ApplicationLogo from "@/components/shared/ApplicationLogo";
 
 export default function FacultySelection({ faculties, user }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -58,8 +59,13 @@ export default function FacultySelection({ faculties, user }) {
                 {/* Main Content */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
-                            <Settings className="w-8 h-8 text-primary" />
+                        {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4"> */}
+                        <div className="inline-flex items-center justify-center  rounded-full mb-4">
+                            {/* <Settings className="w-8 h-8 text-primary" /> */}
+                            <ApplicationLogo
+                                className="h-24 w-auto mb-1"
+                                variant="colored-logo"
+                            />
                         </div>
                         <h2 className="text-3xl font-bold text-gray-900 mb-2">
                             Select Faculty to Manage
