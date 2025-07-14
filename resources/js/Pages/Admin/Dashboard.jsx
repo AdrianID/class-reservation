@@ -182,7 +182,9 @@ export default function AdminDashboard() {
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={() =>
-                                        router.visit("/admin/booking")
+                                        router.visit(
+                                            route("admin.booking.index")
+                                        )
                                     }
                                     className="flex items-center px-3 py-2 bg-white text-primary text-sm font-medium rounded-md shadow-sm hover:bg-white/90"
                                 >
@@ -192,7 +194,9 @@ export default function AdminDashboard() {
 
                                 <button
                                     onClick={() =>
-                                        router.visit("/admin/ruangan")
+                                        router.visit(
+                                            route("admin.ruangan.index")
+                                        )
                                     }
                                     className="flex items-center px-3 py-2 bg-white text-primary text-sm font-medium rounded-md shadow-sm hover:bg-white/90"
                                 >
@@ -216,7 +220,9 @@ export default function AdminDashboard() {
                                                     <button
                                                         onClick={() =>
                                                             router.visit(
-                                                                "/admin/users/mahasiswa"
+                                                                route(
+                                                                    "admin.users.mahasiswa"
+                                                                )
                                                             )
                                                         }
                                                         className={`${
@@ -234,7 +240,9 @@ export default function AdminDashboard() {
                                                     <button
                                                         onClick={() =>
                                                             router.visit(
-                                                                "/admin/users/dosen"
+                                                                route(
+                                                                    "admin.users.dosen"
+                                                                )
                                                             )
                                                         }
                                                         className={`${
@@ -252,7 +260,9 @@ export default function AdminDashboard() {
                                                     <button
                                                         onClick={() =>
                                                             router.visit(
-                                                                "/admin/users/staff"
+                                                                route(
+                                                                    "admin.users.staff"
+                                                                )
                                                             )
                                                         }
                                                         className={`${
