@@ -66,11 +66,11 @@ export default function BookingShow({ booking, flash }) {
             alert('Alasan penolakan harus diisi');
             return;
         }
-        
+
         router.post(route('admin.booking.reject', booking.id), {
             admin_notes: rejectionReason
         });
-        
+
         setShowRejectModal(false);
     };
 
@@ -271,7 +271,7 @@ export default function BookingShow({ booking, flash }) {
                                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
                                         Tindakan
                                     </h3>
-                                    
+
                                     {booking.status === 'pending' && (
                                         <div className="space-y-3">
                                             <button
@@ -355,4 +355,4 @@ export default function BookingShow({ booking, flash }) {
             )}
         </AdminLayout>
     );
-} 
+}

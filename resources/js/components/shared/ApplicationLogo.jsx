@@ -11,6 +11,9 @@ export default function ApplicationLogo({ variant = "default", ...props }) {
         case "white-logo-text":
             logoSrc = "/images/logo3.svg";
             break;
+        case "white-logo-cropped":
+            logoSrc = "/images/logo-cropped.svg";
+            break;
         case "colored-logo":
             logoSrc = "images/logo5.svg";
             break;

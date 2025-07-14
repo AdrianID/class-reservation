@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Faculty;
+use App\Models\Booking;
 use App\Helpers\FacultyHelper;
 
 class AdminController extends Controller
@@ -19,10 +20,24 @@ class AdminController extends Controller
         $user = Auth::user();
         $selectedFaculty = FacultyHelper::getSelectedFaculty();
 
-        // You can pass any data needed for the dashboard here
+        $bookingsQuery = Booking::whereHas('room.building', function ($q) use ($selectedFaculty) {
+            if ($selectedFaculty) {
+                $q->where('faculty_id', $selectedFaculty->id);
+            }
+        });
+
+        $pendingApprovals = (clone $bookingsQuery)->where('status', 'pending')->take(5)->get();
+        $upcomingBookings = (clone $bookingsQuery)->where('booking_date', '>=', now())->take(5)->get();
+        $totalBookings = (clone $bookingsQuery)->count();
+        $activeBookings = (clone $bookingsQuery)->where('status', 'approved')->count();
+
         return Inertia::render('Admin/Dashboard', [
             'user' => $user,
             'selectedFaculty' => $selectedFaculty,
+            'pendingApprovals' => $pendingApprovals,
+            'upcomingBookings' => $upcomingBookings,
+            'totalBookings' => $totalBookings,
+            'activeBookings' => $activeBookings,
             'flash' => session('flash', null),
         ]);
     }
@@ -111,3 +126,4 @@ class AdminController extends Controller
         ]);
     }
 }
+

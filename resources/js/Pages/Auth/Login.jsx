@@ -287,7 +287,7 @@ export default function Login({ status, canResetPassword }) {
                                         disabled={processing}
                                     >
                                         {processing ? (
-                                            <div className="flex items-center justify-center">
+                                            <div className="flex items-center justify-center w-full text-center">
                                                 <svg
                                                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -311,7 +311,9 @@ export default function Login({ status, canResetPassword }) {
                                                 Signing in...
                                             </div>
                                         ) : (
-                                            "Sign In to Your Account"
+                                            <div className="flex items-center justify-center w-full text-center">
+                                                Sign In to Your Account
+                                            </div>
                                         )}
                                     </PrimaryButton>
                                 </div>

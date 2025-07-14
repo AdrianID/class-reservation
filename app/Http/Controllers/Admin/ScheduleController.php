@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Helpers\FacultyHelper;
 use Illuminate\Support\Facades\Auth;
 
 class ScheduleController extends Controller
@@ -13,6 +14,7 @@ class ScheduleController extends Controller
     {
         return Inertia::render('Admin/Schedule/Index', [
             'user' => Auth::user(),
+            'selectedFaculty' => FacultyHelper::getSelectedFaculty()
         ]);
     }
 

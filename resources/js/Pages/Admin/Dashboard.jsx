@@ -1,13 +1,36 @@
 import AdminLayout from "@/components/Layouts/AdminLayout";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, usePage, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
-import { id } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
+import {
+    CheckCircle,
+    XCircle,
+    Clock,
+    Calendar,
+    Activity,
+    FileText,
+    Users,
+    UserPlus,
+    BookOpen,
+    CalendarCheck,
+    RefreshCw,
+    ChevronDown,
+} from "lucide-react";
+import { Menu } from "@headlessui/react";
 
 export default function AdminDashboard() {
     const { props } = usePage();
     const user = props.user;
     const selectedFaculty = props.selectedFaculty;
+
+    // Get data from backend props
+    const pendingApprovals = props.pendingApprovals ?? [];
+    const upcomingBookings = props.upcomingBookings ?? [];
+    const systemActivities = props.systemActivities ?? [];
+    const totalBookings = props.totalBookings ?? 0;
+    const activeBookings = props.activeBookings ?? 0;
+    const totalUsers = props.totalUsers ?? 0;
 
     // Get flash message from Inertia
     const { flash } = usePage().props;
@@ -26,102 +49,10 @@ export default function AdminDashboard() {
         }
     }, [flash?.message]);
 
-    // Status peminjaman yang perlu persetujuan admin
-    const [pendingApprovals, setPendingApprovals] = useState([
-        {
-            id: "PMJ567",
-            ruangan: "Aula Fakultas Teknik",
-            tanggal: "2025-05-10T13:00:00",
-            durasi: "2 jam",
-            tujuan: "Seminar",
-            peminjam: "John Doe",
-            email: "john.doe@example.com",
-            status: "Menunggu Persetujuan",
-            diajukan: "2025-05-02T14:20:00",
-        },
-        {
-            id: "PMJ568",
-            ruangan: "R. 301 Gedung B",
-            tanggal: "2025-05-15T10:00:00",
-            durasi: "3 jam",
-            tujuan: "Rapat Organisasi",
-            peminjam: "Jane Smith",
-            email: "jane.smith@example.com",
-            status: "Menunggu Persetujuan",
-            diajukan: "2025-05-03T09:15:00",
-        },
-        {
-            id: "PMJ569",
-            ruangan: "Laboratorium Komputer",
-            tanggal: "2025-05-12T08:00:00",
-            durasi: "5 jam",
-            tujuan: "Pelatihan Programming",
-            peminjam: "Robert Johnson",
-            email: "robert.j@example.com",
-            status: "Menunggu Persetujuan",
-            diajukan: "2025-05-04T11:30:00",
-        },
-    ]);
-
-    // Peminjaman yang akan datang
-    const [upcomingBookings, setUpcomingBookings] = useState([
-        {
-            id: "PMJ123",
-            ruangan: "Laboratorium Komputer",
-            tanggal: "2025-05-08T09:00:00",
-            durasi: "4 jam",
-            tujuan: "Workshop Web Development",
-            peminjam: "Alice Brown",
-            email: "alice.b@example.com",
-            status: "Disetujui",
-        },
-        {
-            id: "PMJ456",
-            ruangan: "Ruang Diskusi Perpustakaan",
-            tanggal: "2025-05-09T14:00:00",
-            durasi: "2 jam",
-            tujuan: "Diskusi Kelompok",
-            peminjam: "Michael Wilson",
-            email: "michael.w@example.com",
-            status: "Disetujui",
-        },
-    ]);
-
-    // Aktivitas sistem terbaru
-    const [systemActivities, setSystemActivities] = useState([
-        {
-            icon: "📝",
-            message:
-                "Admin menyetujui peminjaman #PMJ123 untuk Laboratorium Komputer",
-            timestamp: "2025-05-03T10:30:00",
-            type: "approval",
-        },
-        {
-            icon: "❌",
-            message:
-                "Admin menolak peminjaman #PMJ111 untuk Auditorium karena jadwal bentrok",
-            timestamp: "2025-05-03T09:45:00",
-            type: "rejection",
-        },
-        {
-            icon: "👤",
-            message: "User baru 'David Lee' (david.lee@example.com) mendaftar",
-            timestamp: "2025-05-02T16:20:00",
-            type: "user",
-        },
-        {
-            icon: "📅",
-            message:
-                "Peminjaman #PMJ456 untuk Ruang Diskusi Perpustakaan telah selesai",
-            timestamp: "2025-05-01T18:45:00",
-            type: "completed",
-        },
-    ]);
-
     const formatDate = (dateString) => {
         try {
             const date = parseISO(dateString);
-            return format(date, "dd MMMM yyyy, HH:mm", { locale: id });
+            return format(date, "MMM dd, yyyy hh:mm a", { locale: enUS });
         } catch (error) {
             return dateString;
         }
@@ -131,12 +62,12 @@ export default function AdminDashboard() {
     const getStatusColor = (status) => {
         switch (status) {
             case "approval":
-            case "Disetujui":
+            case "Approved":
                 return "bg-green-100 text-green-800";
             case "rejection":
-            case "Ditolak":
+            case "Rejected":
                 return "bg-red-100 text-red-800";
-            case "Menunggu Persetujuan":
+            case "Pending Approval":
                 return "bg-yellow-100 text-yellow-800";
             case "user":
                 return "bg-purple-100 text-purple-800";
@@ -150,31 +81,50 @@ export default function AdminDashboard() {
     // Handle approval/rejection
     const handleRequestAction = (id, action) => {
         if (action === "approve") {
-            // Logic untuk menyetujui peminjaman
-            alert(`Peminjaman #${id} telah disetujui`);
-            setPendingApprovals(
-                pendingApprovals.filter((req) => req.id !== id)
-            );
+            // Logic to approve booking
+            alert(`Booking #${id} has been approved`);
         } else {
-            // Logic untuk menolak peminjaman
-            alert(`Peminjaman #${id} telah ditolak`);
-            setPendingApprovals(
-                pendingApprovals.filter((req) => req.id !== id)
-            );
+            // Logic to reject booking
+            alert(`Booking #${id} has been rejected`);
         }
     };
+
+    // Empty state component with Lucide icons
+    const EmptyState = ({
+        title,
+        description,
+        icon,
+        actionText,
+        actionHandler,
+    }) => (
+        <div className="text-center py-12">
+            <div className="mx-auto w-20 h-20 bg-primary-light rounded-full flex items-center justify-center mb-4">
+                {icon}
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">{description}</p>
+            {actionText && actionHandler && (
+                <button
+                    onClick={actionHandler}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                    {actionText}
+                </button>
+            )}
+        </div>
+    );
 
     return (
         <AdminLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard Admin
+                    Admin Dashboard
                 </h2>
             }
         >
-            <Head title="Dashboard Admin" />
+            <Head title="Admin Dashboard" />
 
-            <div className="py-6 min-h-screen">
+            <div className="py-6 min-h-screen bg-gray-50">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Flash Message */}
                     {showFlash && flash?.message && (
@@ -183,19 +133,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0">
-                                            <svg
-                                                className="h-5 w-5 text-green-600"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
+                                            <CheckCircle className="h-5 w-5 text-green-600" />
                                         </div>
                                         <div className="ml-3">
                                             <p className="text-sm text-green-700">
@@ -208,371 +146,541 @@ export default function AdminDashboard() {
                                         className="text-green-500 hover:text-green-700"
                                         onClick={() => setShowFlash(false)}
                                     >
-                                        <span className="sr-only">Tutup</span>
-                                        <svg
-                                            className="h-5 w-5"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
+                                        <span className="sr-only">Close</span>
+                                        <XCircle className="h-5 w-5" />
                                     </button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Welcome Section */}
+                    {/* Welcome Section with Stats Grid */}
                     <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 mb-8">
-                        <div className="p-5 border-b border-gray-200 bg-primary text-primaryLight">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-medium">
-                                    Selamat datang, Admin {user?.full_name ?? "User"}
-                                </h3>
-                                <div className="flex items-center space-x-2">
-                                    {selectedFaculty && (
-                                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                            {selectedFaculty.faculty_name}
-                                        </span>
-                                    )}
-                                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        <div className="p-5 border-b border-gray-200 bg-primary text-white">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-medium">
+                                        Welcome, Admin{" "}
+                                        {user?.full_name ?? "User"}
+                                    </h3>
+                                    <p className="text-sm mt-1 opacity-90">
+                                        {selectedFaculty
+                                            ? `Managing: ${selectedFaculty.faculty_name}`
+                                            : "System-wide administration"}
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-2 mt-2 md:mt-0">
+                                    <span className="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">
                                         {user?.role?.role_name || "Admin"}
                                     </span>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Quick Actions in Subheader */}
+                        <div className="bg-primary-light p-4 border-b border-gray-200">
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() =>
+                                        router.visit("/admin/booking")
+                                    }
+                                    className="flex items-center px-3 py-2 bg-white text-primary text-sm font-medium rounded-md shadow-sm hover:bg-white/90"
+                                >
+                                    <CalendarCheck className="w-4 h-4 mr-2" />
+                                    Manage Bookings
+                                </button>
+
+                                <button
+                                    onClick={() =>
+                                        router.visit("/admin/ruangan")
+                                    }
+                                    className="flex items-center px-3 py-2 bg-white text-primary text-sm font-medium rounded-md shadow-sm hover:bg-white/90"
+                                >
+                                    <BookOpen className="w-4 h-4 mr-2" />
+                                    Manage Classrooms
+                                </button>
+
+                                <Menu
+                                    as="div"
+                                    className="relative inline-block text-left"
+                                >
+                                    <Menu.Button className="flex items-center px-3 py-2 bg-white text-primary text-sm font-medium rounded-md shadow-sm hover:bg-white/90">
+                                        <UserPlus className="w-4 h-4 mr-2" />
+                                        Manage Users
+                                        <ChevronDown className="ml-2 w-4 h-4" />
+                                    </Menu.Button>
+                                    <Menu.Items className="absolute left-0 mt-2 w-48 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                                        <div className="py-1">
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() =>
+                                                            router.visit(
+                                                                "/admin/users/mahasiswa"
+                                                            )
+                                                        }
+                                                        className={`${
+                                                            active
+                                                                ? "bg-gray-100"
+                                                                : ""
+                                                        } block w-full text-left px-4 py-2 text-sm text-primary`}
+                                                    >
+                                                        Mahasiswa
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() =>
+                                                            router.visit(
+                                                                "/admin/users/dosen"
+                                                            )
+                                                        }
+                                                        className={`${
+                                                            active
+                                                                ? "bg-gray-100"
+                                                                : ""
+                                                        } block w-full text-left px-4 py-2 text-sm text-primary`}
+                                                    >
+                                                        Dosen
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() =>
+                                                            router.visit(
+                                                                "/admin/users/staff"
+                                                            )
+                                                        }
+                                                        className={`${
+                                                            active
+                                                                ? "bg-gray-100"
+                                                                : ""
+                                                        } block w-full text-left px-4 py-2 text-sm text-primary`}
+                                                    >
+                                                        Staff
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                        </div>
+                                    </Menu.Items>
+                                </Menu>
+
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="flex items-center px-3 py-2 bg-white text-primary text-sm font-medium rounded-md shadow-sm hover:bg-white/90"
+                                >
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                    Refresh Data
+                                </button>
+                            </div>
+                        </div>
                         <div className="p-5">
                             <p className="text-gray-600">
-                                Berikut adalah ringkasan aktivitas sistem dan
-                                permintaan peminjaman yang perlu persetujuan.
+                                Here's a summary of system activity and pending
+                                classroom booking approvals.
                                 {selectedFaculty && (
-                                    <span className="block mt-2 text-sm font-medium text-blue-600">
-                                        Mengelola fakultas: {selectedFaculty.faculty_name}
+                                    <span className="block mt-2 text-sm font-medium text-primary">
+                                        Managing faculty:{" "}
+                                        {selectedFaculty.faculty_name}
                                     </span>
                                 )}
                             </p>
-                        </div>
-                    </div>
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                            <div className="p-5 border-b border-gray-200 bg-primaryLight">
-                                <h3 className="text-sm font-medium text-primary">
-                                    Total Peminjaman
-                                </h3>
-                            </div>
-                            <div className="p-5 text-center">
-                                <p className="text-3xl font-bold text-primary">
-                                    342
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                            <div className="p-5 border-b border-gray-200 bg-primaryLight">
-                                <h3 className="text-sm font-medium text-primary">
-                                    Perlu Persetujuan
-                                </h3>
-                            </div>
-                            <div className="p-5 text-center">
-                                <p className="text-3xl font-bold text-yellow-500">
-                                    {pendingApprovals.length}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                            <div className="p-5 border-b border-gray-200 bg-primaryLight">
-                                <h3 className="text-sm font-medium text-primary">
-                                    Peminjaman Aktif
-                                </h3>
-                            </div>
-                            <div className="p-5 text-center">
-                                <p className="text-3xl font-bold text-primary">
-                                    28
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                            <div className="p-5 border-b border-gray-200 bg-primaryLight">
-                                <h3 className="text-sm font-medium text-primary">
-                                    Total Pengguna
-                                </h3>
-                            </div>
-                            <div className="p-5 text-center">
-                                <p className="text-3xl font-bold text-primary">
-                                    156
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section Persetujuan Peminjaman */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 mb-8">
-                        <div className="p-5 border-b border-gray-200 bg-primary text-primaryLight">
-                            <h3 className="text-lg font-medium">
-                                Persetujuan Peminjaman
-                            </h3>
-                        </div>
-                        <div className="p-5">
-                            {pendingApprovals.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-primaryLight">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    ID
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Ruangan
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Tanggal & Waktu
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Peminjam
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Status
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Aksi
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {pendingApprovals.map((request) => (
-                                                <tr
-                                                    key={request.id}
-                                                    className="hover:bg-gray-50"
-                                                >
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                                                        #{request.id}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {request.ruangan}
-                                                        <span className="block text-xs text-gray-500">
-                                                            Durasi:{" "}
-                                                            {request.durasi}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {formatDate(
-                                                            request.tanggal
-                                                        )}
-                                                        <span className="block text-xs text-gray-500">
-                                                            Diajukan:{" "}
-                                                            {formatDate(
-                                                                request.diajukan
-                                                            )}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {request.peminjam}
-                                                        <span className="block text-xs text-gray-500">
-                                                            {request.email}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                            {request.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <button
-                                                            onClick={() =>
-                                                                handleRequestAction(
-                                                                    request.id,
-                                                                    "approve"
-                                                                )
-                                                            }
-                                                            className="mr-2 text-green-600 hover:text-green-900"
-                                                        >
-                                                            Setujui
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleRequestAction(
-                                                                    request.id,
-                                                                    "reject"
-                                                                )
-                                                            }
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            Tolak
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    Tidak ada permintaan peminjaman yang perlu
-                                    persetujuan saat ini.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Section Peminjaman Akan Datang */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 mb-8">
-                        <div className="p-5 border-b border-gray-200 bg-primary text-primaryLight">
-                            <h3 className="text-lg font-medium">
-                                Peminjaman Akan Datang
-                            </h3>
-                        </div>
-                        <div className="p-5">
-                            {upcomingBookings.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-primaryLight">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    ID
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Ruangan
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Tanggal & Waktu
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Peminjam
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                                    Status
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {upcomingBookings.map((booking) => (
-                                                <tr
-                                                    key={booking.id}
-                                                    className="hover:bg-gray-50"
-                                                >
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                                                        #{booking.id}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {booking.ruangan}
-                                                        <span className="block text-xs text-gray-500">
-                                                            Durasi:{" "}
-                                                            {booking.durasi}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {formatDate(
-                                                            booking.tanggal
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {booking.peminjam}
-                                                        <span className="block text-xs text-gray-500">
-                                                            {booking.email}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span
-                                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                                                                booking.status
-                                                            )}`}
-                                                        >
-                                                            {booking.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    Tidak ada peminjaman yang akan datang dalam
-                                    waktu dekat.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Section Aktivitas Sistem */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 mb-8">
-                        <div className="p-5 border-b border-gray-200 bg-primary text-white">
-                            <h3 className="text-lg font-medium">
-                                Aktivitas Sistem Terbaru
-                            </h3>
-                        </div>
-                        <div className="p-5">
-                            <ul className="divide-y divide-gray-200">
-                                {systemActivities.map((activity, index) => (
-                                    <li
-                                        key={index}
-                                        className="py-4 hover:bg-gray-50"
-                                    >
-                                        <div className="flex items-start">
-                                            <span className="text-xl mr-3">
-                                                {activity.icon}
-                                            </span>
-                                            <div className="flex-1">
-                                                <p className="text-sm text-gray-700">
-                                                    {activity.message}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    {formatDate(
-                                                        activity.timestamp
-                                                    )}
-                                                </p>
-                                            </div>
-                                            <span
-                                                className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
-                                                    activity.type
-                                                )}`}
-                                            >
-                                                {activity.type === "approval"
-                                                    ? "Persetujuan"
-                                                    : activity.type ===
-                                                      "rejection"
-                                                    ? "Penolakan"
-                                                    : activity.type === "user"
-                                                    ? "Pengguna"
-                                                    : "Selesai"}
-                                            </span>
+                            {/* Stats Grid integrated into Welcome Section */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+                                <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                    <div className="p-5 border-b border-gray-200 bg-primary-light">
+                                        <div className="flex items-center">
+                                            <Calendar className="w-5 h-5 text-primary mr-2" />
+                                            <h3 className="text-sm font-medium text-primary">
+                                                Total Bookings
+                                            </h3>
                                         </div>
-                                    </li>
-                                ))}
-                            </ul>
+                                    </div>
+                                    <div className="p-5 flex items-center justify-between">
+                                        <p className="text-3xl font-bold text-primary">
+                                            {totalBookings}
+                                        </p>
+                                        <div className="bg-primary-light rounded-full p-3">
+                                            <Calendar className="w-6 h-6 text-primary" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                    <div className="p-5 border-b border-gray-200 bg-primary-light">
+                                        <div className="flex items-center">
+                                            <Clock className="w-5 h-5 text-yellow-500 mr-2" />
+                                            <h3 className="text-sm font-medium text-primary">
+                                                Pending Approval
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 flex items-center justify-between">
+                                        <p className="text-3xl font-bold text-yellow-500">
+                                            {pendingApprovals.length}
+                                        </p>
+                                        <div className="bg-yellow-100 rounded-full p-3">
+                                            <Clock className="w-6 h-6 text-yellow-600" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                    <div className="p-5 border-b border-gray-200 bg-primary-light">
+                                        <div className="flex items-center">
+                                            <Activity className="w-5 h-5 text-primary mr-2" />
+                                            <h3 className="text-sm font-medium text-primary">
+                                                Active Bookings
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 flex items-center justify-between">
+                                        <p className="text-3xl font-bold text-primary">
+                                            {activeBookings}
+                                        </p>
+                                        <div className="bg-blue-100 rounded-full p-3">
+                                            <Activity className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                    <div className="p-5 border-b border-gray-200 bg-primary-light">
+                                        <div className="flex items-center">
+                                            <Users className="w-5 h-5 text-primary mr-2" />
+                                            <h3 className="text-sm font-medium text-primary">
+                                                Total Users
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 flex items-center justify-between">
+                                        <p className="text-3xl font-bold text-primary">
+                                            {totalUsers}
+                                        </p>
+                                        <div className="bg-purple-100 rounded-full p-3">
+                                            <Users className="w-6 h-6 text-purple-600" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Admin Quick Actions */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                        <div className="p-5 border-b border-gray-200 bg-primary text-primaryLight">
-                            <h3 className="text-lg font-medium">
-                                Tindakan Cepat Admin
-                            </h3>
+                    {/* 2-Column Layout for Desktop */}
+                    <div className="flex flex-col lg:flex-row gap-8 mb-8">
+                        {/* Left Column - Approval and Upcoming Bookings */}
+                        <div className="lg:w-2/3 space-y-8">
+                            {/* Section Booking Approvals */}
+                            <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                <div className="p-5 border-b border-gray-200 bg-primary text-white">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-medium">
+                                            Booking Approvals
+                                        </h3>
+                                        <span className="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">
+                                            {pendingApprovals.length} pending
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-5">
+                                    {pendingApprovals.length > 0 ? (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-primary-light">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            ID
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Classroom
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Date & Time
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            User
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Status
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Actions
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {pendingApprovals.map(
+                                                        (request) => (
+                                                            <tr
+                                                                key={request.id}
+                                                                className="hover:bg-gray-50"
+                                                            >
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                                                                    #
+                                                                    {request.id}
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                    {
+                                                                        request.classroom
+                                                                    }
+                                                                    <span className="block text-xs text-gray-500 mt-1">
+                                                                        Duration:{" "}
+                                                                        {
+                                                                            request.duration
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                    {formatDate(
+                                                                        request.date
+                                                                    )}
+                                                                    <span className="block text-xs text-gray-500 mt-1">
+                                                                        Submitted:{" "}
+                                                                        {formatDate(
+                                                                            request.submitted
+                                                                        )}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                    {
+                                                                        request.user
+                                                                    }
+                                                                    <span className="block text-xs text-gray-500 mt-1">
+                                                                        {
+                                                                            request.email
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap">
+                                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                                        {
+                                                                            request.status
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            handleRequestAction(
+                                                                                request.id,
+                                                                                "approve"
+                                                                            )
+                                                                        }
+                                                                        className="text-green-600 hover:text-green-900 flex items-center"
+                                                                    >
+                                                                        <CheckCircle className="w-4 h-4 mr-1" />{" "}
+                                                                        Approve
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            handleRequestAction(
+                                                                                request.id,
+                                                                                "reject"
+                                                                            )
+                                                                        }
+                                                                        className="text-red-600 hover:text-red-900 flex items-center"
+                                                                    >
+                                                                        <XCircle className="w-4 h-4 mr-1" />{" "}
+                                                                        Reject
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <EmptyState
+                                            icon={
+                                                <FileText className="w-8 h-8 text-primary" />
+                                            }
+                                            title="No Pending Approvals"
+                                            description="There are currently no classroom booking requests requiring approval. New requests will appear here."
+                                            actionText="View All Bookings"
+                                            actionHandler={() =>
+                                                console.log(
+                                                    "Navigate to bookings"
+                                                )
+                                            }
+                                        />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Section Upcoming Bookings */}
+                            <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                <div className="p-5 border-b border-gray-200 bg-primary text-white">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-medium">
+                                            Upcoming Bookings
+                                        </h3>
+                                        <span className="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">
+                                            {upcomingBookings.length} upcoming
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-5">
+                                    {upcomingBookings.length > 0 ? (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-primary-light">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            ID
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Classroom
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Date & Time
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            User
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                                            Status
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {upcomingBookings.map(
+                                                        (booking) => (
+                                                            <tr
+                                                                key={booking.id}
+                                                                className="hover:bg-gray-50"
+                                                            >
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                                                                    #
+                                                                    {booking.id}
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                    {
+                                                                        booking.classroom
+                                                                    }
+                                                                    <span className="block text-xs text-gray-500 mt-1">
+                                                                        Duration:{" "}
+                                                                        {
+                                                                            booking.duration
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                    {formatDate(
+                                                                        booking.date
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                    {
+                                                                        booking.user
+                                                                    }
+                                                                    <span className="block text-xs text-gray-500 mt-1">
+                                                                        {
+                                                                            booking.email
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap">
+                                                                    <span
+                                                                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                                                                            booking.status
+                                                                        )}`}
+                                                                    >
+                                                                        {
+                                                                            booking.status
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <EmptyState
+                                            icon={
+                                                <Calendar className="w-8 h-8 text-primary" />
+                                            }
+                                            title="No Upcoming Bookings"
+                                            description="There are no classroom bookings scheduled in the near future. Approved bookings will appear here."
+                                            actionText="View Calendar"
+                                            actionHandler={() =>
+                                                console.log(
+                                                    "Navigate to calendar"
+                                                )
+                                            }
+                                        />
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            <button className="w-full py-3 px-4 rounded-lg text-white font-medium transition duration-150 ease-in-out bg-primary hover:bg-primary/90">
-                                Kelola Ruangan
-                            </button>
-                            <button className="w-full py-3 px-4 rounded-lg text-white font-medium transition duration-150 ease-in-out bg-gray-600 hover:bg-gray-700">
-                                Kelola Pengguna
-                            </button>
-                            <button className="w-full py-3 px-4 rounded-lg text-white font-medium transition duration-150 ease-in-out bg-green-600 hover:bg-green-700">
-                                Buat Pengumuman
-                            </button>
-                            <button className="w-full py-3 px-4 rounded-lg text-white font-medium transition duration-150 ease-in-out bg-red-600 hover:bg-red-700">
-                                Laporan Sistem
-                            </button>
+
+                        {/* Right Column - System Activity */}
+                        <div className="lg:w-1/3">
+                            {/* Section System Activity */}
+                            <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                                <div className="p-5 border-b border-gray-200 bg-primary text-white">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-medium">
+                                            Recent System Activity
+                                        </h3>
+                                        <span className="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">
+                                            {systemActivities.length} activities
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-5">
+                                    {systemActivities.length > 0 ? (
+                                        <ul className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
+                                            {systemActivities.map(
+                                                (activity, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className="py-4 hover:bg-gray-50"
+                                                    >
+                                                        <div className="flex items-start">
+                                                            <div className="flex-shrink-0 mt-1">
+                                                                <div className="bg-primary-light rounded-full p-2">
+                                                                    <Activity className="w-5 h-5 text-primary" />
+                                                                </div>
+                                                            </div>
+                                                            <div className="ml-4 flex-1 min-w-0">
+                                                                <p className="text-sm text-gray-700 truncate">
+                                                                    {
+                                                                        activity.message
+                                                                    }
+                                                                </p>
+                                                                <p className="text-xs text-gray-500 mt-1">
+                                                                    {formatDate(
+                                                                        activity.timestamp
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                )
+                                            )}
+                                        </ul>
+                                    ) : (
+                                        <EmptyState
+                                            icon={
+                                                <Activity className="w-8 h-8 text-primary" />
+                                            }
+                                            title="No System Activity"
+                                            description="No system activities have been recorded. Activities like booking approvals will appear here."
+                                            actionText="Refresh Data"
+                                            actionHandler={() =>
+                                                window.location.reload()
+                                            }
+                                        />
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

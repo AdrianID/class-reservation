@@ -90,6 +90,7 @@ class RoomController extends Controller
             'facilities' => $facilities,
             'statuses' => $statuses,
             'flash' => session('flash'),
+            'selectedFaculty' => FacultyHelper::getSelectedFaculty()
         ]);
     }
 
@@ -372,7 +373,7 @@ class RoomController extends Controller
         $selectedFaculty = FacultyHelper::getSelectedFaculty();
 
         $facilityId = $request->get('facility_id');
-        
+
         if (!$facilityId) {
             return response()->json(['error' => 'Facility ID is required'], 400);
         }

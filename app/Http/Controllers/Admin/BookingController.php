@@ -52,18 +52,27 @@ class BookingController extends Controller
 
         $bookings = $query->paginate(15)->withQueryString();
 
-        // Get statistics
+        $statQuery = Booking::query();
+
+        if ($selectedFaculty) {
+            $statQuery->whereHas('room.building', function ($q) use ($selectedFaculty) {
+                $q->where('faculty_id', $selectedFaculty->id);
+            });
+        }
+
         $statistics = [
-            'total' => Booking::count(),
-            'pending' => Booking::where('status', 'pending')->count(),
-            'approved' => Booking::where('status', 'approved')->count(),
-            'rejected' => Booking::where('status', 'rejected')->count(),
+            'total' => (clone $statQuery)->count(),
+            'pending' => (clone $statQuery)->where('status', 'pending')->count(),
+            'approved' => (clone $statQuery)->where('status', 'approved')->count(),
+            'rejected' => (clone $statQuery)->where('status', 'rejected')->count(),
         ];
+
 
         return Inertia::render('Admin/Booking/Index', [
             'bookings' => $bookings,
             'filters' => $request->only(['status', 'search', 'date_from', 'date_to', 'sort_field', 'sort_direction']),
             'statistics' => $statistics,
+            'selectedFaculty' => FacultyHelper::getSelectedFaculty()
         ]);
     }
 
@@ -81,10 +90,10 @@ class BookingController extends Controller
         ]);
     }
 
-    public function approve(Request $request, $id)
+    /* public function approve(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
-        
+
         // Check if this room is available for this time slot
         $conflictingBooking = Booking::where('id', '!=', $id)
             ->where('room_id', $booking->room_id)
@@ -112,9 +121,65 @@ class BookingController extends Controller
         ]);
 
         // Tambahkan log atau notifikasi jika diperlukan
-        
+
         return redirect()->back()->with('success', 'Booking berhasil disetujui.');
     }
+ */
+
+    public function approve(Request $request, $id)
+        {
+            $booking = Booking::findOrFail($id);
+
+            // Cek tabrakan jadwal
+            $conflictingBooking = Booking::where('id', '!=', $id)
+                ->where('room_id', $booking->room_id)
+                ->where('booking_date', $booking->booking_date)
+                ->where('status', 'approved')
+                ->where(function ($query) use ($booking) {
+                    $query->whereBetween('start_time', [$booking->start_time, $booking->end_time])
+                        ->orWhereBetween('end_time', [$booking->start_time, $booking->end_time])
+                        ->orWhere(function ($q) use ($booking) {
+                            $q->where('start_time', '<=', $booking->start_time)
+                                ->where('end_time', '>=', $booking->end_time);
+                        });
+                })
+                ->first();
+
+            if ($conflictingBooking) {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'message' => 'Jadwal bertabrakan',
+                    ], 409);
+                }
+
+                return back()->with('error', 'Tidak dapat menyetujui booking karena terdapat jadwal yang bertabrakan.');
+            }
+
+            $booking->update([
+                'status' => 'approved',
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+                'admin_notes' => $request->admin_notes,
+            ]);
+
+
+            if ($request->wantsJson() || $request->header('X-Inertia')) {
+                return back(303)->with([
+                    'flash' => [
+                        'type' => 'success',
+                        'message' => 'Booking berhasil disetujui.',
+                    ],
+                ]);
+            }
+
+            /* return back()->with('success', 'Booking berhasil disetujui.'); */
+            return back(303)->with([
+                'flash' => [
+                    'type' => 'success',
+                    'message' => 'Booking berhasil disetujui.',
+                ],
+            ]);
+        }
 
     public function reject(Request $request, $id)
     {
@@ -131,8 +196,14 @@ class BookingController extends Controller
         ]);
 
         // Tambahkan log atau notifikasi jika diperlukan
-        
-        return redirect()->back()->with('success', 'Booking berhasil ditolak.');
+
+        /* return redirect()->back()->with('success', 'Booking berhasil ditolak.'); */
+        return back(303)->with([
+            'flash' => [
+                'type' => 'success',
+                'message' => 'Booking berhasil ditolak.',
+            ],
+        ]);
     }
 
     public function export(Request $request)
@@ -142,4 +213,4 @@ class BookingController extends Controller
 
         return response()->download('path/to/exported/file');
     }
-} 
+}
